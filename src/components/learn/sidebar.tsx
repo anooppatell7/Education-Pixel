@@ -11,7 +11,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Menu, X, BookText, Layers, Search as SearchIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import courses from '@/lib/data/courses.json';
@@ -21,11 +21,12 @@ import { Input } from '../ui/input';
 
 type SidebarProps = {
   courseSlug: string;
+  isMobile?: boolean;
+  onLinkClick?: () => void;
 };
 
-export default function LearnSidebar({ courseSlug }: SidebarProps) {
+export default function LearnSidebar({ courseSlug, isMobile = false, onLinkClick }: SidebarProps) {
   const [course, setCourse] = useState<LearningCourse | null>(null);
-  const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const pathname = usePathname();
 
@@ -43,10 +44,12 @@ export default function LearnSidebar({ courseSlug }: SidebarProps) {
 
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col bg-card text-card-foreground border-r">
-       <div className="p-4 border-b">
-          <Logo />
-      </div>
+    <div className="flex h-full flex-col bg-card text-card-foreground">
+       {!isMobile && (
+         <div className="p-4 border-b">
+            <Logo />
+         </div>
+       )}
 
        <div className="p-4 border-b">
         <div className="relative">
@@ -82,7 +85,7 @@ export default function LearnSidebar({ courseSlug }: SidebarProps) {
                       <li key={lesson.id}>
                         <Link
                           href={`/learn/${courseSlug}/${lesson.id}`}
-                          onClick={() => setOpen(false)}
+                          onClick={onLinkClick}
                           className={cn(
                             'flex items-center gap-3 p-2 rounded-md transition-colors text-sm w-full text-left',
                             isActive
@@ -109,32 +112,14 @@ export default function LearnSidebar({ courseSlug }: SidebarProps) {
        </div>
     </div>
   );
+  
+  if (isMobile) {
+    return <SidebarContent />;
+  }
 
   return (
-    <>
-      {/* Mobile Sidebar (Drawer) */}
-      <div className="md:hidden sticky top-16 bg-card border-b z-10 p-2 flex items-center">
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <Menu className="h-5 w-5 mr-2" />
-              Menu
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-80">
-            <SheetHeader className="sr-only">
-                <SheetTitle>Course Navigation</SheetTitle>
-            </SheetHeader>
-            <SidebarContent />
-          </SheetContent>
-        </Sheet>
-        <div className="text-sm font-semibold truncate ml-4">{course?.title}</div>
-      </div>
-
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:block w-80 sticky top-16 h-[calc(100vh-4rem)]">
+      <aside className="hidden md:block w-80 sticky top-16 h-[calc(100vh-4rem)] border-r">
         <SidebarContent />
       </aside>
-    </>
   );
 }

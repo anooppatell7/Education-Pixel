@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -10,10 +11,30 @@ import { navItems } from "@/lib/data";
 import Logo from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { EnrollModal } from "@/components/enroll-modal";
+import LearnSidebar from "./learn/sidebar"; // Import the sidebar
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const isLearnPage = pathname.startsWith('/learn/');
+  const courseSlug = isLearnPage ? pathname.split('/')[2] : '';
+
+
+  const renderNavLinks = () => (
+      navItems.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={cn(
+            "flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline",
+            pathname === item.href ? "text-accent" : "text-foreground/70"
+          )}
+          onClick={() => setIsOpen(false)}
+        >
+          {item.title}
+        </Link>
+      ))
+  );
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -58,24 +79,18 @@ export default function Header() {
         <div className="md:hidden">
           <div className="fixed inset-0 top-16 z-50 grid h-[calc(100vh-4rem)] grid-flow-row auto-rows-max overflow-auto p-6 pb-32 shadow-md animate-in slide-in-from-bottom-80">
             <div className="relative z-20 grid gap-6 rounded-md bg-popover p-4 text-popover-foreground shadow-md">
-                <nav className="grid grid-flow-row auto-rows-max text-sm">
-                {navItems.map((item) => (
-                    <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                        "flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline",
-                        pathname === item.href ? "text-accent" : "text-foreground/70"
-                    )}
-                    onClick={() => setIsOpen(false)}
-                    >
-                    {item.title}
-                    </Link>
-                ))}
-                </nav>
-                <EnrollModal>
-                  <Button className="w-full" onClick={() => setIsOpen(false)}>Enroll Now</Button>
-                </EnrollModal>
+              {isLearnPage ? (
+                <LearnSidebar courseSlug={courseSlug} isMobile />
+              ) : (
+                <>
+                  <nav className="grid grid-flow-row auto-rows-max text-sm">
+                    {renderNavLinks()}
+                  </nav>
+                  <EnrollModal>
+                    <Button className="w-full" onClick={() => setIsOpen(false)}>Enroll Now</Button>
+                  </EnrollModal>
+                </>
+              )}
             </div>
           </div>
         </div>
