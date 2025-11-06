@@ -5,14 +5,19 @@ import Logo from "./logo";
 import { navItems } from "@/lib/data";
 
 export default function Footer() {
-  // Main navigation links for the footer
+  // Split links for a two-column layout
   const quickLinks = [
-    ...navItems,
-    { title: "Reviews", href: "/reviews" },
+    { title: "Home", href: "/" },
+    { title: "About", href: "/about" },
+    { title: "Courses", href: "/courses" },
+    { title: "Learn", href: "/learn" },
+    { title: "Blog", href: "/blog" },
   ];
 
-  // Secondary/legal links for the second column
-  const legalLinks = [
+  const secondaryLinks = [
+    { title: "Career Guidance", href: "/career" },
+    { title: "Resources", href: "/resources" },
+    { title: "Reviews", href: "/reviews" },
     { title: "Privacy Policy", href: "/privacy-policy" },
     { title: "Terms & Conditions", href: "/terms-and-conditions" },
   ];
@@ -64,7 +69,7 @@ export default function Footer() {
                         ))}
                     </ul>
                     <ul className="space-y-2">
-                        {legalLinks.map((item) => (
+                        {secondaryLinks.map((item) => (
                             <li key={item.href}>
                                 <Link href={item.href} className="hover:text-accent transition-colors">
                                     {item.title}

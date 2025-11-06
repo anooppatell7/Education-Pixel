@@ -1,0 +1,104 @@
+
+import Link from 'next/link';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { ArrowRight } from 'lucide-react';
+import type { Metadata } from "next";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+
+export const metadata: Metadata = {
+  title: "Learn To Code - Interactive Courses | MTech IT Institute",
+  description: "Start learning to code with MTech IT Institute. Our interactive courses in HTML, CSS, JavaScript, Python, and more will take you from beginner to pro.",
+  keywords: ["learn to code", "interactive coding courses", "learn html", "learn css", "learn javascript", "learn python"],
+   alternates: {
+    canonical: `${siteUrl}/learn`,
+  },
+  openGraph: {
+    title: "Learn To Code - Interactive Courses | MTech IT Institute",
+    description: "Start learning to code with MTech IT Institute. Our interactive courses in HTML, CSS, JavaScript, Python, and more will take you from beginner to pro.",
+    url: `${siteUrl}/learn`,
+  },
+};
+
+const learningModules = [
+    {
+        slug: 'html',
+        title: 'HTML Foundations',
+        description: 'Learn the structure of the web. Build and structure websites from scratch.',
+        progress: 0,
+        icon: '📄'
+    },
+    {
+        slug: 'css',
+        title: 'CSS Styling',
+        description: 'Style your websites and bring your designs to life with modern CSS.',
+        progress: 0,
+        icon: '🎨'
+    },
+    {
+        slug: 'javascript',
+        title: 'JavaScript Essentials',
+        description: 'Make your websites interactive and dynamic with the web\'s most popular language.',
+        progress: 0,
+        icon: '⚡'
+    },
+    {
+        slug: 'python',
+        title: 'Python for Beginners',
+        description: 'Start your journey into programming with the versatile and powerful Python.',
+        progress: 0,
+        icon: '🐍'
+    },
+    {
+        slug: 'sql',
+        title: 'SQL Database Basics',
+        description: 'Learn to manage and query data from databases, a fundamental skill for any developer.',
+        progress: 0,
+        icon: '🗃️'
+    }
+]
+
+
+export default function LearnPage() {
+    return (
+        <div className="bg-secondary">
+            <div className="container py-16 sm:py-24">
+                <div className="text-center mb-12">
+                <h1 className="font-headline text-4xl font-bold text-primary sm:text-5xl">Learn with MTech IT</h1>
+                <p className="mt-4 max-w-2xl mx-auto text-lg text-primary/80">
+                    Start from basics and master real-world skills with interactive lessons and projects.
+                </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {learningModules.map((module) => (
+                        <Card key={module.slug} className="flex flex-col shadow-sm hover:shadow-lg transition-shadow">
+                            <CardHeader className="flex-row items-center gap-4">
+                                <div className="text-4xl">{module.icon}</div>
+                                <div>
+                                    <CardTitle className="font-headline text-xl text-primary">{module.title}</CardTitle>
+                                    <CardDescription className="line-clamp-2">{module.description}</CardDescription>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex-grow">
+                                <div className="space-y-2">
+                                    <Progress value={module.progress} />
+                                    <p className="text-xs text-muted-foreground">{module.progress}% Complete</p>
+                                </div>
+                            </CardContent>
+                            <CardFooter>
+                                <Button asChild className="w-full">
+                                    <Link href={`/learn/${module.slug}`}>
+                                        Start Learning <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Link>
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            </div>
+        </div>
+    )
+}

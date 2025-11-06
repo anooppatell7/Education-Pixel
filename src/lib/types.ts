@@ -79,6 +79,37 @@ export type SiteSettings = {
     isVisible: boolean;
 }
 
+export type QuizQuestion = {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+};
+
+export type Lesson = {
+  slug: string;
+  title: string;
+  theory: string; // HTML content
+  codeExample?: string;
+  practiceTasks?: string[];
+  quiz?: QuizQuestion[];
+  notesUrl?: string;
+};
+
+export type Chapter = {
+  slug: string;
+  title: string;
+  lessons: Lesson[];
+};
+
+export type LearningModule = {
+  slug: string;
+  title: string;
+  description: string;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  chapters: Chapter[];
+};
+
+
 // Add types for more complex schemas
 export type HowToSchema = HowTo;
 export type FAQPageSchema = FAQPage;
