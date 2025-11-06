@@ -45,9 +45,7 @@ export default function LearnSidebar({ courseSlug }: SidebarProps) {
   const SidebarContent = () => (
     <div className="flex h-full flex-col bg-card text-card-foreground border-r">
        <div className="p-4 border-b">
-         <Link href="/learn">
           <Logo />
-        </Link>
       </div>
 
        <div className="p-4 border-b">
@@ -124,7 +122,7 @@ export default function LearnSidebar({ courseSlug }: SidebarProps) {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-80">
-             <SheetHeader className="sr-only">
+            <SheetHeader className="sr-only">
                 <SheetTitle>Course Navigation</SheetTitle>
             </SheetHeader>
             <SidebarContent />
