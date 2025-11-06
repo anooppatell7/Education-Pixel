@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ArrowRight } from 'lucide-react';
 import type { Metadata } from "next";
+import { learningModules } from '@/lib/learn-data';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
@@ -22,46 +23,16 @@ export const metadata: Metadata = {
   },
 };
 
-const learningModules = [
-    {
-        slug: 'html',
-        title: 'HTML Foundations',
-        description: 'Learn the structure of the web. Build and structure websites from scratch.',
-        progress: 0,
-        icon: '📄'
-    },
-    {
-        slug: 'css',
-        title: 'CSS Styling',
-        description: 'Style your websites and bring your designs to life with modern CSS.',
-        progress: 0,
-        icon: '🎨'
-    },
-    {
-        slug: 'javascript',
-        title: 'JavaScript Essentials',
-        description: 'Make your websites interactive and dynamic with the web\'s most popular language.',
-        progress: 0,
-        icon: '⚡'
-    },
-    {
-        slug: 'python',
-        title: 'Python for Beginners',
-        description: 'Start your journey into programming with the versatile and powerful Python.',
-        progress: 0,
-        icon: '🐍'
-    },
-    {
-        slug: 'sql',
-        title: 'SQL Database Basics',
-        description: 'Learn to manage and query data from databases, a fundamental skill for any developer.',
-        progress: 0,
-        icon: '🗃️'
-    }
-]
-
-
 export default function LearnPage() {
+    // In the future, progress will come from user data
+    const userProgress = {
+        html: 0,
+        css: 0,
+        js: 0, // Corrected from 'javascript' to 'js'
+        python: 0,
+        sql: 0,
+    } as Record<string, number>;
+
     return (
         <div className="bg-secondary">
             <div className="container py-16 sm:py-24">
@@ -84,8 +55,8 @@ export default function LearnPage() {
                             </CardHeader>
                             <CardContent className="flex-grow">
                                 <div className="space-y-2">
-                                    <Progress value={module.progress} />
-                                    <p className="text-xs text-muted-foreground">{module.progress}% Complete</p>
+                                    <Progress value={userProgress[module.slug] || 0} />
+                                    <p className="text-xs text-muted-foreground">{userProgress[module.slug] || 0}% Complete</p>
                                 </div>
                             </CardContent>
                             <CardFooter>

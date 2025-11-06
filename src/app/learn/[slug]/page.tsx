@@ -1,0 +1,89 @@
+
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { learningModules } from '@/lib/learn-data';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { BookOpen, ChevronLeft } from 'lucide-react';
+import type { Metadata } from 'next';
+
+type LearnModulePageProps = {
+  params: {
+    slug: string;
+  };
+};
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+
+export async function generateMetadata({ params }: LearnModulePageProps): Promise<Metadata> {
+  const module = learningModules.find(m => m.slug === params.slug);
+  if (!module) {
+    return { title: "Module Not Found" };
+  }
+  return {
+    title: `${module.title} | MTech IT Institute`,
+    description: `Start learning ${module.title}. ${module.description}`,
+     alternates: {
+      canonical: `${siteUrl}/learn/${params.slug}`,
+    },
+  };
+}
+
+export default function LearnModulePage({ params }: LearnModulePageProps) {
+  const module = learningModules.find(m => m.slug === params.slug);
+
+  if (!module) {
+    notFound();
+  }
+
+  return (
+    <div className="bg-background">
+      <div className="container py-16 sm:py-24">
+        <div className="mb-12">
+            <Link href="/learn" className="flex items-center text-sm text-accent hover:underline mb-4">
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Back to Learn
+            </Link>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                 <h1 className="font-headline text-4xl font-bold text-primary sm:text-5xl">{module.title}</h1>
+                 <p className="mt-2 max-w-2xl text-lg text-foreground/80">{module.description}</p>
+            </div>
+            <Badge variant="outline" className="mt-4 sm:mt-0 text-base">{module.difficulty}</Badge>
+          </div>
+        </div>
+
+        <div className="space-y-8">
+            {module.chapters.map((chapter) => (
+                <Card key={chapter.slug} className="shadow-sm">
+                    <CardHeader>
+                        <CardTitle className="font-headline text-2xl text-primary">{chapter.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ul className="space-y-3">
+                            {chapter.lessons.map((lesson) => (
+                                <li key={lesson.slug}>
+                                    <Link href={`/learn/${module.slug}/${lesson.slug}`} className="flex items-center gap-3 p-3 -m-3 rounded-md hover:bg-secondary transition-colors">
+                                        <div className="p-2 bg-primary/10 text-accent rounded-md">
+                                            <BookOpen className="h-5 w-5" />
+                                        </div>
+                                        <span className="font-medium text-primary/90">{lesson.title}</span>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </CardContent>
+                </Card>
+            ))}
+            {module.chapters.length === 0 && (
+                <Card>
+                    <CardContent className="p-12 text-center text-muted-foreground">
+                        <p>Lessons for this module are coming soon. Check back later!</p>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+      </div>
+    </div>
+  );
+}

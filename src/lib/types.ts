@@ -82,7 +82,8 @@ export type SiteSettings = {
 export type QuizQuestion = {
   question: string;
   options: string[];
-  correctAnswer: number;
+  correctAnswer: number; // index of the correct option
+  explanation?: string;
 };
 
 export type Lesson = {
@@ -92,7 +93,6 @@ export type Lesson = {
   codeExample?: string;
   practiceTasks?: string[];
   quiz?: QuizQuestion[];
-  notesUrl?: string;
 };
 
 export type Chapter = {
@@ -107,6 +107,7 @@ export type LearningModule = {
   description: string;
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   chapters: Chapter[];
+  icon: string;
 };
 
 
