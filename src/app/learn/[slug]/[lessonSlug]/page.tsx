@@ -1,7 +1,9 @@
 
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { learningModules } from '@/lib/learn-data';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import type { LearningModule, Chapter, Lesson } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, Code, BookOpen, BrainCircuit, PencilRuler } from 'lucide-react';
@@ -16,9 +18,32 @@ type LessonPageProps = {
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
+async function getLesson(moduleSlug: string, lessonSlug: string): Promise<{ module: LearningModule | null, lesson: Lesson | null }> {
+    const moduleRef = doc(db, 'learningModules', moduleSlug);
+    const moduleSnap = await getDoc(moduleRef);
+    
+    if (!moduleSnap.exists()) {
+        return { module: null, lesson: null };
+    }
+    
+    const module = { slug: moduleSnap.id, ...moduleSnap.data() } as LearningModule;
+
+    const chaptersSnap = await getDocs(collection(db, 'learningModules', moduleSlug, 'chapters'));
+
+    for (const chapterDoc of chaptersSnap.docs) {
+        const lessonRef = doc(db, 'learningModules', moduleSlug, 'chapters', chapterDoc.id, 'lessons', lessonSlug);
+        const lessonSnap = await getDoc(lessonRef);
+        if (lessonSnap.exists()) {
+            const lesson = { slug: lessonSnap.id, ...lessonSnap.data() } as Lesson;
+            return { module, lesson };
+        }
+    }
+    
+    return { module, lesson: null };
+}
+
 export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
-    const module = learningModules.find(m => m.slug === params.slug);
-    const lesson = module?.chapters.flatMap(c => c.lessons).find(l => l.slug === params.lessonSlug);
+    const { module, lesson } = await getLesson(params.slug, params.lessonSlug);
 
     if (!module || !lesson) {
         return { title: "Lesson Not Found" };
@@ -33,10 +58,8 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
     };
 }
 
-
-export default function LessonPage({ params }: LessonPageProps) {
-    const module = learningModules.find(m => m.slug === params.slug);
-    const lesson = module?.chapters.flatMap(c => c.lessons).find(l => l.slug === params.lessonSlug);
+export default async function LessonPage({ params }: LessonPageProps) {
+    const { module, lesson } = await getLesson(params.slug, params.lessonSlug);
 
     if (!module || !lesson) {
         notFound();

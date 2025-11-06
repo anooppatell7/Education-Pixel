@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ArrowRight } from 'lucide-react';
 import type { Metadata } from "next";
-import { learningModules } from '@/lib/learn-data';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import type { LearningModule } from '@/lib/types';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
@@ -23,15 +25,27 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LearnPage() {
+// This forces the page to be dynamically rendered
+export const revalidate = 0;
+
+async function getLearningModules(): Promise<LearningModule[]> {
+    const modulesQuery = query(collection(db, 'learningModules'), orderBy('slug'));
+    const querySnapshot = await getDocs(modulesQuery);
+    return querySnapshot.docs.map(doc => ({ slug: doc.id, ...doc.data() } as LearningModule));
+}
+
+
+export default async function LearnPage() {
     // In the future, progress will come from user data
     const userProgress = {
         html: 0,
         css: 0,
-        js: 0, // Corrected from 'javascript' to 'js'
+        js: 0,
         python: 0,
         sql: 0,
     } as Record<string, number>;
+    
+    const learningModules = await getLearningModules();
 
     return (
         <div className="bg-secondary">

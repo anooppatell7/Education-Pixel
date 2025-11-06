@@ -1,7 +1,9 @@
 
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { learningModules } from '@/lib/learn-data';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, collection, getDocs, orderBy } from 'firebase/firestore';
+import type { LearningModule, Chapter } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, ChevronLeft } from 'lucide-react';
@@ -15,8 +17,45 @@ type LearnModulePageProps = {
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
+async function getModule(slug: string): Promise<LearningModule | null> {
+    const docRef = doc(db, 'learningModules', slug);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+        return null;
+    }
+    
+    const moduleData = docSnap.data();
+    const chaptersQuery = query(collection(db, 'learningModules', slug, 'chapters'), orderBy('slug')); // Assuming chapters have an order field or slug can be used for ordering
+    const chaptersSnap = await getDocs(chaptersQuery);
+
+    const chapters: Chapter[] = [];
+    for (const chapterDoc of chaptersSnap.docs) {
+        const chapterData = chapterDoc.data();
+        const lessonsQuery = query(collection(db, 'learningModules', slug, 'chapters', chapterDoc.id, 'lessons'), orderBy('slug'));
+        const lessonsSnap = await getDocs(lessonsQuery);
+        const lessons = lessonsSnap.docs.map(lessonDoc => ({ slug: lessonDoc.id, ...lessonDoc.data() }));
+
+        chapters.push({
+            slug: chapterDoc.id,
+            title: chapterData.title,
+            lessons: lessons as any,
+        });
+    }
+
+    return {
+        slug: docSnap.id,
+        title: moduleData.title,
+        description: moduleData.description,
+        difficulty: moduleData.difficulty,
+        icon: moduleData.icon,
+        chapters,
+    } as LearningModule;
+}
+
+
 export async function generateMetadata({ params }: LearnModulePageProps): Promise<Metadata> {
-  const module = learningModules.find(m => m.slug === params.slug);
+  const module = await getModule(params.slug);
   if (!module) {
     return { title: "Module Not Found" };
   }
@@ -29,8 +68,8 @@ export async function generateMetadata({ params }: LearnModulePageProps): Promis
   };
 }
 
-export default function LearnModulePage({ params }: LearnModulePageProps) {
-  const module = learningModules.find(m => m.slug === params.slug);
+export default async function LearnModulePage({ params }: LearnModulePageProps) {
+  const module = await getModule(params.slug);
 
   if (!module) {
     notFound();

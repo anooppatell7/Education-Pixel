@@ -1,10 +1,11 @@
 
+
 "use client";
 
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star } from "lucide-react";
+import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -62,16 +63,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Logo from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review } from "@/lib/types";
+import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, LearningModule } from "@/lib/types";
 import { db, auth } from "@/lib/firebase";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, setDoc, Timestamp, where, arrayUnion, arrayRemove, getDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, setDoc, Timestamp, where, arrayUnion, arrayRemove, getDoc, writeBatch } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { signOut, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { learningModules as staticLearningModules } from "@/lib/learn-data";
 
 
-type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews';
+type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'learn-content';
 
 export default function AdminDashboardPage() {
     const [user, authLoading, authError] = useAuthState(auth);
@@ -491,6 +493,45 @@ export default function AdminDashboardPage() {
         }
     };
 
+    const handleUploadLearnContent = async () => {
+        if (!confirm("Are you sure you want to upload all static learning modules to Firestore? This will overwrite existing modules with the same slug.")) {
+            return;
+        }
+        
+        try {
+            const batch = writeBatch(db);
+
+            for (const module of staticLearningModules) {
+                const moduleRef = doc(db, "learningModules", module.slug);
+                const moduleData: Omit<LearningModule, 'chapters'> = {
+                    slug: module.slug,
+                    title: module.title,
+                    description: module.description,
+                    difficulty: module.difficulty,
+                    icon: module.icon,
+                };
+                batch.set(moduleRef, moduleData);
+
+                for (const chapter of module.chapters) {
+                    const chapterRef = doc(collection(db, "learningModules", module.slug, "chapters"), chapter.slug);
+                    batch.set(chapterRef, { title: chapter.title, slug: chapter.slug });
+
+                    for (const lesson of chapter.lessons) {
+                        const lessonRef = doc(collection(db, "learningModules", module.slug, "chapters", chapter.slug, "lessons"), lesson.slug);
+                        batch.set(lessonRef, lesson);
+                    }
+                }
+            }
+
+            await batch.commit();
+            toast({ title: "Success", description: "Learning content uploaded to Firestore." });
+
+        } catch (error) {
+            console.error("Error uploading learning content:", error);
+            toast({ title: "Error", description: "Could not upload learning content.", variant: "destructive" });
+        }
+    };
+
     const getFormTitle = () => {
         if (activeTab === 'courses') return editingItem ? 'Edit Course' : 'Add New Course';
         if (activeTab === 'blog') return editingItem ? 'Edit Blog Post' : 'Add New Blog Post';
@@ -623,6 +664,7 @@ export default function AdminDashboardPage() {
                                     <TabsTrigger value="blog">Blog Posts</TabsTrigger>
                                     <TabsTrigger value="guidance"><Briefcase className="mr-2 h-4 w-4"/>Career Guidance</TabsTrigger>
                                     <TabsTrigger value="resources">Resources</TabsTrigger>
+                                    <TabsTrigger value="learn-content">Learn Content</TabsTrigger>
                                     <TabsTrigger value="reviews"><Star className="mr-2 h-4 w-4" />Reviews</TabsTrigger>
                                     <TabsTrigger value="internal-links"><Link2 className="mr-2 h-4 w-4"/>Internal Links</TabsTrigger>
                                     <TabsTrigger value="enrollments"><FileText className="mr-2 h-4 w-4"/>Enrollments</TabsTrigger>
@@ -633,7 +675,7 @@ export default function AdminDashboardPage() {
                                 <ScrollBar orientation="horizontal" />
                             </ScrollArea>
                              <div className="ml-auto flex items-center gap-2 pl-4">
-                                {activeTab !== 'settings' && activeTab !== 'site-settings' && activeTab !== 'enrollments' && activeTab !== 'contacts' && activeTab !== 'internal-links' && activeTab !== 'reviews' && (
+                                {activeTab !== 'settings' && activeTab !== 'site-settings' && activeTab !== 'enrollments' && activeTab !== 'contacts' && activeTab !== 'internal-links' && activeTab !== 'reviews' && activeTab !== 'learn-content' && (
                                 <Button size="sm" className="h-8 gap-1" onClick={handleAddNew}>
                                     <PlusCircle className="h-3.5 w-3.5" />
                                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -868,6 +910,27 @@ export default function AdminDashboardPage() {
                                          <ScrollBar orientation="horizontal" />
                                      </ScrollArea>
                                      }
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                        <TabsContent value="learn-content">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Learning Content</CardTitle>
+                                    <CardDescription>Manage interactive course modules, chapters, and lessons.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        <p>You can add and edit learning content directly in Firestore for now.</p>
+                                        <div className="p-4 bg-muted rounded-md text-sm">
+                                            <p className="font-semibold">To get started, you need to upload the initial set of courses from your local code to the database.</p>
+                                            <p className="mt-2 text-muted-foreground">This button will read the content from `src/lib/learn-data.ts` and save it to your Firestore `learningModules` collection. This is a one-time setup action.</p>
+                                            <Button onClick={handleUploadLearnContent} className="mt-4">
+                                                <Upload className="mr-2 h-4 w-4" />
+                                                Upload Static Content to Firestore
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </CardContent>
                             </Card>
                         </TabsContent>
