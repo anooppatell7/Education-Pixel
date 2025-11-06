@@ -45,9 +45,7 @@ export default function LearnSidebar({ courseSlug }: SidebarProps) {
   const SidebarContent = () => (
     <div className="flex h-full flex-col bg-card text-card-foreground border-r">
       <div className="p-4 border-b">
-        <Link href="/learn" onClick={() => setOpen(false)}>
-          <Logo />
-        </Link>
+        <Logo />
       </div>
 
        <div className="p-4 border-b">
