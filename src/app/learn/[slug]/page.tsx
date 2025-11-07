@@ -23,16 +23,16 @@ export default function LearnModulePage({ params }: { params: { slug: string } }
 
   useEffect(() => {
     async function loadData() {
-        const courseData = await getCourseData(params.slug);
-        setCourse(courseData);
-        
-        const { progressPercentage: newProgress } = getCourseProgress(params.slug);
-        setProgressPercentage(newProgress);
+        if (params.slug) {
+            const courseData = await getCourseData(params.slug);
+            setCourse(courseData);
+            
+            const { progressPercentage: newProgress } = getCourseProgress(params.slug);
+            setProgressPercentage(newProgress);
+        }
     }
     
-    if (params.slug) {
-        loadData();
-    }
+    loadData();
     
   }, [params.slug, getCourseProgress]);
 
