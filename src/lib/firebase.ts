@@ -23,7 +23,7 @@ const auth = getAuth(app);
 // This is needed for phone auth to work with app check
 if (typeof window !== "undefined") {
     // @ts-ignore
-    self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = process.env.NODE_ENV === 'development';
 }
 
 export async function getBlogPostsByCategory(category: string): Promise<BlogPost[]> {
@@ -81,7 +81,7 @@ export async function getUserProgress(userId: string): Promise<UserProgress | nu
         if (docSnap.exists()) {
             return docSnap.data() as UserProgress;
         }
-        return null;
+        return {}; // Return empty object if no progress found
     } catch (error) {
         console.error("Error fetching user progress:", error);
         return null;

@@ -5,7 +5,9 @@ import { useState, useEffect, useCallback } from 'react';
 import coursesData from '@/lib/data/courses.json';
 import type { LearningCourse, UserProgress } from '@/lib/types';
 import { useUser } from '@/firebase';
-import { getUserProgress, updateUserProgress } from '@/lib/firebase';
+import { updateUserProgress } from '@/lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 // Helper to get total lesson count for a course
 const getTotalLessons = (courseId: string): number => {
@@ -19,30 +21,39 @@ export const useLearnProgress = () => {
     const [progress, setProgress] = useState<UserProgress>({});
     const [isLoading, setIsLoading] = useState(true);
 
-    // Load progress from Firestore on initial render
+    // Set up a real-time listener for user progress
     useEffect(() => {
-        const fetchProgress = async () => {
-            if (user) {
-                setIsLoading(true);
-                const dbProgress = await getUserProgress(user.uid);
-                if (dbProgress) {
-                    setProgress(dbProgress);
+        if (user && db) {
+            setIsLoading(true);
+            const docRef = doc(db, 'userProgress', user.uid);
+            
+            const unsubscribe = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    setProgress(docSnap.data() as UserProgress);
+                } else {
+                    // No progress document exists, so set to empty
+                    setProgress({});
                 }
                 setIsLoading(false);
-            } else {
-                // If user is logged out, clear progress
-                setProgress({});
+            }, (error) => {
+                console.error("Error listening to progress updates:", error);
                 setIsLoading(false);
-            }
-        };
+            });
 
-        fetchProgress();
+            // Cleanup listener on component unmount or user change
+            return () => unsubscribe();
+        } else {
+            // If user is logged out, clear progress and loading state
+            setProgress({});
+            setIsLoading(false);
+        }
     }, [user]);
 
-    // Save progress to Firestore whenever it changes
+    // This function now ONLY writes to the database.
+    // The local state will be updated by the onSnapshot listener.
     const saveProgress = useCallback(async (newProgress: UserProgress) => {
         if (!user) return;
-        setProgress(newProgress); // Optimistic update
+        // No more optimistic setProgress here.
         await updateUserProgress(user.uid, newProgress);
     }, [user]);
     
@@ -53,22 +64,22 @@ export const useLearnProgress = () => {
     const toggleLessonCompleted = useCallback((courseId: string, lessonId: string) => {
         if (!user) return;
 
-        const courseProgress = progress[courseId] || { completedLessons: [] };
-        const isCompleted = courseProgress.completedLessons.includes(lessonId);
+        const currentCourseProgress = progress[courseId] || { completedLessons: [] };
+        const isCompleted = currentCourseProgress.completedLessons.includes(lessonId);
         
         let newCompletedLessons: string[];
         if (isCompleted) {
-            newCompletedLessons = courseProgress.completedLessons.filter(id => id !== lessonId);
+            newCompletedLessons = currentCourseProgress.completedLessons.filter(id => id !== lessonId);
         } else {
-            newCompletedLessons = [...courseProgress.completedLessons, lessonId];
+            newCompletedLessons = [...currentCourseProgress.completedLessons, lessonId];
         }
 
         const newProgressData: UserProgress = {
             ...progress,
             [courseId]: {
-                ...courseProgress,
+                ...currentCourseProgress,
                 completedLessons: newCompletedLessons,
-                lastVisitedLesson: lessonId, // Also update last visited
+                lastVisitedLesson: lessonId,
             },
         };
 
@@ -97,6 +108,11 @@ export const useLearnProgress = () => {
     
     const updateLastVisitedLesson = useCallback((courseId: string, lessonId: string) => {
         if (!user) return;
+        
+        // Only update if the last visited lesson is different
+        if (progress[courseId]?.lastVisitedLesson === lessonId) {
+            return;
+        }
 
         const newProgressData: UserProgress = {
             ...progress,
