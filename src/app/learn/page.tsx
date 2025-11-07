@@ -10,8 +10,7 @@ import { ArrowRight } from 'lucide-react';
 import { useLearnProgress } from '@/hooks/use-learn-progress';
 import { useUser } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getAllCourses } from '@/lib/learn-helpers';
 import type { LearningCourse } from '@/lib/types';
 
 function LearnPageUnauthenticated() {
@@ -51,7 +50,7 @@ function LearnPageAuthenticated({ courses }: { courses: LearningCourse[] }) {
             {learningCourses.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {learningCourses.map((course) => {
-                        const { progressPercentage } = getCourseProgress(course.id);
+                        const { progressPercentage } = getCourseProgress(course);
 
                         return (
                             <Card key={course.id} className="flex flex-col shadow-sm hover:shadow-lg transition-shadow">
@@ -98,11 +97,8 @@ export default function LearnPage() {
 
     useEffect(() => {
         const fetchCourses = async () => {
-            if (!db) return;
             setDataLoading(true);
-            const coursesQuery = query(collection(db, "learningCourses"), orderBy("order"));
-            const snapshot = await getDocs(coursesQuery);
-            const courseList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LearningCourse));
+            const courseList = await getAllCourses();
             setCourses(courseList);
             setDataLoading(false);
         };

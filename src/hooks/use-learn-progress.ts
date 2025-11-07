@@ -2,19 +2,18 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import coursesData from '@/lib/data/courses.json';
 import type { LearningCourse, UserProgress } from '@/lib/types';
 import { useUser } from '@/firebase';
 import { updateUserProgress } from '@/lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-// Helper to get total lesson count for a course
-const getTotalLessons = (courseId: string): number => {
-    const course = coursesData.find(c => c.id === courseId) as LearningCourse | undefined;
-    if (!course) return 0;
-    return course.modules.reduce((acc, module) => acc + module.lessons.length, 0);
-}
+
+// Helper to get total lesson count from a LIVE course object
+const getTotalLessonsFromCourse = (course: LearningCourse | null): number => {
+    if (!course || !course.modules) return 0;
+    return course.modules.reduce((acc, module) => acc + (module.lessons?.length || 0), 0);
+};
 
 export const useLearnProgress = () => {
     const { user } = useUser();
@@ -53,7 +52,6 @@ export const useLearnProgress = () => {
     // The local state will be updated by the onSnapshot listener.
     const saveProgress = useCallback(async (newProgress: UserProgress) => {
         if (!user) return;
-        // No more optimistic setProgress here.
         await updateUserProgress(user.uid, newProgress);
     }, [user]);
     
@@ -87,9 +85,13 @@ export const useLearnProgress = () => {
 
     }, [progress, saveProgress, user]);
     
-    const getCourseProgress = useCallback((courseId: string): { completedCount: number, totalLessons: number, progressPercentage: number } => {
-        const completedLessons = progress[courseId]?.completedLessons || [];
-        const totalLessons = getTotalLessons(courseId);
+    const getCourseProgress = useCallback((course: LearningCourse | null): { completedCount: number, totalLessons: number, progressPercentage: number } => {
+        if (!course) {
+            return { completedCount: 0, totalLessons: 0, progressPercentage: 0 };
+        }
+        
+        const completedLessons = progress[course.id]?.completedLessons || [];
+        const totalLessons = getTotalLessonsFromCourse(course);
         const completedCount = completedLessons.length;
         
         if (totalLessons === 0) {
@@ -109,7 +111,6 @@ export const useLearnProgress = () => {
     const updateLastVisitedLesson = useCallback((courseId: string, lessonId: string) => {
         if (!user) return;
         
-        // Only update if the last visited lesson is different
         if (progress[courseId]?.lastVisitedLesson === lessonId) {
             return;
         }

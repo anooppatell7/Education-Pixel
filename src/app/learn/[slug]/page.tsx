@@ -78,10 +78,9 @@ export default function LearnModulePage({ params }: { params: { slug: string } }
   }, [loadData]);
   
   const progressPercentage = useMemo(() => {
-      if (!slug) return 0;
-      const { progressPercentage: newProgress } = getCourseProgress(slug);
+      const { progressPercentage: newProgress } = getCourseProgress(course);
       return newProgress;
-  }, [slug, getCourseProgress]);
+  }, [course, getCourseProgress]);
 
 
   if (isUserLoading || isCourseLoading || !course) {
