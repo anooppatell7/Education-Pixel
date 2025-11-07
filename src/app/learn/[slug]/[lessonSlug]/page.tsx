@@ -1,8 +1,8 @@
 
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import React, { useEffect, useState, use, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -109,13 +109,19 @@ function LessonPageSkeleton() {
                         <Skeleton className="h-6 w-full" />
                     </CardContent>
                 </Card>
+                 <Card>
+                    <CardHeader><Skeleton className="h-8 w-1/4" /></CardHeader>
+                    <CardContent className="space-y-4">
+                        <Skeleton className="h-24 w-full" />
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
 }
 
 export default function LessonPage({ params }: { params: { slug: string; lessonSlug: string } }) {
-    const { slug, lessonSlug } = React.use(params); // Correctly unwrap params
+    const { slug, lessonSlug } = use(params);
     const { user, isLoading: userLoading } = useUser();
     const router = useRouter();
     const { updateLastVisitedLesson } = useLearnProgress();
@@ -127,7 +133,25 @@ export default function LessonPage({ params }: { params: { slug: string; lessonS
         prevLesson: Lesson | null;
         nextLesson: Lesson | null;
     } | null>(null);
-     const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const fetchLesson = useCallback(async () => {
+        if (!user || !slug || !lessonSlug) return;
+        
+        setIsLoading(true);
+        const { course, lesson, module } = await getLessonData(slug, lessonSlug);
+        
+        if (!course || !lesson || !module) {
+            setIsLoading(false);
+            router.push(`/learn/${slug}`);
+            return;
+        }
+        const { prevLesson, nextLesson } = await getNextPrevLessons(slug, module.id, lessonSlug);
+        setLessonData({ course, module, lesson, prevLesson, nextLesson });
+        updateLastVisitedLesson(slug, lessonSlug);
+        setIsLoading(false);
+    }, [slug, lessonSlug, user, router, updateLastVisitedLesson]);
+
 
     useEffect(() => {
         if (userLoading) return;
@@ -135,34 +159,14 @@ export default function LessonPage({ params }: { params: { slug: string; lessonS
             router.push(`/login?redirect=/learn/${slug}/${lessonSlug}`);
             return;
         }
-
-        const fetchLesson = async () => {
-            setIsLoading(true);
-            const { course, lesson, module } = await getLessonData(slug, lessonSlug);
-            
-            if (!course || !lesson || !module) {
-                setIsLoading(false);
-                // Consider redirecting to a 404 page or the course page
-                router.push(`/learn/${slug}`);
-                return;
-            }
-            const { prevLesson, nextLesson } = await getNextPrevLessons(slug, module.id, lessonSlug);
-            setLessonData({ course, module, lesson, prevLesson, nextLesson });
-            updateLastVisitedLesson(slug, lessonSlug);
-            setIsLoading(false);
-        };
-        
-        if (slug && lessonSlug) {
-            fetchLesson();
-        }
-    }, [slug, lessonSlug, user, userLoading, router, updateLastVisitedLesson]);
+        fetchLesson();
+    }, [slug, lessonSlug, user, userLoading, router, fetchLesson]);
     
     if (isLoading || userLoading || !lessonData) {
         return <LessonPageSkeleton />;
     }
 
     if (!lessonData.course || !lessonData.lesson || !lessonData.module) {
-        // This case is handled by the redirect in useEffect, but as a fallback:
         return <div>Lesson not found. Redirecting...</div>;
     }
 

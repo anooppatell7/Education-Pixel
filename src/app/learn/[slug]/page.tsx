@@ -13,9 +13,41 @@ import { Progress } from '@/components/ui/progress';
 import { useLearnProgress } from '@/hooks/use-learn-progress';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const getFirstLesson = (module: LearningModule) => {
     return module.lessons && module.lessons.length > 0 ? module.lessons[0] : null;
+}
+
+function CoursePageSkeleton() {
+    return (
+        <div className="w-full animate-pulse">
+            <div className="mb-12">
+                <Skeleton className="h-12 w-3/4" />
+                <Skeleton className="h-6 w-1/2 mt-4" />
+                <div className="mt-6">
+                    <Skeleton className="h-2 w-full" />
+                    <Skeleton className="h-4 w-1/4 mt-2" />
+                </div>
+            </div>
+             <div className="space-y-8">
+                {Array.from({length: 2}).map((_, i) => (
+                    <Card key={i}>
+                        <CardHeader>
+                            <Skeleton className="h-8 w-1/2" />
+                            <Skeleton className="h-5 w-1/4 mt-2" />
+                        </CardHeader>
+                        <CardContent>
+                             <Skeleton className="h-5 w-full" />
+                        </CardContent>
+                        <CardFooter>
+                             <Skeleton className="h-10 w-36" />
+                        </CardFooter>
+                    </Card>
+                ))}
+             </div>
+        </div>
+    );
 }
 
 export default function LearnModulePage({ params }: { params: { slug: string } }) {
@@ -23,24 +55,28 @@ export default function LearnModulePage({ params }: { params: { slug: string } }
   const [course, setCourse] = useState<LearningCourse | null>(null);
   const [progressPercentage, setProgressPercentage] = useState(0);
   const { getCourseProgress } = useLearnProgress();
-  const { user, isLoading } = useUser();
+  const { user, isLoading: isUserLoading } = useUser();
   const router = useRouter();
+  const [isCourseLoading, setIsCourseLoading] = useState(true);
 
-  useEffect(() => {
-    if (!isLoading && !user) {
-        router.push(`/login?redirect=/learn/${slug}`);
-    }
-  }, [user, isLoading, slug, router]);
-
-  useEffect(() => {
-    async function loadData() {
-      if (slug) {
+  const loadData = useCallback(async () => {
+    if (slug) {
+        setIsCourseLoading(true);
         const courseData = await getCourseData(slug);
         setCourse(courseData);
-      }
+        setIsCourseLoading(false);
     }
-    loadData();
   }, [slug]);
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+        router.push(`/login?redirect=/learn/${slug}`);
+    }
+  }, [user, isUserLoading, slug, router]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   useEffect(() => {
       if (slug) {
@@ -50,9 +86,8 @@ export default function LearnModulePage({ params }: { params: { slug: string } }
   }, [slug, getCourseProgress]);
 
 
-  if (!course || isLoading) {
-    // TODO: Add a skeleton loader here
-    return <div>Loading...</div>;
+  if (isUserLoading || isCourseLoading || !course) {
+    return <CoursePageSkeleton />;
   }
 
   return (
