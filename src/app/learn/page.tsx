@@ -1,16 +1,18 @@
 
 "use client";
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ArrowRight, User } from 'lucide-react';
-import courses from '@/lib/data/courses.json';
-import type { LearningCourse } from '@/lib/types';
+import { ArrowRight } from 'lucide-react';
 import { useLearnProgress } from '@/hooks/use-learn-progress';
 import { useUser } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import type { LearningCourse } from '@/lib/types';
 
 function LearnPageUnauthenticated() {
     return (
@@ -31,7 +33,7 @@ function LearnPageUnauthenticated() {
     )
 }
 
-function LearnPageAuthenticated() {
+function LearnPageAuthenticated({ courses }: { courses: LearningCourse[] }) {
     const { getCourseProgress } = useLearnProgress();
     
     // Sort courses by the 'order' property
@@ -90,9 +92,25 @@ function LearnPageAuthenticated() {
 }
 
 export default function LearnPage() {
-    const { user, isLoading } = useUser();
+    const { user, isLoading: userLoading } = useUser();
+    const [courses, setCourses] = useState<LearningCourse[]>([]);
+    const [dataLoading, setDataLoading] = useState(true);
 
-    if (isLoading) {
+    useEffect(() => {
+        const fetchCourses = async () => {
+            if (!db) return;
+            setDataLoading(true);
+            const coursesQuery = query(collection(db, "learningCourses"), orderBy("order"));
+            const snapshot = await getDocs(coursesQuery);
+            const courseList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LearningCourse));
+            setCourses(courseList);
+            setDataLoading(false);
+        };
+
+        fetchCourses();
+    }, []);
+
+    if (userLoading || dataLoading) {
         return (
             <div className="bg-secondary">
                 <div className="container py-16 sm:py-24">
@@ -117,7 +135,7 @@ export default function LearnPage() {
     return (
         <div className="bg-secondary">
             <div className="container py-16 sm:py-24">
-                {user ? <LearnPageAuthenticated /> : <LearnPageUnauthenticated />}
+                {user ? <LearnPageAuthenticated courses={courses} /> : <LearnPageUnauthenticated />}
             </div>
         </div>
     )

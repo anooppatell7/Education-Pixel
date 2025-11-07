@@ -1,20 +1,58 @@
 
-import courses from '@/lib/data/courses.json';
+import { db } from '@/lib/firebase';
+import { collection, doc, getDoc, getDocs, query, orderBy } from 'firebase/firestore';
 import type { LearningCourse, LearningModule, Lesson } from './types';
 
 // Memoization cache
 const courseCache = new Map<string, LearningCourse>();
 
-// Pre-fill the cache
-courses.forEach(course => {
-    courseCache.set(course.id, course as LearningCourse);
-});
+// Function to fetch all courses and their subcollections from Firestore
+export async function getAllCourses(): Promise<LearningCourse[]> {
+    if (courseCache.size > 0) {
+        // This is a simple cache, for production you might want a more sophisticated strategy
+        // return Array.from(courseCache.values());
+    }
+
+    const coursesQuery = query(collection(db, "learningCourses"), orderBy("order"));
+    const coursesSnapshot = await getDocs(coursesQuery);
+    
+    const courseList = await Promise.all(coursesSnapshot.docs.map(async (courseDoc) => {
+        const courseData = { id: courseDoc.id, ...courseDoc.data() } as LearningCourse;
+        
+        const modulesQuery = query(collection(db, "learningCourses", courseDoc.id, "modules"), orderBy("order"));
+        const modulesSnapshot = await getDocs(modulesQuery);
+        
+        courseData.modules = await Promise.all(modulesSnapshot.docs.map(async (moduleDoc) => {
+            const moduleData = { id: moduleDoc.id, ...moduleDoc.data() } as LearningModule;
+
+            const lessonsQuery = query(collection(db, "learningCourses", courseDoc.id, "modules", moduleDoc.id, "lessons"), orderBy("order"));
+            const lessonsSnapshot = await getDocs(lessonsQuery);
+            moduleData.lessons = lessonsSnapshot.docs.map(lessonDoc => ({ id: lessonDoc.id, ...lessonDoc.data() } as Lesson));
+            
+            return moduleData;
+        }));
+
+        return courseData;
+    }));
+
+    // Update cache
+    courseList.forEach(course => courseCache.set(course.id, course));
+    return courseList;
+}
+
 
 export async function getCourseData(slug: string): Promise<LearningCourse | null> {
     if (courseCache.has(slug)) {
         return courseCache.get(slug)!;
     }
-    // In a real DB-driven app, you'd fetch from the DB here as a fallback
+    
+    // If not in cache, fetch all courses to populate cache
+    await getAllCourses();
+    
+    if (courseCache.has(slug)) {
+        return courseCache.get(slug)!;
+    }
+
     return null;
 }
 
