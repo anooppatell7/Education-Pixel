@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Layers, ArrowRight, BookOpen } from 'lucide-react';
 import type { LearningCourse, LearningModule } from '@/lib/types';
 import { getCourseData } from '@/lib/learn-helpers';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { useLearnProgress } from '@/hooks/use-learn-progress';
 
@@ -20,20 +20,22 @@ export default function LearnModulePage({ params }: { params: { slug: string } }
   const [course, setCourse] = useState<LearningCourse | null>(null);
   const [progressPercentage, setProgressPercentage] = useState(0);
   const { getCourseProgress } = useLearnProgress();
+  const courseSlug = params.slug;
 
   useEffect(() => {
     async function loadData() {
-        if (params.slug) {
-            const courseData = await getCourseData(params.slug);
+        if (courseSlug) {
+            const courseData = await getCourseData(courseSlug);
             setCourse(courseData);
-            const { progressPercentage: newProgress } = getCourseProgress(params.slug);
-            setProgressPercentage(newProgress);
         }
     }
     
     loadData();
     
-  }, [params.slug, getCourseProgress]);
+    const { progressPercentage: newProgress } = getCourseProgress(courseSlug);
+    setProgressPercentage(newProgress);
+    
+  }, [courseSlug, getCourseProgress]);
 
 
   if (!course) {
