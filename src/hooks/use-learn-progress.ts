@@ -3,15 +3,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import coursesData from '@/lib/data/courses.json';
-import type { LearningCourse } from '@/lib/types';
-
-// The key used to store progress data in localStorage
-const PROGRESS_STORAGE_KEY = 'mtech-learn-progress';
-
-type ProgressData = {
-  // e.g., { html: ['lesson-1', 'lesson-2'], css: ['intro'] }
-  [courseId: string]: string[]; 
-};
+import type { LearningCourse, UserProgress } from '@/lib/types';
+import { useUser } from '@/firebase';
+import { getUserProgress, updateUserProgress } from '@/lib/firebase';
 
 // Helper to get total lesson count for a course
 const getTotalLessons = (courseId: string): number => {
@@ -20,70 +14,70 @@ const getTotalLessons = (courseId: string): number => {
     return course.modules.reduce((acc, module) => acc + module.lessons.length, 0);
 }
 
-
 export const useLearnProgress = () => {
-    const [progress, setProgress] = useState<ProgressData>({});
+    const { user } = useUser();
+    const [progress, setProgress] = useState<UserProgress>({});
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Load progress from localStorage on initial render (client-side only)
+    // Load progress from Firestore on initial render
     useEffect(() => {
-        try {
-            const storedProgress = localStorage.getItem(PROGRESS_STORAGE_KEY);
-            if (storedProgress) {
-                setProgress(JSON.parse(storedProgress));
+        const fetchProgress = async () => {
+            if (user) {
+                setIsLoading(true);
+                const dbProgress = await getUserProgress(user.uid);
+                if (dbProgress) {
+                    setProgress(dbProgress);
+                }
+                setIsLoading(false);
+            } else {
+                // If user is logged out, clear progress
+                setProgress({});
+                setIsLoading(false);
             }
-        } catch (error) {
-            console.error("Failed to load learning progress from localStorage", error);
-        }
-    }, []);
+        };
 
-    // Save progress to localStorage whenever it changes
-    const saveProgress = useCallback((newProgress: ProgressData) => {
-        try {
-            localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(newProgress));
-            setProgress(newProgress);
-        } catch (error) {
-            console.error("Failed to save learning progress to localStorage", error);
-        }
-    }, []);
+        fetchProgress();
+    }, [user]);
+
+    // Save progress to Firestore whenever it changes
+    const saveProgress = useCallback(async (newProgress: UserProgress) => {
+        if (!user) return;
+        setProgress(newProgress); // Optimistic update
+        await updateUserProgress(user.uid, newProgress);
+    }, [user]);
     
-    /**
-     * Checks if a specific lesson is marked as completed.
-     */
     const isLessonCompleted = useCallback((courseId: string, lessonId: string): boolean => {
-        return !!progress[courseId]?.includes(lessonId);
+        return !!progress[courseId]?.completedLessons?.includes(lessonId);
     }, [progress]);
 
-    /**
-     * Toggles the completion status of a lesson.
-     */
     const toggleLessonCompleted = useCallback((courseId: string, lessonId: string) => {
-        const courseProgress = progress[courseId] || [];
-        const isCompleted = courseProgress.includes(lessonId);
+        if (!user) return;
+
+        const courseProgress = progress[courseId] || { completedLessons: [] };
+        const isCompleted = courseProgress.completedLessons.includes(lessonId);
         
-        let newCourseProgress: string[];
+        let newCompletedLessons: string[];
         if (isCompleted) {
-            // Remove the lesson if it was already completed
-            newCourseProgress = courseProgress.filter(id => id !== lessonId);
+            newCompletedLessons = courseProgress.completedLessons.filter(id => id !== lessonId);
         } else {
-            // Add the lesson if it was not completed
-            newCourseProgress = [...courseProgress, lessonId];
+            newCompletedLessons = [...courseProgress.completedLessons, lessonId];
         }
 
-        const newProgressData = {
+        const newProgressData: UserProgress = {
             ...progress,
-            [courseId]: newCourseProgress,
+            [courseId]: {
+                ...courseProgress,
+                completedLessons: newCompletedLessons,
+                lastVisitedLesson: lessonId, // Also update last visited
+            },
         };
 
         saveProgress(newProgressData);
 
-    }, [progress, saveProgress]);
+    }, [progress, saveProgress, user]);
     
-    /**
-     * Gets the progress for a specific course.
-     * @returns The number of completed lessons and the completion percentage.
-     */
     const getCourseProgress = useCallback((courseId: string): { completedCount: number, totalLessons: number, progressPercentage: number } => {
-        const completedLessons = progress[courseId] || [];
+        const completedLessons = progress[courseId]?.completedLessons || [];
         const totalLessons = getTotalLessons(courseId);
         const completedCount = completedLessons.length;
         
@@ -100,12 +94,27 @@ export const useLearnProgress = () => {
         };
 
     }, [progress]);
+    
+    const updateLastVisitedLesson = useCallback((courseId: string, lessonId: string) => {
+        if (!user) return;
+
+        const newProgressData: UserProgress = {
+            ...progress,
+            [courseId]: {
+                ...(progress[courseId] || { completedLessons: [] }),
+                lastVisitedLesson: lessonId,
+            },
+        };
+        saveProgress(newProgressData);
+    }, [progress, saveProgress, user]);
 
 
     return {
         progress,
+        isLoading,
         isLessonCompleted,
         toggleLessonCompleted,
         getCourseProgress,
+        updateLastVisitedLesson
     };
 };

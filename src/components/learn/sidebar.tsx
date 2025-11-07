@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Accordion,
   AccordionContent,
@@ -11,14 +11,14 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Layers, Search as SearchIcon, BookText, CheckCircle } from 'lucide-react';
+import { Layers, Search as SearchIcon, BookText, CheckCircle, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import courses from '@/lib/data/courses.json';
 import type { LearningCourse, LearningModule, Lesson } from '@/lib/types';
 import Logo from '../logo';
 import { Input } from '../ui/input';
 import { useLearnProgress } from '@/hooks/use-learn-progress';
+import { useUser } from '@/firebase';
 
 type SidebarProps = {
   courseSlug: string;
@@ -30,7 +30,16 @@ export default function LearnSidebar({ courseSlug, isMobile = false, onLinkClick
   const [course, setCourse] = useState<LearningCourse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const pathname = usePathname();
+  const { user, isLoading } = useUser();
   const { isLessonCompleted } = useLearnProgress();
+  const router = useRouter();
+  
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push(`/login?redirect=/learn/${courseSlug}`);
+    }
+  }, [user, isLoading, courseSlug, router]);
+
 
   useEffect(() => {
     const currentCourse = courses.find(c => c.id === courseSlug);
@@ -47,10 +56,11 @@ export default function LearnSidebar({ courseSlug, isMobile = false, onLinkClick
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col bg-card text-card-foreground">
-       <div className="p-4 border-b">
-        <Link href="/learn">
-            <h2 className="font-headline text-lg font-bold text-primary hover:text-accent transition-colors">{course?.title}</h2>
-        </Link>
+       <div className="p-4 border-b flex items-center justify-between">
+        <h2 className="font-headline text-lg font-bold text-primary hover:text-accent transition-colors">{course?.title}</h2>
+        <Button variant="ghost" size="icon" asChild>
+            <Link href="/learn" title="All Courses"><Home className="h-5 w-5" /></Link>
+        </Button>
       </div>
 
        <div className="p-4 border-b">
@@ -112,11 +122,6 @@ export default function LearnSidebar({ courseSlug, isMobile = false, onLinkClick
           ))}
         </Accordion>
       </div>
-       <div className="p-4 border-t">
-          <Button variant="outline" className="w-full" asChild>
-            <Link href="/learn">All Courses</Link>
-          </Button>
-       </div>
     </div>
   );
   

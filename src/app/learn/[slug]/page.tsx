@@ -8,37 +8,49 @@ import { Button } from '@/components/ui/button';
 import { Layers, ArrowRight, BookOpen } from 'lucide-react';
 import type { LearningCourse, LearningModule } from '@/lib/types';
 import { getCourseData } from '@/lib/learn-helpers';
-import { useEffect, useState, useCallback, use } from 'react';
+import { useEffect, useState, use, useCallback } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { useLearnProgress } from '@/hooks/use-learn-progress';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
 
 const getFirstLesson = (module: LearningModule) => {
     return module.lessons && module.lessons.length > 0 ? module.lessons[0] : null;
 }
 
-export default function LearnModulePage({ params }: { params: Promise<{ slug: string }> }) {
+export default function LearnModulePage({ params }: { params: { slug: string } }) {
   const { slug } = use(params);
   const [course, setCourse] = useState<LearningCourse | null>(null);
   const [progressPercentage, setProgressPercentage] = useState(0);
   const { getCourseProgress } = useLearnProgress();
+  const { user, isLoading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+        router.push(`/login?redirect=/learn/${slug}`);
+    }
+  }, [user, isLoading, slug, router]);
 
   useEffect(() => {
     async function loadData() {
       if (slug) {
         const courseData = await getCourseData(slug);
         setCourse(courseData);
-        
-        const { progressPercentage: newProgress } = getCourseProgress(slug);
-        setProgressPercentage(newProgress);
       }
     }
-    
     loadData();
-    
+  }, [slug]);
+
+  useEffect(() => {
+      if (slug) {
+          const { progressPercentage: newProgress } = getCourseProgress(slug);
+          setProgressPercentage(newProgress);
+      }
   }, [slug, getCourseProgress]);
 
 
-  if (!course) {
+  if (!course || isLoading) {
     // TODO: Add a skeleton loader here
     return <div>Loading...</div>;
   }

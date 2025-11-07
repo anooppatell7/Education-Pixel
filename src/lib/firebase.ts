@@ -1,8 +1,9 @@
 
+
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, collection, query, where, getDocs, orderBy, doc, getDoc } from "firebase/firestore";
+import { getFirestore, collection, query, where, getDocs, orderBy, doc, getDoc, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import type { BlogPost, SiteSettings } from "./types";
+import type { BlogPost, SiteSettings, UserProgress } from "./types";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -70,6 +71,31 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
         console.error("Error fetching site settings:", error);
         return null;
     }
+}
+
+export async function getUserProgress(userId: string): Promise<UserProgress | null> {
+    if (!userId) return null;
+    try {
+        const docRef = doc(db, 'userProgress', userId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return docSnap.data() as UserProgress;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching user progress:", error);
+        return null;
+    }
+}
+
+export async function updateUserProgress(userId: string, progress: UserProgress): Promise<void> {
+     if (!userId) return;
+     try {
+        const docRef = doc(db, 'userProgress', userId);
+        await setDoc(docRef, progress, { merge: true });
+     } catch (error) {
+        console.error("Error updating user progress:", error);
+     }
 }
 
 

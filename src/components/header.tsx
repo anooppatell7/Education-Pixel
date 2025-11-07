@@ -2,38 +2,64 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User as UserIcon, LogOut, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useUser, useAuth } from "@/firebase";
+import { signOut } from "firebase/auth";
 
 import { cn } from "@/lib/utils";
 import { navItems } from "@/lib/data";
 import Logo from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { EnrollModal } from "@/components/enroll-modal";
-import LearnSidebar from "./learn/sidebar"; // Import the sidebar
+import LearnSidebar from "./learn/sidebar"; 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const isLearnPage = pathname.startsWith('/learn/');
-  const courseSlug = isLearnPage ? pathname.split('/')[2] : '';
+  const auth = useAuth();
+  const { user, isLoading } = useUser();
+  const router = useRouter();
 
+  const isLearnPage = pathname.startsWith('/learn');
+  const courseSlug = isLearnPage && pathname.split('/')[2] ? pathname.split('/')[2] : '';
+
+  const handleLogout = async () => {
+    if (auth) {
+        await signOut(auth);
+        router.push('/');
+    }
+  }
 
   const renderNavLinks = () => (
-      navItems.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          className={cn(
-            "flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline",
-            pathname === item.href ? "text-accent" : "text-foreground/70"
-          )}
-          onClick={() => setIsOpen(false)}
-        >
-          {item.title}
-        </Link>
-      ))
+      navItems.map((item) => {
+        // Hide "Learn" link if user is not authenticated
+        if (item.href === "/learn" && !user) return null;
+        
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline",
+              pathname === item.href ? "text-accent" : "text-foreground/70"
+            )}
+            onClick={() => setIsOpen(false)}
+          >
+            {item.title}
+          </Link>
+        )
+      })
   );
 
   return (
@@ -42,26 +68,68 @@ export default function Header() {
         <Logo />
 
         <nav className="hidden md:flex md:items-center md:gap-6">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-accent",
-                pathname === item.href
-                  ? "text-accent"
-                  : "text-foreground/70"
-              )}
-            >
-              {item.title}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            if (item.href === "/learn" && !user && !isLoading) return null;
+            return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "text-sm font-medium transition-colors hover:text-accent",
+                    pathname === item.href
+                      ? "text-accent"
+                      : "text-foreground/70"
+                  )}
+                >
+                  {item.title}
+                </Link>
+            )
+          })}
         </nav>
 
         <div className="flex items-center gap-2">
-           <EnrollModal>
-              <Button className="hidden md:inline-flex">Enroll Now</Button>
-           </EnrollModal>
+            {!isLoading && (
+              user ? (
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                           <Avatar className="h-8 w-8">
+                                <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || 'User'} />
+                                <AvatarFallback>{user.displayName?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
+                           </Avatar>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                        <DropdownMenuLabel className="font-normal">
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none">{user.displayName}</p>
+                                <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                            </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => router.push('/learn')}>
+                           <LayoutDashboard className="mr-2 h-4 w-4" />
+                           <span>My Learning</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout}>
+                            <LogOut className="mr-2 h-4 w-4" />
+                            <span>Log out</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                 </DropdownMenu>
+              ) : (
+                <>
+                  <Button variant="ghost" asChild className="hidden md:inline-flex">
+                     <Link href="/login">Log In</Link>
+                  </Button>
+                  <Button asChild className="hidden md:inline-flex">
+                     <Link href="/signup">Sign Up</Link>
+                  </Button>
+                </>
+              )
+            )}
+
           <Button
             variant="ghost"
             size="icon"
@@ -74,21 +142,23 @@ export default function Header() {
         </div>
       </div>
       
-      {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden">
           <div className="fixed inset-0 top-16 z-50 grid h-[calc(100vh-4rem)] grid-flow-row auto-rows-max overflow-auto p-6 pb-32 shadow-md animate-in slide-in-from-bottom-80">
             <div className="relative z-20 grid gap-6 rounded-md bg-popover p-4 text-popover-foreground shadow-md">
-              {isLearnPage ? (
-                <LearnSidebar courseSlug={courseSlug} isMobile />
+              {isLearnPage && courseSlug ? (
+                <LearnSidebar courseSlug={courseSlug} isMobile onLinkClick={() => setIsOpen(false)} />
               ) : (
                 <>
                   <nav className="grid grid-flow-row auto-rows-max text-sm">
                     {renderNavLinks()}
                   </nav>
-                  <EnrollModal>
-                    <Button className="w-full" onClick={() => setIsOpen(false)}>Enroll Now</Button>
-                  </EnrollModal>
+                  {!user && (
+                    <div className="flex flex-col gap-2">
+                        <Button className="w-full" asChild onClick={() => setIsOpen(false)}><Link href="/login">Log In</Link></Button>
+                        <Button className="w-full" variant="outline" asChild onClick={() => setIsOpen(false)}><Link href="/signup">Sign Up</Link></Button>
+                    </div>
+                  )}
                 </>
               )}
             </div>

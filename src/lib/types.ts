@@ -113,6 +113,13 @@ export type LearningCourse = {
   modules: LearningModule[];
 };
 
+export type UserProgress = {
+    [courseId: string]: {
+        completedLessons: string[];
+        lastVisitedLesson?: string;
+    };
+};
+
 
 // Add types for more complex schemas
 export type HowToSchema = HowTo;

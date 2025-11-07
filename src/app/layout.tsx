@@ -10,6 +10,7 @@ import { JsonLd } from "@/components/json-ld";
 import { organizationSchema, websiteSchema } from "@/lib/schema";
 import { getSiteSettings } from "@/lib/firebase";
 import AnnouncementBar from "@/components/announcement-bar";
+import { FirebaseClientProvider } from "@/firebase/client-provider";
 
 const ptSans = PT_Sans({
   subsets: ["latin"],
@@ -116,15 +117,17 @@ export default async function RootLayout({
       >
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
-        <div className="relative flex min-h-dvh flex-col bg-background">
-          {announcement && announcement.isVisible && (
-            <AnnouncementBar text={announcement.text} link={announcement.link} />
-          )}
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
-        <Toaster />
+        <FirebaseClientProvider>
+          <div className="relative flex min-h-dvh flex-col bg-background">
+            {announcement && announcement.isVisible && (
+              <AnnouncementBar text={announcement.text} link={announcement.link} />
+            )}
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
+          <Toaster />
+        </FirebaseClientProvider>
       </body>
     </html>
   );
