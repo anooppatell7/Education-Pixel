@@ -1,13 +1,13 @@
 
 "use client";
 
+import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Code, BookOpen, CheckCircle, Circle } from 'lucide-react';
 import { getLessonData, getNextPrevLessons } from '@/lib/learn-helpers';
-import { useEffect, useState, use } from 'react';
 import { useLearnProgress } from '@/hooks/use-learn-progress';
 import { useUser } from '@/firebase';
 import type { LearningCourse, LearningModule, Lesson } from '@/lib/types';
@@ -115,7 +115,7 @@ function LessonPageSkeleton() {
 }
 
 export default function LessonPage({ params }: { params: { slug: string; lessonSlug: string } }) {
-    const { slug, lessonSlug } = use(params);
+    const { slug, lessonSlug } = React.use(params); // Correctly unwrap params
     const { user, isLoading: userLoading } = useUser();
     const router = useRouter();
     const { updateLastVisitedLesson } = useLearnProgress();
@@ -141,8 +141,9 @@ export default function LessonPage({ params }: { params: { slug: string; lessonS
             const { course, lesson, module } = await getLessonData(slug, lessonSlug);
             
             if (!course || !lesson || !module) {
-                // Handle not found, maybe redirect or show a 404 component
                 setIsLoading(false);
+                // Consider redirecting to a 404 page or the course page
+                router.push(`/learn/${slug}`);
                 return;
             }
             const { prevLesson, nextLesson } = await getNextPrevLessons(slug, module.id, lessonSlug);
@@ -161,8 +162,8 @@ export default function LessonPage({ params }: { params: { slug: string; lessonS
     }
 
     if (!lessonData.course || !lessonData.lesson || !lessonData.module) {
-        // You can return a proper 404 component here
-        return <div>Lesson not found.</div>;
+        // This case is handled by the redirect in useEffect, but as a fallback:
+        return <div>Lesson not found. Redirecting...</div>;
     }
 
     return <LessonPageContent {...lessonData} />;
