@@ -18,8 +18,8 @@ const getFirstLesson = (module: LearningModule) => {
 
 export default function LearnModulePage({ params }: { params: { slug: string } }) {
   const [course, setCourse] = useState<LearningCourse | null>(null);
+  const [progressPercentage, setProgressPercentage] = useState(0);
   const { getCourseProgress } = useLearnProgress();
-  const { progressPercentage } = getCourseProgress(params.slug);
 
   useEffect(() => {
     async function loadData() {
@@ -27,7 +27,12 @@ export default function LearnModulePage({ params }: { params: { slug: string } }
         setCourse(courseData);
     }
     loadData();
-  }, [params.slug]);
+
+    // Update progress whenever params.slug or the hook's data changes
+    const { progressPercentage: newProgress } = getCourseProgress(params.slug);
+    setProgressPercentage(newProgress);
+    
+  }, [params.slug, getCourseProgress]);
 
 
   if (!course) {

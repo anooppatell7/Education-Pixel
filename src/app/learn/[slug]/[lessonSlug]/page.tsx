@@ -1,7 +1,7 @@
 
 "use client";
 
-import { notFound } from 'next/navigation';
+import { notFound, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,7 @@ export default function LessonPage({ params }: { params: { slug: string; lessonS
     }>({ course: null, module: null, lesson: null, prevLesson: null, nextLesson: null });
     
     const { isLessonCompleted, toggleLessonCompleted } = useLearnProgress();
-    const isCompleted = isLessonCompleted(params.slug, params.lessonSlug);
+    const [isCompleted, setIsCompleted] = useState(false);
 
     useEffect(() => {
         const fetchLesson = async () => {
@@ -37,7 +37,10 @@ export default function LessonPage({ params }: { params: { slug: string; lessonS
             setLessonData({ course, module, lesson, prevLesson, nextLesson });
         }
         fetchLesson();
-    }, [params.slug, params.lessonSlug]);
+        
+        setIsCompleted(isLessonCompleted(params.slug, params.lessonSlug));
+        
+    }, [params.slug, params.lessonSlug, isLessonCompleted]);
     
     const { course, module, lesson, prevLesson, nextLesson } = lessonData;
 
@@ -66,7 +69,7 @@ export default function LessonPage({ params }: { params: { slug: string; lessonS
                         <BookOpen className="h-6 w-6 text-accent" />
                         <CardTitle className="font-headline text-2xl text-primary">Theory</CardTitle>
                     </CardHeader>
-                    <CardContent className="prose dark:prose-invert max-w-none prose-h2:font-headline prose-h2:text-primary prose-headings:text-primary prose-p:text-foreground/80 prose-li:text-foreground/80 prose-strong:text-foreground prose-code:bg-muted prose-code:text-primary prose-code:p-1 prose-code:rounded-sm prose-pre:bg-muted prose-pre:p-4 prose-pre:rounded-md">
+                    <CardContent className="prose dark:prose-invert max-w-none prose-headings:font-headline prose-h2:text-primary prose-a:text-accent prose-p:text-foreground/80 prose-li:text-foreground/80 prose-strong:text-foreground prose-code:bg-muted prose-code:text-primary prose-code:p-1 prose-code:rounded-sm prose-pre:bg-muted prose-pre:p-4 prose-pre:rounded-md">
                         <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
                     </CardContent>
                 </Card>
@@ -116,3 +119,4 @@ export default function LessonPage({ params }: { params: { slug: string; lessonS
         </div>
     );
 }
+
