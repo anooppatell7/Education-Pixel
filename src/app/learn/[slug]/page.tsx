@@ -1,46 +1,38 @@
 
-import { notFound } from 'next/navigation';
+"use client";
+
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { BookOpen, ChevronLeft, Layers, ArrowRight } from 'lucide-react';
-import type { Metadata } from 'next';
+import { Layers, ArrowRight, BookOpen } from 'lucide-react';
+import type { LearningCourse, LearningModule } from '@/lib/types';
 import { getCourseData } from '@/lib/learn-helpers';
-import type { LearningModule } from '@/lib/types';
-
-type LearnModulePageProps = {
-  params: {
-    slug: string;
-  };
-};
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
-
-
-export async function generateMetadata({ params }: LearnModulePageProps): Promise<Metadata> {
-  const course = await getCourseData(params.slug);
-  if (!course) {
-    return { title: "Course Not Found" };
-  }
-  return {
-    title: `${course.title} | MTech IT Institute`,
-    description: `Start learning ${course.title}. ${course.description}`,
-     alternates: {
-      canonical: `${siteUrl}/learn/${params.slug}`,
-    },
-  };
-}
+import { useEffect, useState } from 'react';
+import { Progress } from '@/components/ui/progress';
+import { useLearnProgress } from '@/hooks/use-learn-progress';
 
 const getFirstLesson = (module: LearningModule) => {
     return module.lessons && module.lessons.length > 0 ? module.lessons[0] : null;
 }
 
-export default async function LearnModulePage({ params }: LearnModulePageProps) {
-  const course = await getCourseData(params.slug);
+export default function LearnModulePage({ params }: { params: { slug: string } }) {
+  const [course, setCourse] = useState<LearningCourse | null>(null);
+  const { getCourseProgress } = useLearnProgress();
+  const { progressPercentage } = getCourseProgress(params.slug);
+
+  useEffect(() => {
+    async function loadData() {
+        const courseData = await getCourseData(params.slug);
+        setCourse(courseData);
+    }
+    loadData();
+  }, [params.slug]);
+
 
   if (!course) {
-    notFound();
+    // TODO: Add a skeleton loader here
+    return <div>Loading...</div>;
   }
 
   return (
@@ -52,6 +44,10 @@ export default async function LearnModulePage({ params }: LearnModulePageProps) 
                     <p className="mt-2 max-w-2xl text-lg text-foreground/80">{course.description}</p>
                 </div>
                 <Badge variant="outline" className="mt-4 sm:mt-0 text-base">{course.level}</Badge>
+            </div>
+            <div className="mt-6">
+                <Progress value={progressPercentage} className="h-2" />
+                <p className="text-sm text-muted-foreground mt-2">{Math.round(progressPercentage)}% Complete</p>
             </div>
         </div>
 
@@ -89,7 +85,9 @@ export default async function LearnModulePage({ params }: LearnModulePageProps) 
             {course.modules.length === 0 && (
                 <Card>
                     <CardContent className="p-12 text-center text-muted-foreground">
-                        <p>Lessons for this course are coming soon. Check back later!</p>
+                         <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
+                        <p className="mt-4 text-lg">Lessons are on the way!</p>
+                        <p className="mt-2 text-sm">Content for this course is being prepared. Please check back soon.</p>
                     </CardContent>
                 </Card>
             )}

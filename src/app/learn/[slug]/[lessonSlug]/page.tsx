@@ -1,50 +1,54 @@
 
+"use client";
+
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Code, BookOpen, BrainCircuit, PencilRuler } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Code, BookOpen, CheckCircle, Circle } from 'lucide-react';
 import type { Metadata } from 'next';
 import courses from '@/lib/data/courses.json';
 import type { LearningCourse, LearningModule, Lesson } from '@/lib/types';
 import { getLessonData, getNextPrevLessons } from '@/lib/learn-helpers';
+import { useEffect, useState } from 'react';
+import { useLearnProgress } from '@/hooks/use-learn-progress';
 
 
-type LessonPageProps = {
-  params: {
-    slug: string;
-    lessonSlug: string;
-  };
-};
+export default function LessonPage({ params }: { params: { slug: string; lessonSlug: string } }) {
+    const [lessonData, setLessonData] = useState<{
+        course: LearningCourse | null;
+        module: LearningModule | null;
+        lesson: Lesson | null;
+        prevLesson: Lesson | null;
+        nextLesson: Lesson | null;
+    }>({ course: null, module: null, lesson: null, prevLesson: null, nextLesson: null });
+    
+    const { isLessonCompleted, toggleLessonCompleted } = useLearnProgress();
+    const isCompleted = isLessonCompleted(params.slug, params.lessonSlug);
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
-
-
-export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
-    const { course, lesson } = await getLessonData(params.slug, params.lessonSlug);
-
-    if (!course || !lesson) {
-        return { title: "Lesson Not Found" };
-    }
-
-    return {
-        title: `${lesson.title} | ${course.title}`,
-        description: `Learn about ${lesson.title} in the ${course.title} course on MTech IT Institute.`,
-        alternates: {
-            canonical: `${siteUrl}/learn/${params.slug}/${params.lessonSlug}`,
-        },
-    };
-}
-
-export default async function LessonPage({ params }: LessonPageProps) {
-    const { course, lesson, module } = await getLessonData(params.slug, params.lessonSlug);
+    useEffect(() => {
+        const fetchLesson = async () => {
+            const { course, lesson, module } = await getLessonData(params.slug, params.lessonSlug);
+            if (!course || !lesson || !module) {
+                // Not found handling can be improved here
+                return;
+            }
+            const { prevLesson, nextLesson } = await getNextPrevLessons(params.slug, module.id, params.lessonSlug);
+            setLessonData({ course, module, lesson, prevLesson, nextLesson });
+        }
+        fetchLesson();
+    }, [params.slug, params.lessonSlug]);
+    
+    const { course, module, lesson, prevLesson, nextLesson } = lessonData;
 
     if (!course || !lesson || !module) {
-        notFound();
+        // You can add a skeleton loader here for a better UX
+        return <div>Loading lesson...</div>;
     }
-    
-    const { prevLesson, nextLesson } = await getNextPrevLessons(params.slug, module.id, params.lessonSlug);
 
+    const handleToggleComplete = () => {
+        toggleLessonCompleted(course.id, lesson.id);
+    }
 
     return (
         <div className="w-full">
@@ -62,7 +66,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                         <BookOpen className="h-6 w-6 text-accent" />
                         <CardTitle className="font-headline text-2xl text-primary">Theory</CardTitle>
                     </CardHeader>
-                    <CardContent className="prose dark:prose-invert max-w-none prose-headings:text-primary prose-p:text-foreground/80 prose-li:text-foreground/80 prose-strong:text-foreground prose-code:bg-muted prose-code:text-primary prose-code:p-1 prose-code:rounded-sm prose-pre:bg-muted prose-pre:p-4 prose-pre:rounded-md">
+                    <CardContent className="prose dark:prose-invert max-w-none prose-h2:font-headline prose-h2:text-primary prose-headings:text-primary prose-p:text-foreground/80 prose-li:text-foreground/80 prose-strong:text-foreground prose-code:bg-muted prose-code:text-primary prose-code:p-1 prose-code:rounded-sm prose-pre:bg-muted prose-pre:p-4 prose-pre:rounded-md">
                         <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
                     </CardContent>
                 </Card>
@@ -78,12 +82,16 @@ export default async function LessonPage({ params }: LessonPageProps) {
                             <div className="p-4 bg-muted rounded-lg text-sm overflow-x-auto">
                                 <pre><code>{lesson.exampleCode}</code></pre>
                             </div>
-                            <div className="p-8 text-center bg-background border rounded-lg mt-4">
-                                <p className="text-muted-foreground">Interactive code editor coming soon!</p>
-                            </div>
                         </CardContent>
                     </Card>
                 )}
+            </div>
+            
+            <div className="mt-8 pt-6 border-t">
+                 <Button onClick={handleToggleComplete} variant={isCompleted ? "secondary" : "default"} size="lg">
+                    {isCompleted ? <CheckCircle className="mr-2 h-5 w-5"/> : <Circle className="mr-2 h-5 w-5"/>}
+                    {isCompleted ? 'Mark as Incomplete' : 'Mark as Complete'}
+                </Button>
             </div>
 
             {/* Bottom Navigation */}
