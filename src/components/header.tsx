@@ -71,7 +71,6 @@ export default function Header() {
 
         <nav className="hidden md:flex md:items-center md:gap-6">
           {navItems.map((item) => {
-            if (item.href === "/learn" && !user && !isLoading) return null;
             return (
                 <Link
                   key={item.href}
@@ -160,7 +159,19 @@ export default function Header() {
               ) : (
                 <>
                   <nav className="grid grid-flow-row auto-rows-max text-sm">
-                    {renderNavLinks()}
+                    {navItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={cn(
+                          "flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline",
+                          pathname === item.href ? "text-accent" : "text-foreground/70"
+                        )}
+                        onClick={() => setIsOpen(false)}
+                      >
+                        {item.title}
+                      </Link>
+                    ))}
                   </nav>
                   {!user && (
                     <div className="flex flex-col gap-2">
