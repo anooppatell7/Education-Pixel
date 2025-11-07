@@ -5,7 +5,7 @@
 import Link from "next/link";
 import React, { useState, useEffect, use } from "react";
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload } from "lucide-react";
+import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -55,6 +55,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,7 +69,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Logo from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review } from "@/lib/types";
+import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, LearningCourse, LearningModule, Lesson } from "@/lib/types";
 import { auth, db } from "@/lib/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, setDoc, Timestamp, where, arrayUnion, arrayRemove, getDoc, writeBatch } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
@@ -74,12 +80,13 @@ import coursesData from "@/lib/data/courses.json";
 import marketingCoursesData from "@/lib/data/marketing-courses.json";
 
 
-type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'learn-content';
+type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'learningCourse' | 'learningModule' | 'learningLesson';
 
 export default function AdminDashboardPage() {
     const [user, authLoading, authError] = useAuthState(auth);
     const router = useRouter();
     const [courses, setCourses] = useState<Course[]>([]);
+    const [learningCourses, setLearningCourses] = useState<LearningCourse[]>([]);
     const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
     const [guidanceArticles, setGuidanceArticles] = useState<BlogPost[]>([]);
     const [resources, setResources] = useState<Resource[]>([]);
@@ -117,6 +124,29 @@ export default function AdminDashboardPage() {
             const courseSnapshot = await getDocs(coursesCollection);
             const courseList = courseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
             setCourses(courseList);
+
+             // Learning Courses
+            const learningCoursesQuery = query(collection(db, "learningCourses"), orderBy("order"));
+            const learningCoursesSnapshot = await getDocs(learningCoursesQuery);
+            const learningCoursesList = await Promise.all(learningCoursesSnapshot.docs.map(async (courseDoc) => {
+                const courseData = { id: courseDoc.id, ...courseDoc.data() } as LearningCourse;
+                
+                const modulesQuery = query(collection(db, "learningCourses", courseDoc.id, "modules"), orderBy("order"));
+                const modulesSnapshot = await getDocs(modulesQuery);
+                
+                courseData.modules = await Promise.all(modulesSnapshot.docs.map(async (moduleDoc) => {
+                    const moduleData = { id: moduleDoc.id, ...moduleDoc.data() } as LearningModule;
+
+                    const lessonsQuery = query(collection(db, "learningCourses", courseDoc.id, "modules", moduleDoc.id, "lessons"), orderBy("order"));
+                    const lessonsSnapshot = await getDocs(lessonsQuery);
+                    moduleData.lessons = lessonsSnapshot.docs.map(lessonDoc => ({ id: lessonDoc.id, ...lessonDoc.data() } as Lesson));
+                    
+                    return moduleData;
+                }));
+
+                return courseData;
+            }));
+            setLearningCourses(learningCoursesList);
 
             // Blog Posts
             const blogQuery = query(collection(db, "blog"), orderBy("date", "desc"));
@@ -178,13 +208,14 @@ export default function AdminDashboardPage() {
     };
 
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [itemToDelete, setItemToDelete] = useState<{type: ItemType, id: string} | null>(null);
+    const [itemToDelete, setItemToDelete] = useState<{type: ItemType, id: string, parentIds?: { courseId: string, moduleId?: string }} | null>(null);
     const [linkToDelete, setLinkToDelete] = useState<{postSlug: string, link: InternalLink} | null>(null);
 
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [editingItem, setEditingItem] = useState<Course | BlogPost | Resource | null>(null);
+    const [editingItem, setEditingItem] = useState<Course | BlogPost | Resource | LearningCourse | LearningModule | Lesson | null>(null);
+    const [formParentIds, setFormParentIds] = useState<{ courseId: string, moduleId?: string } | null>(null);
     const [formData, setFormData] = useState<any>({});
-    const [activeTab, setActiveTab] = useState<ItemType>('courses');
+    const [activeTab, setActiveTab] = useState<string>('courses');
     
     const [settingsFormData, setSettingsFormData] = useState({
         currentPassword: '',
@@ -193,8 +224,8 @@ export default function AdminDashboardPage() {
         confirmNewPassword: ''
     });
 
-    const openConfirmationDialog = (type: ItemType, id: string) => {
-        setItemToDelete({ type, id });
+    const openConfirmationDialog = (type: ItemType, id: string, parentIds?: { courseId: string, moduleId?: string }) => {
+        setItemToDelete({ type, id, parentIds });
         setDialogOpen(true);
     };
 
@@ -207,7 +238,7 @@ export default function AdminDashboardPage() {
     const handleDelete = async () => {
         if (!db) return;
         if (itemToDelete) {
-            const { type, id } = itemToDelete;
+            const { type, id, parentIds } = itemToDelete;
             try {
                 if (type === 'courses') await deleteDoc(doc(db, "courses", id));
                 if (type === 'blog' || type === 'guidance') await deleteDoc(doc(db, "blog", id));
@@ -215,6 +246,9 @@ export default function AdminDashboardPage() {
                 if (type === 'enrollments') await deleteDoc(doc(db, "enrollments", id));
                 if (type === 'contacts') await deleteDoc(doc(db, "contacts", id));
                 if (type === 'reviews') await deleteDoc(doc(db, "reviews", id));
+                if (type === 'learningCourse') await deleteDoc(doc(db, "learningCourses", id));
+                if (type === 'learningModule' && parentIds?.courseId) await deleteDoc(doc(db, "learningCourses", parentIds.courseId, "modules", id));
+                if (type === 'learningLesson' && parentIds?.courseId && parentIds?.moduleId) await deleteDoc(doc(db, "learningCourses", parentIds.courseId, "modules", parentIds.moduleId, "lessons", id));
                 await fetchData(); // Refetch all data
                 toast({ title: "Success", description: "Item deleted successfully." });
             } catch (error) {
@@ -241,26 +275,41 @@ export default function AdminDashboardPage() {
         setDialogOpen(false);
     };
     
-    const handleAddNew = () => {
+    const handleAddNew = (parentIds: { courseId: string, moduleId?: string } | null = null) => {
         setEditingItem(null);
-        let initialData = {};
+        let initialData: any = {};
         if (activeTab === 'guidance') {
             initialData = { category: "Career Guidance" };
+        }
+        if (activeTab === 'learn-content' && parentIds) {
+            setFormParentIds(parentIds);
         }
         setFormData(initialData);
         setIsFormOpen(true);
     };
 
-    const handleEdit = (item: Course | BlogPost | Resource) => {
+    const handleEdit = (item: any, parentIds: { courseId: string, moduleId?: string } | null = null) => {
         setEditingItem(item);
         setFormData(item);
+        if (parentIds) {
+            setFormParentIds(parentIds);
+        }
         setIsFormOpen(true);
     };
+    
+    const handleCloseForm = () => {
+        setIsFormOpen(false);
+        setEditingItem(null);
+        setFormData({});
+        setFormParentIds(null);
+    }
 
-    const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         if (name === 'tags' || name === 'syllabus') {
             setFormData({ ...formData, [name]: value.split(',').map(s => s.trim()) });
+        } else if (name === 'order') {
+             setFormData({ ...formData, [name]: Number(value) });
         } else {
             setFormData({ ...formData, [name]: value });
         }
@@ -335,63 +384,75 @@ export default function AdminDashboardPage() {
         if (!db) return;
         
         try {
+            let collectionPath: any;
+            let dataToSave = { ...formData };
+            let docId: string | undefined = undefined;
+            
+            // Cleanup data before saving
+            delete dataToSave.id;
+            if ('modules' in dataToSave) delete dataToSave.modules;
+            if ('lessons' in dataToSave) delete dataToSave.lessons;
+            
+            // Determine collection path and data based on active tab and context
             if (activeTab === 'courses') {
-                const courseData = { 
-                    ...formData, 
-                    image: formData.image || `https://picsum.photos/seed/${formData.title || 'course'}/600/400`,
-                };
-                delete courseData.id;
-                // Ensure prices are stored as strings
-                courseData.actualPrice = String(courseData.actualPrice || '');
-                courseData.discountPrice = String(courseData.discountPrice || '');
-
-                if (editingItem) {
-                    const courseDoc = doc(db, "courses", (editingItem as Course).id);
-                    await updateDoc(courseDoc, courseData);
-                } else {
-                    await addDoc(collection(db, "courses"), courseData);
-                }
+                collectionPath = collection(db, "courses");
+                docId = (editingItem as Course)?.id;
+                dataToSave.image = dataToSave.image || `https://picsum.photos/seed/${dataToSave.title || 'course'}/600/400`;
+                dataToSave.actualPrice = String(dataToSave.actualPrice || '');
+                dataToSave.discountPrice = String(dataToSave.discountPrice || '');
             } else if (activeTab === 'blog' || activeTab === 'guidance') {
-                const blogData = { ...formData, image: formData.image || `https://picsum.photos/seed/${formData.title || 'blog'}/800/450` };
-                if (editingItem) {
-                    const slug = (editingItem as BlogPost).slug;
-                    delete blogData.slug;
-                    const blogDoc = doc(db, "blog", slug);
-                    await updateDoc(blogDoc, blogData);
-                } else {
-                    const newSlug = createSlug(formData.title);
-                    if (!newSlug) {
-                        console.error("Cannot create blog post without a title.");
-                        toast({ title: "Error", description: "Post must have a title.", variant: "destructive" });
-                        return;
-                    }
-                    const newPostData = { ...blogData, internalLinks: [] }; // Add empty internalLinks array
-                    delete newPostData.slug;
-                    await setDoc(doc(db, "blog", newSlug), newPostData);
+                collectionPath = collection(db, "blog");
+                docId = (editingItem as BlogPost)?.slug;
+                if (!docId) { // For new posts
+                    docId = createSlug(dataToSave.title);
+                    if (!docId) throw new Error("Blog post must have a title to generate a slug.");
+                    dataToSave.internalLinks = []; // Initialize for new posts
                 }
+                dataToSave.image = dataToSave.image || `https://picsum.photos/seed/${dataToSave.title || 'blog'}/800/450`;
             } else if (activeTab === 'resources') {
-                const resourceData = { ...formData };
-                if (resourceData.fileUrl) {
-                    resourceData.fileUrl = convertToDirectDownloadLink(resourceData.fileUrl);
+                collectionPath = collection(db, "resources");
+                docId = (editingItem as Resource)?.id;
+                if (dataToSave.fileUrl) {
+                    dataToSave.fileUrl = convertToDirectDownloadLink(dataToSave.fileUrl);
                 }
-                delete resourceData.id;
-                 if (editingItem) {
-                    const resourceDoc = doc(db, "resources", (editingItem as Resource).id);
-                    await updateDoc(resourceDoc, resourceData);
-                } else {
-                    await addDoc(collection(db, "resources"), resourceData);
+            } else if (activeTab === 'learn-content') {
+                 if (formParentIds) { // Editing/Adding Module or Lesson
+                    if (formParentIds.moduleId) { // Lesson
+                        collectionPath = collection(db, "learningCourses", formParentIds.courseId, "modules", formParentIds.moduleId, "lessons");
+                        docId = (editingItem as Lesson)?.id;
+                    } else { // Module
+                        collectionPath = collection(db, "learningCourses", formParentIds.courseId, "modules");
+                        docId = (editingItem as LearningModule)?.id;
+                    }
+                } else { // Course
+                    collectionPath = collection(db, "learningCourses");
+                    docId = (editingItem as LearningCourse)?.id;
                 }
             }
-            await fetchData(); // Refetch data
+
+            // Perform DB operation
+            if (editingItem && docId) {
+                if(activeTab === 'blog' || activeTab === 'guidance') {
+                     await setDoc(doc(collectionPath, docId), dataToSave);
+                } else {
+                     await updateDoc(doc(collectionPath, docId), dataToSave);
+                }
+            } else {
+                 if(activeTab === 'blog' || activeTab === 'guidance') {
+                    if (!docId) throw new Error("Slug could not be created for new blog post.");
+                    await setDoc(doc(collectionPath, docId), dataToSave);
+                 } else {
+                    await addDoc(collectionPath, dataToSave);
+                 }
+            }
+            
+            await fetchData();
             toast({ title: "Success", description: "Data saved successfully." });
+            handleCloseForm();
         } catch(error) {
             console.error("Error saving document: ", error);
              toast({ title: "Error", description: "Could not save data.", variant: "destructive" });
         }
-
-        setIsFormOpen(false);
-        setEditingItem(null);
-        setFormData({});
     };
 
     const handleSettingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -551,17 +612,34 @@ export default function AdminDashboardPage() {
     };
 
     const getFormTitle = () => {
-        if (activeTab === 'courses') return editingItem ? 'Edit Course' : 'Add New Course';
-        if (activeTab === 'blog') return editingItem ? 'Edit Blog Post' : 'Add New Blog Post';
-        if (activeTab === 'guidance') return editingItem ? 'Edit Guidance Article' : 'Add New Guidance Article';
-        if (activeTab === 'resources') return editingItem ? 'Edit Resource' : 'Add New Resource';
+        const isEditing = !!editingItem;
+        if (activeTab === 'courses') return isEditing ? 'Edit Course' : 'Add New Course';
+        if (activeTab === 'blog') return isEditing ? 'Edit Blog Post' : 'Add New Blog Post';
+        if (activeTab === 'guidance') return isEditing ? 'Edit Guidance Article' : 'Add New Guidance Article';
+        if (activeTab === 'resources') return isEditing ? 'Edit Resource' : 'Add New Resource';
+
+        if (activeTab === 'learn-content') {
+             if (formParentIds) {
+                if (formParentIds.moduleId) return isEditing ? 'Edit Lesson' : 'Add New Lesson';
+                return isEditing ? 'Edit Module' : 'Add New Module';
+            }
+            return isEditing ? 'Edit Learning Course' : 'Add New Learning Course';
+        }
         return 'Edit Item';
     }
 
 
     const renderFormFields = () => {
-        const isGuidance = activeTab === 'guidance';
-        switch(activeTab) {
+        let currentActiveTab = activeTab;
+        if (activeTab === 'learn-content') {
+            if (formParentIds) {
+                currentActiveTab = formParentIds.moduleId ? 'learningLesson' : 'learningModule';
+            } else {
+                currentActiveTab = 'learningCourse';
+            }
+        }
+
+        switch(currentActiveTab) {
             case 'courses': return (
                 <>
                     <div className="grid gap-2">
@@ -604,6 +682,7 @@ export default function AdminDashboardPage() {
             );
             case 'blog':
             case 'guidance':
+                const isGuidance = activeTab === 'guidance';
                 return (
                 <>
                     <div className="grid gap-2">
@@ -656,6 +735,93 @@ export default function AdminDashboardPage() {
                     </div>
                 </>
             );
+             case 'learningCourse': return (
+                <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="id">Course ID (Slug)</Label>
+                        <Input id="id" name="id" value={formData.id || ''} onChange={handleFormChange} disabled={!!editingItem} placeholder="e.g., html-basics"/>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="title">Title</Label>
+                        <Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea id="description" name="description" value={formData.description || ''} onChange={handleFormChange} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="level">Level</Label>
+                        <Select name="level" value={formData.level || ''} onValueChange={(val) => setFormData({ ...formData, level: val })}>
+                             <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
+                             <SelectContent>
+                                <SelectItem value="Beginner">Beginner</SelectItem>
+                                <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                <SelectItem value="Advanced">Advanced</SelectItem>
+                                <SelectItem value="Beginner to Advanced">Beginner to Advanced</SelectItem>
+                             </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="order">Order</Label>
+                        <Input id="order" name="order" type="number" value={formData.order || 0} onChange={handleFormChange} />
+                    </div>
+                     <div className="grid gap-2">
+                        <Label htmlFor="icon">Icon (Emoji)</Label>
+                        <Input id="icon" name="icon" value={formData.icon || ''} onChange={handleFormChange} placeholder="e.g., 📄"/>
+                    </div>
+                </>
+            );
+            case 'learningModule': return (
+                <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="id">Module ID (Slug)</Label>
+                        <Input id="id" name="id" value={formData.id || ''} onChange={handleFormChange} disabled={!!editingItem} placeholder="e.g., introduction"/>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="title">Title</Label>
+                        <Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="difficulty">Difficulty</Label>
+                        <Select name="difficulty" value={formData.difficulty || ''} onValueChange={(val) => setFormData({ ...formData, difficulty: val })}>
+                             <SelectTrigger><SelectValue placeholder="Select difficulty" /></SelectTrigger>
+                             <SelectContent>
+                                <SelectItem value="Beginner">Beginner</SelectItem>
+                                <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                <SelectItem value="Advanced">Advanced</SelectItem>
+                             </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="grid gap-2">
+                        <Label htmlFor="order">Order</Label>
+                        <Input id="order" name="order" type="number" value={formData.order || 0} onChange={handleFormChange} />
+                    </div>
+                </>
+            );
+            case 'learningLesson': return (
+                 <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="id">Lesson ID (Slug)</Label>
+                        <Input id="id" name="id" value={formData.id || ''} onChange={handleFormChange} disabled={!!editingItem} placeholder="e.g., what-is-html"/>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="title">Title</Label>
+                        <Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} />
+                    </div>
+                     <div className="grid gap-2">
+                        <Label htmlFor="order">Order</Label>
+                        <Input id="order" name="order" type="number" value={formData.order || 0} onChange={handleFormChange} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="content">Content (HTML Supported)</Label>
+                        <Textarea id="content" name="content" value={formData.content || ''} onChange={handleFormChange} rows={10} />
+                    </div>
+                     <div className="grid gap-2">
+                        <Label htmlFor="exampleCode">Example Code (Optional)</Label>
+                        <Textarea id="exampleCode" name="exampleCode" value={formData.exampleCode || ''} onChange={handleFormChange} rows={6} />
+                    </div>
+                </>
+            );
             default: return null;
         }
     }
@@ -674,7 +840,7 @@ export default function AdminDashboardPage() {
                     </div>
                 </header>
                 <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-                    <Tabs defaultValue="courses" onValueChange={(value) => setActiveTab(value as ItemType)}>
+                    <Tabs defaultValue="courses" onValueChange={(value) => setActiveTab(value as string)}>
                         <div className="flex items-center">
                             <ScrollArea className="w-full whitespace-nowrap">
                                 <TabsList className="inline-flex">
@@ -693,8 +859,8 @@ export default function AdminDashboardPage() {
                                 <ScrollBar orientation="horizontal" />
                             </ScrollArea>
                              <div className="ml-auto flex items-center gap-2 pl-4">
-                                {activeTab !== 'settings' && activeTab !== 'site-settings' && activeTab !== 'enrollments' && activeTab !== 'contacts' && activeTab !== 'internal-links' && activeTab !== 'reviews' && activeTab !== 'learn-content' && (
-                                <Button size="sm" className="h-8 gap-1" onClick={handleAddNew}>
+                                {activeTab !== 'settings' && activeTab !== 'site-settings' && activeTab !== 'enrollments' && activeTab !== 'contacts' && activeTab !== 'internal-links' && activeTab !== 'reviews' && (
+                                <Button size="sm" className="h-8 gap-1" onClick={() => handleAddNew()}>
                                     <PlusCircle className="h-3.5 w-3.5" />
                                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                                         Add New
@@ -938,17 +1104,69 @@ export default function AdminDashboardPage() {
                                     <CardDescription>Manage interactive course modules, chapters, and lessons.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="space-y-4">
-                                        <p>You can add and edit learning content directly in Firestore for now.</p>
-                                        <div className="p-4 bg-muted rounded-md text-sm">
-                                            <p className="font-semibold">To get started, you need to upload the initial set of courses from your local code to the database.</p>
-                                            <p className="mt-2 text-muted-foreground">This button will read the content from `src/lib/data/courses.json` (for interactive lessons) and `src/lib/data/marketing-courses.json` (for the public courses page) and save it to your Firestore database. This is a one-time setup action.</p>
-                                            <Button onClick={handleUploadLearnContent} className="mt-4">
-                                                <Upload className="mr-2 h-4 w-4" />
-                                                Upload Static Content to Firestore
-                                            </Button>
+                                    {loading ? <p>Loading content...</p> : (
+                                        <div className="space-y-4">
+                                            <Accordion type="multiple" className="w-full">
+                                                {learningCourses.map(course => (
+                                                    <AccordionItem value={course.id} key={course.id}>
+                                                        <AccordionTrigger className="hover:no-underline">
+                                                             <div className="flex justify-between items-center w-full">
+                                                                <div className="flex items-center gap-4">
+                                                                    <BookOpen className="h-5 w-5 text-primary" />
+                                                                    <span className="font-semibold text-lg">{course.title}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2 pr-4">
+                                                                    <Button variant="outline" size="sm" onClick={(e) => {e.stopPropagation(); handleEdit(course)}}><Edit className="h-4 w-4 mr-1"/> Edit</Button>
+                                                                    <Button variant="destructive" size="sm" onClick={(e) => {e.stopPropagation(); openConfirmationDialog('learningCourse', course.id)}}><Trash className="h-4 w-4 mr-1"/> Delete</Button>
+                                                                </div>
+                                                             </div>
+                                                        </AccordionTrigger>
+                                                        <AccordionContent className="pl-6 border-l ml-3">
+                                                            <div className="space-y-2 py-2">
+                                                                {course.modules.map(module => (
+                                                                     <Accordion type="multiple" key={module.id}>
+                                                                        <AccordionItem value={module.id}>
+                                                                             <AccordionTrigger className="hover:no-underline">
+                                                                                 <div className="flex justify-between items-center w-full">
+                                                                                    <div className="flex items-center gap-3">
+                                                                                         <Layers className="h-5 w-5 text-accent" />
+                                                                                        <span>{module.title}</span>
+                                                                                    </div>
+                                                                                    <div className="flex items-center gap-2 pr-4">
+                                                                                        <Button variant="outline" size="sm" onClick={(e) => {e.stopPropagation(); handleEdit(module, { courseId: course.id })}}><Edit className="h-4 w-4 mr-1"/> Edit</Button>
+                                                                                        <Button variant="destructive" size="sm" onClick={(e) => {e.stopPropagation(); openConfirmationDialog('learningModule', module.id, { courseId: course.id })}}><Trash className="h-4 w-4 mr-1"/> Delete</Button>
+                                                                                    </div>
+                                                                                 </div>
+                                                                            </AccordionTrigger>
+                                                                            <AccordionContent className="pl-6 border-l ml-3">
+                                                                                <div className="space-y-1 py-2">
+                                                                                {module.lessons.map(lesson => (
+                                                                                    <div key={lesson.id} className="flex justify-between items-center p-2 rounded-md hover:bg-muted">
+                                                                                        <span>{lesson.title}</span>
+                                                                                         <div className="flex items-center gap-2">
+                                                                                            <Button variant="ghost" size="sm" onClick={() => handleEdit(lesson, { courseId: course.id, moduleId: module.id })}><Edit className="h-4 w-4"/></Button>
+                                                                                            <Button variant="ghost" size="sm" className="text-destructive" onClick={() => openConfirmationDialog('learningLesson', lesson.id, { courseId: course.id, moduleId: module.id })}><Trash className="h-4 w-4"/></Button>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                ))}
+                                                                                <Button variant="secondary" size="sm" className="mt-2" onClick={() => handleAddNew({ courseId: course.id, moduleId: module.id })}>
+                                                                                    <PlusCircle className="h-4 w-4 mr-2" /> Add Lesson
+                                                                                </Button>
+                                                                                </div>
+                                                                            </AccordionContent>
+                                                                        </AccordionItem>
+                                                                     </Accordion>
+                                                                ))}
+                                                                 <Button variant="outline" size="sm" className="mt-4" onClick={() => handleAddNew({ courseId: course.id })}>
+                                                                    <PlusCircle className="h-4 w-4 mr-2" /> Add Module
+                                                                </Button>
+                                                            </div>
+                                                        </AccordionContent>
+                                                    </AccordionItem>
+                                                ))}
+                                            </Accordion>
                                         </div>
-                                    </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </TabsContent>
@@ -1260,7 +1478,7 @@ export default function AdminDashboardPage() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete this item.
+                            This action cannot be undone. This will permanently delete this item and all its sub-items (modules, lessons).
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -1272,7 +1490,7 @@ export default function AdminDashboardPage() {
                 </AlertDialogContent>
             </AlertDialog>
             
-            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <Dialog open={isFormOpen} onOpenChange={handleCloseForm}>
                 <DialogContent className="sm:max-w-[425px] md:max-w-lg max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{getFormTitle()}</DialogTitle>
@@ -1285,7 +1503,7 @@ export default function AdminDashboardPage() {
                            {renderFormFields()}
                         </div>
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>Cancel</Button>
+                            <Button type="button" variant="outline" onClick={handleCloseForm}>Cancel</Button>
                             <Button type="submit">Save changes</Button>
                         </DialogFooter>
                     </form>
@@ -1295,5 +1513,7 @@ export default function AdminDashboardPage() {
     );
 }
 
+
+    
 
     
