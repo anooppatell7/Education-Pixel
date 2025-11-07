@@ -43,7 +43,7 @@ function LearnPageAuthenticated({ courses }: { courses: LearningCourse[] }) {
             <div className="text-center mb-12">
                 <h1 className="font-headline text-4xl font-bold text-primary sm:text-5xl">Learn with MTech IT</h1>
                 <p className="mt-4 max-w-2xl mx-auto text-lg text-primary/80">
-                    Start from basics and master real-world skills with interactive lessons and projects.
+                    Code. Learn. Grow. — at MTech IT
                 </p>
             </div>
 
