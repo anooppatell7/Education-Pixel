@@ -23,7 +23,12 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      router.push('/');
+      // If user is already logged in, decide where to send them
+      if (user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/learn');
+      }
     }
   }, [user, router]);
 
@@ -40,12 +45,19 @@ export default function LoginPage() {
     }
 
     try {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
         toast({
             title: "Login Successful",
             description: "Welcome back!",
         });
-        router.push('/learn');
+        
+        // Redirect based on user role
+        if (userCredential.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+            router.push('/admin/dashboard');
+        } else {
+            router.push('/learn');
+        }
+
     } catch (error: any) {
          let errorMessage = "An unknown error occurred.";
          if (error.code) {

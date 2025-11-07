@@ -34,6 +34,8 @@ export default function Header() {
   const isLearnPage = pathname.startsWith('/learn');
   const courseSlug = isLearnPage && pathname.split('/')[2] ? pathname.split('/')[2] : '';
 
+  const isAdmin = user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+
   const handleLogout = async () => {
     if (auth) {
         await signOut(auth);
@@ -107,10 +109,17 @@ export default function Header() {
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => router.push('/learn')}>
-                           <LayoutDashboard className="mr-2 h-4 w-4" />
-                           <span>My Learning</span>
-                        </DropdownMenuItem>
+                        {isAdmin ? (
+                            <DropdownMenuItem onClick={() => router.push('/admin/dashboard')}>
+                               <LayoutDashboard className="mr-2 h-4 w-4" />
+                               <span>Dashboard</span>
+                            </DropdownMenuItem>
+                        ) : (
+                            <DropdownMenuItem onClick={() => router.push('/learn')}>
+                               <LayoutDashboard className="mr-2 h-4 w-4" />
+                               <span>My Learning</span>
+                            </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout}>
                             <LogOut className="mr-2 h-4 w-4" />

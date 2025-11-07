@@ -94,10 +94,8 @@ export default function Footer() {
                 <Instagram className="w-5 h-5" />
               </Link>
             </div>
-          <div className="text-sm text-center sm:text-right flex items-center gap-2">
+          <div className="text-sm text-center sm:text-right">
             <span>&copy; {new Date().getFullYear()} MTech IT Institute. All Rights Reserved.</span>
-            <span className="hidden sm:inline">|</span>
-            <Link href="/admin/login" className="hover:text-accent transition-colors">Admin Login</Link>
           </div>
         </div>
       </div>
