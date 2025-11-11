@@ -120,6 +120,45 @@ export type UserProgress = {
     };
 };
 
+// Types for Mock Test System
+export type TestQuestion = {
+    id: string;
+    questionText: string;
+    options: string[]; // Array of 4 strings
+    correctOption: number; // Index of the correct option (0-3)
+    explanation?: string;
+    marks: number;
+};
+
+export type MockTest = {
+    id: string;
+    title: string;
+    description: string;
+    duration: number; // in minutes
+    totalMarks: number;
+    questions: TestQuestion[];
+    isPublished: boolean;
+};
+
+export type TestResponse = {
+    [questionId: string]: {
+        selectedOption: number | null;
+        isCorrect: boolean;
+    }
+};
+
+export type TestResult = {
+    id: string;
+    userId: string;
+    testId: string;
+    score: number;
+    totalMarks: number;
+    accuracy: number; // percentage
+    timeTaken: number; // in seconds
+    responses: TestResponse;
+    submittedAt: any; // Firestore Timestamp
+};
+
 
 // Add types for more complex schemas
 export type HowToSchema = HowTo;

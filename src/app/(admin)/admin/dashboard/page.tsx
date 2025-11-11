@@ -4,7 +4,7 @@
 import Link from "next/link";
 import React, { useState, useEffect, use } from "react";
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown } from "lucide-react";
+import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -68,7 +68,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Logo from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, LearningCourse, LearningModule, Lesson } from "@/lib/types";
+import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, LearningCourse, LearningModule, Lesson, MockTest, TestQuestion } from "@/lib/types";
 import { auth, db } from "@/lib/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, setDoc, Timestamp, where, arrayUnion, arrayRemove, getDoc, writeBatch } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
@@ -79,7 +79,7 @@ import coursesData from "@/lib/data/courses.json";
 import marketingCoursesData from "@/lib/data/marketing-courses.json";
 
 
-type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'learningCourse' | 'learningModule' | 'learningLesson';
+type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'learningCourse' | 'learningModule' | 'learningLesson' | 'mockTest' | 'testQuestion';
 
 export default function AdminDashboardPage() {
     const [user, authLoading, authError] = useAuthState(auth);
@@ -92,6 +92,7 @@ export default function AdminDashboardPage() {
     const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
     const [contacts, setContacts] = useState<ContactSubmission[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
+    const [mockTests, setMockTests] = useState<MockTest[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
@@ -192,6 +193,13 @@ export default function AdminDashboardPage() {
             });
             setReviews(reviewList);
 
+            // Mock Tests
+            const mockTestsQuery = query(collection(db, "mockTests"));
+            const mockTestsSnapshot = await getDocs(mockTestsQuery);
+            const mockTestsList = mockTestsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MockTest));
+            setMockTests(mockTestsList);
+
+
             // Site Settings
             const announcementDoc = await getDoc(doc(db, "site_settings", "announcement"));
             if (announcementDoc.exists()) {
@@ -207,12 +215,12 @@ export default function AdminDashboardPage() {
     };
 
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [itemToDelete, setItemToDelete] = useState<{type: ItemType, id: string, parentIds?: { courseId: string, moduleId?: string }} | null>(null);
+    const [itemToDelete, setItemToDelete] = useState<{type: ItemType, id: string, parentIds?: { courseId?: string, moduleId?: string, testId?: string }} | null>(null);
     const [linkToDelete, setLinkToDelete] = useState<{postSlug: string, link: InternalLink} | null>(null);
 
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [editingItem, setEditingItem] = useState<Course | BlogPost | Resource | LearningCourse | LearningModule | Lesson | null>(null);
-    const [formParentIds, setFormParentIds] = useState<{ courseId: string, moduleId?: string } | null>(null);
+    const [editingItem, setEditingItem] = useState<any>(null);
+    const [formParentIds, setFormParentIds] = useState<{ courseId?: string, moduleId?: string, testId?: string } | null>(null);
     const [formData, setFormData] = useState<any>({});
     const [activeTab, setActiveTab] = useState<string>('courses');
     
@@ -223,7 +231,7 @@ export default function AdminDashboardPage() {
         confirmNewPassword: ''
     });
 
-    const openConfirmationDialog = (type: ItemType, id: string, parentIds?: { courseId: string, moduleId?: string }) => {
+    const openConfirmationDialog = (type: ItemType, id: string, parentIds?: { courseId?: string, moduleId?: string, testId?: string }) => {
         setItemToDelete({ type, id, parentIds });
         setDialogOpen(true);
     };
@@ -248,6 +256,16 @@ export default function AdminDashboardPage() {
                 if (type === 'learningCourse') await deleteDoc(doc(db, "learningCourses", id));
                 if (type === 'learningModule' && parentIds?.courseId) await deleteDoc(doc(db, "learningCourses", parentIds.courseId, "modules", id));
                 if (type === 'learningLesson' && parentIds?.courseId && parentIds?.moduleId) await deleteDoc(doc(db, "learningCourses", parentIds.courseId, "modules", parentIds.moduleId, "lessons", id));
+                if (type === 'mockTest') await deleteDoc(doc(db, "mockTests", id));
+                if (type === 'testQuestion' && parentIds?.testId) {
+                    const testRef = doc(db, "mockTests", parentIds.testId);
+                    const testDoc = await getDoc(testRef);
+                    if (testDoc.exists()) {
+                        const testData = testDoc.data() as MockTest;
+                        const updatedQuestions = testData.questions.filter(q => q.id !== id);
+                        await updateDoc(testRef, { questions: updatedQuestions });
+                    }
+                }
                 await fetchData(); // Refetch all data
                 toast({ title: "Success", description: "Item deleted successfully." });
             } catch (error) {
@@ -274,13 +292,15 @@ export default function AdminDashboardPage() {
         setDialogOpen(false);
     };
     
-    const handleAddNew = (parentIds: { courseId: string, moduleId?: string } | null = null) => {
+    const handleAddNew = (parentIds: { courseId?: string, moduleId?: string, testId?: string } | null = null) => {
         setEditingItem(null);
         let initialData: any = {};
         if (activeTab === 'guidance') {
             initialData = { category: "Career Guidance" };
         }
-        if (activeTab === 'learn-content' && parentIds) {
+        if (activeTab === 'learn-content' && parentIds?.courseId) {
+            setFormParentIds(parentIds);
+        } else if (activeTab === 'mock-tests' && parentIds?.testId) {
             setFormParentIds(parentIds);
         } else {
             setFormParentIds(null);
@@ -289,7 +309,7 @@ export default function AdminDashboardPage() {
         setIsFormOpen(true);
     };
 
-    const handleEdit = (item: any, parentIds: { courseId: string, moduleId?: string } | null = null) => {
+    const handleEdit = (item: any, parentIds: { courseId?: string, moduleId?: string, testId?: string } | null = null) => {
         setEditingItem(item);
         setFormData(item);
         if (parentIds) {
@@ -306,10 +326,21 @@ export default function AdminDashboardPage() {
     }
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
+        const { name, value, type } = e.target;
+        
+        if ((e.target as HTMLInputElement).type === 'checkbox') {
+             setFormData({ ...formData, [name]: (e.target as HTMLInputElement).checked });
+             return;
+        }
+
         if (name === 'tags' || name === 'syllabus') {
             setFormData({ ...formData, [name]: value.split(',').map(s => s.trim()) });
-        } else if (name === 'order') {
+        } else if (name.startsWith('option')) { // For test question options
+            const index = parseInt(name.split('-')[1]);
+            const newOptions = [...(formData.options || ['', '', '', ''])];
+            newOptions[index] = value;
+            setFormData({ ...formData, options: newOptions });
+        } else if (type === 'number') {
              setFormData({ ...formData, [name]: Number(value) });
         } else {
             setFormData({ ...formData, [name]: value });
@@ -415,7 +446,7 @@ export default function AdminDashboardPage() {
                     dataToSave.fileUrl = convertToDirectDownloadLink(dataToSave.fileUrl);
                 }
             } else if (activeTab === 'learn-content') {
-                 if (formParentIds) { // Editing/Adding Module or Lesson
+                 if (formParentIds?.courseId) { // Editing/Adding Module or Lesson
                     if (formParentIds.moduleId) { // Lesson
                         collectionRef = collection(db, "learningCourses", formParentIds.courseId, "modules", formParentIds.moduleId, "lessons");
                     } else { // Module
@@ -424,23 +455,48 @@ export default function AdminDashboardPage() {
                 } else { // Course
                     collectionRef = collection(db, "learningCourses");
                 }
+            } else if (activeTab === 'mock-tests') {
+                if(formParentIds?.testId) { // It's a question
+                    const testRef = doc(db, "mockTests", formParentIds.testId);
+                    const testDoc = await getDoc(testRef);
+                    if (testDoc.exists()) {
+                        const testData = testDoc.data() as MockTest;
+                        if (editingItem && docId) { // Editing a question
+                            const questionIndex = testData.questions.findIndex(q => q.id === docId);
+                            if(questionIndex > -1) {
+                                testData.questions[questionIndex] = { ...dataToSave, id: docId };
+                            }
+                        } else { // Adding a new question
+                            dataToSave.id = doc(collection(db, 'mock-tests')).id; // Generate a unique ID
+                            testData.questions = [...(testData.questions || []), dataToSave];
+                        }
+                        await updateDoc(testRef, { questions: testData.questions });
+                    }
+                } else { // It's a test
+                    collectionRef = collection(db, "mockTests");
+                    if(!editingItem) {
+                        dataToSave.questions = [];
+                    }
+                }
             }
 
-            // Perform DB operation
-            if (editingItem && docId) {
-                if(activeTab === 'blog' || activeTab === 'guidance' || (activeTab === 'learn-content' && !formParentIds)) {
-                     await setDoc(doc(collectionRef, docId), dataToSave);
+            // Standard DB operations for non-question items
+            if (activeTab !== 'mock-tests' || !formParentIds?.testId) {
+                if (editingItem && docId) {
+                    if(activeTab === 'blog' || activeTab === 'guidance' || (activeTab === 'learn-content' && !formParentIds?.courseId)) {
+                         await setDoc(doc(collectionRef, docId), dataToSave);
+                    } else {
+                         await updateDoc(doc(collectionRef, docId), dataToSave);
+                    }
                 } else {
-                     await updateDoc(doc(collectionRef, docId), dataToSave);
+                     if(activeTab === 'blog' || activeTab === 'guidance' || activeTab === 'learn-content') {
+                        docId = dataToSave.id || createSlug(dataToSave.title);
+                        if (!docId) throw new Error("Slug/ID could not be created for new item.");
+                        await setDoc(doc(collectionRef, docId), dataToSave);
+                     } else {
+                        await addDoc(collectionRef, dataToSave);
+                     }
                 }
-            } else {
-                 if(activeTab === 'blog' || activeTab === 'guidance' || activeTab === 'learn-content') {
-                    docId = dataToSave.id || createSlug(dataToSave.title);
-                    if (!docId) throw new Error("Slug/ID could not be created for new item.");
-                    await setDoc(doc(collectionRef, docId), dataToSave);
-                 } else {
-                    await addDoc(collectionRef, dataToSave);
-                 }
             }
             
             await fetchData();
@@ -614,9 +670,13 @@ export default function AdminDashboardPage() {
         if (activeTab === 'blog') return isEditing ? 'Edit Blog Post' : 'Add New Blog Post';
         if (activeTab === 'guidance') return isEditing ? 'Edit Guidance Article' : 'Add New Guidance Article';
         if (activeTab === 'resources') return isEditing ? 'Edit Resource' : 'Add New Resource';
+        if (activeTab === 'mock-tests') {
+            if (formParentIds?.testId) return isEditing ? 'Edit Question' : 'Add New Question';
+            return isEditing ? 'Edit Mock Test' : 'Add New Mock Test';
+        }
 
         if (activeTab === 'learn-content') {
-             if (formParentIds) {
+             if (formParentIds?.courseId) {
                 if (formParentIds.moduleId) return isEditing ? 'Edit Lesson' : 'Add New Lesson';
                 return isEditing ? 'Edit Module' : 'Add New Module';
             }
@@ -629,10 +689,17 @@ export default function AdminDashboardPage() {
     const renderFormFields = () => {
         let currentActiveTab = activeTab;
         if (activeTab === 'learn-content') {
-            if (formParentIds) {
+            if (formParentIds?.courseId) {
                 currentActiveTab = formParentIds.moduleId ? 'learningLesson' : 'learningModule';
             } else {
                 currentActiveTab = 'learningCourse';
+            }
+        }
+        if (activeTab === 'mock-tests') {
+            if(formParentIds?.testId) {
+                currentActiveTab = 'testQuestion';
+            } else {
+                currentActiveTab = 'mockTest';
             }
         }
 
@@ -819,6 +886,80 @@ export default function AdminDashboardPage() {
                     </div>
                 </>
             );
+            case 'mockTest': return (
+                <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="title">Test Title</Label>
+                        <Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea id="description" name="description" value={formData.description || ''} onChange={handleFormChange} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="duration">Duration (Minutes)</Label>
+                            <Input id="duration" name="duration" type="number" value={formData.duration || 0} onChange={handleFormChange} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="totalMarks">Total Marks</Label>
+                            <Input id="totalMarks" name="totalMarks" type="number" value={formData.totalMarks || 0} onChange={handleFormChange} />
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Switch id="isPublished" name="isPublished" checked={formData.isPublished || false} onCheckedChange={(checked) => setFormData({...formData, isPublished: checked})} />
+                        <Label htmlFor="isPublished">Publish Test</Label>
+                    </div>
+                </>
+            );
+            case 'testQuestion': return (
+                 <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="questionText">Question Text</Label>
+                        <Textarea id="questionText" name="questionText" value={formData.questionText || ''} onChange={handleFormChange} />
+                    </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                           <Label htmlFor="option-0">Option A</Label>
+                           <Input id="option-0" name="option-0" value={formData.options?.[0] || ''} onChange={handleFormChange} />
+                        </div>
+                        <div className="grid gap-2">
+                           <Label htmlFor="option-1">Option B</Label>
+                           <Input id="option-1" name="option-1" value={formData.options?.[1] || ''} onChange={handleFormChange} />
+                        </div>
+                        <div className="grid gap-2">
+                           <Label htmlFor="option-2">Option C</Label>
+                           <Input id="option-2" name="option-2" value={formData.options?.[2] || ''} onChange={handleFormChange} />
+                        </div>
+                        <div className="grid gap-2">
+                           <Label htmlFor="option-3">Option D</Label>
+                           <Input id="option-3" name="option-3" value={formData.options?.[3] || ''} onChange={handleFormChange} />
+                        </div>
+                    </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="correctOption">Correct Option</Label>
+                            <Select name="correctOption" value={String(formData.correctOption) || '0'} onValueChange={(val) => setFormData({ ...formData, correctOption: Number(val) })}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="0">Option A</SelectItem>
+                                    <SelectItem value="1">Option B</SelectItem>
+                                    <SelectItem value="2">Option C</SelectItem>
+                                    <SelectItem value="3">Option D</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                         <div className="grid gap-2">
+                            <Label htmlFor="marks">Marks</Label>
+                            <Input id="marks" name="marks" type="number" value={formData.marks || 1} onChange={handleFormChange} />
+                        </div>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="explanation">Explanation (Optional)</Label>
+                        <Textarea id="explanation" name="explanation" value={formData.explanation || ''} onChange={handleFormChange} />
+                    </div>
+                </>
+            );
             default: return null;
         }
     }
@@ -846,6 +987,7 @@ export default function AdminDashboardPage() {
                                     <TabsTrigger value="guidance"><Briefcase className="mr-2 h-4 w-4"/>Career Guidance</TabsTrigger>
                                     <TabsTrigger value="resources">Resources</TabsTrigger>
                                     <TabsTrigger value="learn-content">Learn Content</TabsTrigger>
+                                    <TabsTrigger value="mock-tests"><ListTodo className="mr-2 h-4 w-4" />Mock Tests</TabsTrigger>
                                     <TabsTrigger value="reviews"><Star className="mr-2 h-4 w-4" />Reviews</TabsTrigger>
                                     <TabsTrigger value="internal-links"><Link2 className="mr-2 h-4 w-4"/>Internal Links</TabsTrigger>
                                     <TabsTrigger value="enrollments"><FileText className="mr-2 h-4 w-4"/>Enrollments</TabsTrigger>
@@ -1167,6 +1309,64 @@ export default function AdminDashboardPage() {
                                 </CardContent>
                             </Card>
                         </TabsContent>
+                        <TabsContent value="mock-tests">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Mock Tests</CardTitle>
+                                    <CardDescription>Create and manage mock tests for your students.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {loading ? <p>Loading mock tests...</p> : (
+                                        <Accordion type="multiple" className="w-full">
+                                            {mockTests.map(test => (
+                                                <AccordionItem value={test.id} key={test.id}>
+                                                    <div className="flex items-center pr-4 hover:bg-muted/50 rounded-lg">
+                                                        <AccordionTrigger className="flex-1 px-4 py-2 hover:no-underline">
+                                                            <div className="flex items-center justify-between w-full">
+                                                                <span className="font-semibold text-lg">{test.title}</span>
+                                                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                                                    <span>{test.questions?.length || 0} Questions</span>
+                                                                    <span>{test.duration} mins</span>
+                                                                    <Badge variant={test.isPublished ? "default" : "secondary"}>
+                                                                        {test.isPublished ? "Published" : "Draft"}
+                                                                    </Badge>
+                                                                </div>
+                                                            </div>
+                                                        </AccordionTrigger>
+                                                        <div className="flex items-center gap-2 pl-2">
+                                                            <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleEdit(test) }}><Edit className="h-4 w-4 mr-1" /> Edit Test</Button>
+                                                            <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); openConfirmationDialog('mockTest', test.id) }}><Trash className="h-4 w-4 mr-1" /> Delete Test</Button>
+                                                        </div>
+                                                    </div>
+                                                    <AccordionContent className="pl-6 border-l-2 ml-3">
+                                                        <div className="py-4">
+                                                            <h4 className="font-semibold mb-4">Questions</h4>
+                                                            <div className="space-y-2">
+                                                                {test.questions?.map((q, index) => (
+                                                                    <div key={q.id} className="flex justify-between items-center p-3 rounded-md border bg-card">
+                                                                        <p className="flex-1 truncate">{index + 1}. {q.questionText}</p>
+                                                                        <div className="flex items-center gap-2 ml-4">
+                                                                            <Button variant="ghost" size="sm" onClick={() => handleEdit(q, { testId: test.id })}><Edit className="h-4 w-4" /></Button>
+                                                                            <Button variant="ghost" size="sm" className="text-destructive" onClick={() => openConfirmationDialog('testQuestion', q.id, { testId: test.id })}><Trash className="h-4 w-4" /></Button>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                                {(!test.questions || test.questions.length === 0) && (
+                                                                    <p className="text-muted-foreground text-sm text-center py-4">No questions added to this test yet.</p>
+                                                                )}
+                                                            </div>
+                                                             <Button variant="secondary" size="sm" className="mt-4" onClick={() => handleAddNew({ testId: test.id })}>
+                                                                <PlusCircle className="h-4 w-4 mr-2" /> Add Question
+                                                            </Button>
+                                                        </div>
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            ))}
+                                        </Accordion>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
                          <TabsContent value="reviews">
                             <Card>
                                 <CardHeader>
@@ -1475,7 +1675,7 @@ export default function AdminDashboardPage() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete this item and all its sub-items (modules, lessons).
+                            This action cannot be undone. This will permanently delete this item and all its sub-items (modules, lessons, or questions).
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
