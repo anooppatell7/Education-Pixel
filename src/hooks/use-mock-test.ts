@@ -4,61 +4,62 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocalStorage } from './use-local-storage';
 
-export const useMockTest = (testId: string, questionCount: number, durationMinutes: number) => {
+export const useMockTest = (testId: string) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     const [selectedAnswers, setSelectedAnswers] = useLocalStorage<(number | null)[]>(
         `test-${testId}-answers`, 
-        Array(questionCount).fill(null)
+        []
     );
     const [markedForReview, setMarkedForReview] = useLocalStorage<number[]>(
         `test-${testId}-review`,
         []
     );
 
-    const initialTime = durationMinutes * 60;
-    const [timeLeft, setTimeLeft] = useLocalStorage<number>(`test-${testId}-time`, initialTime);
+    const [timeLeft, setTimeLeft] = useLocalStorage<number>(`test-${testId}-time`, 0);
     const [isTimeUp, setIsTimeUp] = useState(false);
 
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    
+    const initializeTest = useCallback((questionCount: number, durationMinutes: number) => {
+        if (isInitialized) return;
+
+        const initialTime = durationMinutes * 60;
+        
+        // Only set initial values if they haven't been set before (i.e., user refreshes)
+        if (localStorage.getItem(`test-${testId}-time`) === null) {
+            setTimeLeft(initialTime);
+        }
+        if (localStorage.getItem(`test-${testId}-answers`) === null) {
+            setSelectedAnswers(Array(questionCount).fill(null));
+        }
+
+        setIsInitialized(true);
+    }, [isInitialized, testId, setTimeLeft, setSelectedAnswers]);
 
     // Timer effect
     useEffect(() => {
-        if (durationMinutes > 0 && questionCount > 0) {
-            timerRef.current = setInterval(() => {
-                setTimeLeft(prevTime => {
-                    if (prevTime <= 1) {
-                        clearInterval(timerRef.current!);
-                        setIsTimeUp(true);
-                        return 0;
-                    }
-                    return prevTime - 1;
-                });
-            }, 1000);
-        }
+        if (!isInitialized) return;
+
+        timerRef.current = setInterval(() => {
+            setTimeLeft(prevTime => {
+                if (prevTime <= 1) {
+                    clearInterval(timerRef.current!);
+                    setIsTimeUp(true);
+                    return 0;
+                }
+                return prevTime - 1;
+            });
+        }, 1000);
 
         return () => {
             if (timerRef.current) {
                 clearInterval(timerRef.current);
             }
         };
-    }, [durationMinutes, questionCount, setTimeLeft]);
+    }, [isInitialized, setTimeLeft]);
     
-    // Ensure array sizes are correct when data loads
-    useEffect(() => {
-        if(questionCount > 0) {
-            if(selectedAnswers.length !== questionCount) {
-                const newAnswers = Array(questionCount).fill(null);
-                // Preserve old answers if any
-                for(let i=0; i<Math.min(selectedAnswers.length, questionCount); i++) {
-                    newAnswers[i] = selectedAnswers[i];
-                }
-                setSelectedAnswers(newAnswers);
-            }
-        }
-    }, [questionCount, selectedAnswers, setSelectedAnswers]);
-
-
     const handleSelectAnswer = useCallback((questionIndex: number, optionIndex: number) => {
         setSelectedAnswers(prev => {
             const newAnswers = [...prev];
@@ -103,6 +104,8 @@ export const useMockTest = (testId: string, questionCount: number, durationMinut
     }, [selectedAnswers, cleanupLocalStorage]);
 
     return {
+        isInitialized,
+        initializeTest,
         currentQuestionIndex,
         setCurrentQuestionIndex,
         selectedAnswers,

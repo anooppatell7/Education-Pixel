@@ -65,6 +65,8 @@ export default function MockTestPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     const {
+        isInitialized,
+        initializeTest,
         currentQuestionIndex,
         setCurrentQuestionIndex,
         selectedAnswers,
@@ -74,7 +76,7 @@ export default function MockTestPage() {
         timeLeft,
         isTimeUp,
         handleSubmit,
-    } = useMockTest(testId, testData?.questions.length || 0, testData?.duration || 0);
+    } = useMockTest(testId);
 
     useEffect(() => {
         if (userLoading) return;
@@ -104,6 +106,14 @@ export default function MockTestPage() {
         fetchTest();
     }, [testId, user, userLoading, router]);
 
+    // Initialize the test state once testData is loaded
+    useEffect(() => {
+        if (testData && !isInitialized) {
+            initializeTest(testData.questions.length, testData.duration);
+        }
+    }, [testData, isInitialized, initializeTest]);
+
+
     useEffect(() => {
         if(isTimeUp) {
             handleSubmit(true); // Auto-submit when time is up
@@ -122,7 +132,7 @@ export default function MockTestPage() {
         return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }, [timeLeft]);
 
-    if (isLoading || userLoading) {
+    if (isLoading || userLoading || !isInitialized) {
         return <TestPageSkeleton />;
     }
 
@@ -257,4 +267,3 @@ export default function MockTestPage() {
         </div>
     );
 }
-
