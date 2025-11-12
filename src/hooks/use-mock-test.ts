@@ -117,7 +117,8 @@ export const useMockTest = (testId: string) => {
         let correctAnswers = 0;
 
         const responses: TestResponse[] = testData.questions.map((q, i) => {
-            const isCorrect = selectedAnswers[i] === q.correctOption;
+            const selectedOption = selectedAnswers[i];
+            const isCorrect = selectedOption === q.correctOption;
             const marksAwarded = isCorrect ? q.marks : 0;
             if (isCorrect) {
                 score += q.marks;
@@ -125,7 +126,7 @@ export const useMockTest = (testId: string) => {
             }
             return {
                 questionId: q.id,
-                selectedOption: selectedAnswers[i],
+                selectedOption: selectedOption === undefined ? null : selectedOption, // Explicitly set to null if undefined
                 isCorrect,
                 marksAwarded
             };
