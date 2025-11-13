@@ -256,7 +256,21 @@ export default function AdminDashboardPage() {
                 if (type === 'learningCourse') await deleteDoc(doc(db, "learningCourses", id));
                 if (type === 'learningModule' && parentIds?.courseId) await deleteDoc(doc(db, "learningCourses", parentIds.courseId, "modules", id));
                 if (type === 'learningLesson' && parentIds?.courseId && parentIds?.moduleId) await deleteDoc(doc(db, "learningCourses", parentIds.courseId, "modules", parentIds.moduleId, "lessons", id));
-                if (type === 'mockTest') await deleteDoc(doc(db, "mockTests", id));
+                if (type === 'mockTest') {
+                    // Delete the mock test itself
+                    await deleteDoc(doc(db, "mockTests", id));
+                    
+                    // Also delete all associated test results
+                    const resultsQuery = query(collection(db, "testResults"), where("testId", "==", id));
+                    const resultsSnapshot = await getDocs(resultsQuery);
+                    
+                    const batch = writeBatch(db);
+                    resultsSnapshot.docs.forEach(resultDoc => {
+                        batch.delete(resultDoc.ref);
+                    });
+                    await batch.commit();
+
+                }
                 if (type === 'testQuestion' && parentIds?.testId) {
                     const testRef = doc(db, "mockTests", parentIds.testId);
                     const testDoc = await getDoc(testRef);
@@ -1710,6 +1724,8 @@ export default function AdminDashboardPage() {
     );
 }
 
+
+    
 
     
 
