@@ -46,20 +46,26 @@ export default function MockTestsClient({ mockTests }: { mockTests: MockTest[] }
             };
             setResultsLoading(true);
             try {
+                // Fetch results without ordering from Firestore
                 const resultsQuery = query(
                     collection(db, 'testResults'),
-                    where('userId', '==', user.uid),
-                    orderBy('submittedAt', 'desc')
+                    where('userId', '==', user.uid)
                 );
                 const resultsSnapshot = await getDocs(resultsQuery);
-                const results = resultsSnapshot.docs.map(doc => {
+                let results = resultsSnapshot.docs.map(doc => {
                     const data = doc.data();
+                    // Ensure submittedAt is a Date object for sorting
+                    const submittedAt = data.submittedAt?.toDate ? data.submittedAt.toDate() : new Date(0);
                     return { 
                         id: doc.id,
                         ...data,
-                        submittedAt: data.submittedAt.toDate()
+                        submittedAt
                     } as TestResult
                 });
+
+                // Sort results on the client side
+                results.sort((a, b) => b.submittedAt.getTime() - a.submittedAt.getTime());
+
                 setUserResults(results);
             } catch (error) {
                 console.error("Failed to fetch user results:", error);
