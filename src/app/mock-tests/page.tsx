@@ -5,7 +5,9 @@ import type { MockTest, TestResult } from "@/lib/types";
 import type { Metadata } from 'next';
 import MockTestsClient from "@/components/mock-tests-client";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { useUser } from "@/firebase";
+import { auth } from "firebase-admin";
+import { cookies } from "next/headers";
+
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
@@ -38,12 +40,41 @@ async function getPublishedMockTests(): Promise<MockTest[]> {
 
 async function getUserResults(userId: string): Promise<TestResult[]> {
     if (!userId) return [];
-    const resultsQuery = query(
-        collection(db, 'testResults'),
-        where('userId', '==', userId)
-    );
-    const resultsSnapshot = await getDocs(resultsQuery);
-    return resultsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TestResult));
+    try {
+        const resultsQuery = query(
+            collection(db, 'testResults'),
+            where('userId', '==', userId)
+        );
+        const resultsSnapshot = await getDocs(resultsQuery);
+        return resultsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TestResult));
+    } catch (error) {
+        console.error("Failed to fetch user results:", error);
+        return [];
+    }
+}
+
+// Helper to get user ID from session cookie
+async function getUserIdFromSession(): Promise<string | null> {
+    const sessionCookie = cookies().get('session')?.value;
+    if (!sessionCookie) return null;
+
+    try {
+        // This requires firebase-admin setup on the backend, which we assume exists
+        // For a client-component driven approach, this would be handled differently.
+        // As this is a server component, we'll outline the server-side verification logic.
+        // NOTE: A full admin SDK setup is beyond this component's scope.
+        // This is a placeholder for a real implementation.
+        // In a real app, you would have a backend endpoint or use NextAuth/Kinde to verify this.
+        // For this context, we will simulate getting a user ID. Let's try another way.
+        // The Kinde session is easier to use here.
+        const { getUser } = getKindeServerSession();
+        const user = await getUser();
+        return user?.id || null;
+
+    } catch (error) {
+        console.error("Session verification failed:", error);
+        return null;
+    }
 }
 
 
@@ -52,7 +83,9 @@ export default async function MockTestsPage() {
     const { getUser } = getKindeServerSession();
     const user = await getUser();
 
-    const userResults = user?.id ? await getUserResults(user.id) : [];
+    // In a real Firebase Auth app, we'd verify the token. Kinde is used here.
+    const userId = user?.id || null;
+    const userResults = userId ? await getUserResults(userId) : [];
 
     return (
         <MockTestsClient mockTests={mockTests} userResults={userResults} />
