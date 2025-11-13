@@ -1,22 +1,87 @@
 
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Clock, ArrowRight, BarChart } from "lucide-react";
+import { ListChecks, Clock, ArrowRight, BarChart, Loader2 } from "lucide-react";
 import type { MockTest, TestResult } from "@/lib/types";
+import { useUser, useFirestore } from "@/firebase";
+import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
+import { Skeleton } from "./ui/skeleton";
 
-export default function MockTestsClient({ mockTests, userResults }: { mockTests: MockTest[], userResults: TestResult[] }) {
+function TestsLoadingSkeleton() {
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({length: 3}).map((_, i) => (
+                <Card key={i}>
+                    <CardHeader>
+                        <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-10 w-full mt-2" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-5 w-full" />
+                    </CardContent>
+                    <CardFooter>
+                        <Skeleton className="h-10 w-full" />
+                    </CardFooter>
+                </Card>
+            ))}
+        </div>
+    )
+}
+
+export default function MockTestsClient({ mockTests }: { mockTests: MockTest[] }) {
+    const { user, isLoading: userLoading } = useUser();
+    const db = useFirestore();
+    const [userResults, setUserResults] = useState<TestResult[]>([]);
+    const [resultsLoading, setResultsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUserResults = async () => {
+            if (!user || !db) {
+                setResultsLoading(false);
+                return;
+            };
+            setResultsLoading(true);
+            try {
+                const resultsQuery = query(
+                    collection(db, 'testResults'),
+                    where('userId', '==', user.uid),
+                    orderBy('submittedAt', 'desc')
+                );
+                const resultsSnapshot = await getDocs(resultsQuery);
+                const results = resultsSnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return { 
+                        id: doc.id,
+                        ...data,
+                        submittedAt: data.submittedAt.toDate()
+                    } as TestResult
+                });
+                setUserResults(results);
+            } catch (error) {
+                console.error("Failed to fetch user results:", error);
+            } finally {
+                setResultsLoading(false);
+            }
+        };
+
+        if (!userLoading) {
+            fetchUserResults();
+        }
+    }, [user, userLoading, db]);
     
     // Create a map for quick lookup of the latest result for each test
     const latestResultsMap = new Map<string, TestResult>();
     userResults.forEach(result => {
-        const existing = latestResultsMap.get(result.testId);
-        if (!existing || (result.submittedAt && existing.submittedAt && result.submittedAt.seconds > existing.submittedAt.seconds)) {
+        if (!latestResultsMap.has(result.testId)) {
             latestResultsMap.set(result.testId, result);
         }
     });
+
+    const isLoading = userLoading || resultsLoading;
 
     return (
         <div className="bg-secondary">
@@ -28,7 +93,9 @@ export default function MockTestsClient({ mockTests, userResults }: { mockTests:
                     </p>
                 </div>
                 
-                {mockTests.length > 0 ? (
+                {isLoading ? (
+                    <TestsLoadingSkeleton />
+                ) : mockTests.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {mockTests.map((test) => {
                             const hasAttempted = latestResultsMap.has(test.id);
@@ -68,7 +135,7 @@ export default function MockTestsClient({ mockTests, userResults }: { mockTests:
                                             </>
                                         ) : (
                                             <Button asChild className="w-full">
-                                                <Link href={`/mock-tests/${test.id}`}>
+                                                <Link href={user ? `/mock-tests/${test.id}`: '/login?redirect=/mock-tests'}>
                                                     Start Test <ArrowRight className="ml-2 h-4 w-4" />
                                                 </Link>
                                             </Button>
