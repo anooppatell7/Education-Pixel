@@ -139,7 +139,8 @@ export const useMockTest = (testId: string) => {
         const responses: TestResponse[] = testData.questions.map((q, i) => {
             const selectedOption = selectedAnswers[i];
             const isCorrect = selectedOption === q.correctOption;
-            const marksAwarded = isCorrect ? q.marks : 0;
+            const questionMarks = q.marks || 1; // Default to 1 mark if not specified
+            const marksAwarded = isCorrect ? questionMarks : 0;
             if (isCorrect) {
                 score += marksAwarded;
                 correctAnswers++;
