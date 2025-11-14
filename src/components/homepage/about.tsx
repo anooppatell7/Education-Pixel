@@ -6,11 +6,48 @@ import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Award, BrainCircuit, Target } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+// Simple SVG Icon components for branded software
+const IconPhotoshop = ({ className }: { className?: string }) => (
+    <svg className={cn("h-10 w-10 text-blue-500", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 7C7.67157 7 7 7.67157 7 8.5V17H11.5C13.9853 17 16 14.9853 16 12.5C16 10.0147 13.9853 8 11.5 8H9.5V11.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M14.5 14.5L17.5 17.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+);
+
+const IconTally = ({ className }: { className?: string }) => (
+    <svg className={cn("h-10 w-10 text-red-500", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v16H4V4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M9 9h6M9 12h6M9 15h3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+);
+
+const IconExcel = ({ className }: { className?: string }) => (
+    <svg className={cn("h-10 w-10 text-green-600", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v16H4V4zM4 10h16M10 4v16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+);
+
+const IconWord = ({ className }: { className?: string }) => (
+    <svg className={cn("h-10 w-10 text-blue-600", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h16v16H4V4zM8 9l2 6 2-6M14 9v6h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+);
+
+const IconCorel = ({ className }: { className?: string }) => (
+    <svg className={cn("h-10 w-10 text-teal-500", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 16.5a.5.5 0 01-.5-.5V6a.5.5 0 011 0v12a.5.5 0 01-.5.5z" fill="currentColor" /><path d="M17.5 12a.5.5 0 01-.5.5H6a.5.5 0 010-1h11a.5.5 0 01.5.5z" fill="currentColor" /></svg>
+);
+
+const AnimatedIcon = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+  <div className={cn("absolute bg-card/60 backdrop-blur-sm p-3 rounded-full shadow-lg border border-border/20 animate-float", className)}>
+      {children}
+  </div>
+);
+
 
 export default function About() {
   return (
-    <section className="py-16 sm:py-24 bg-secondary/50">
-      <div className="container">
+    <section className="py-16 sm:py-24 bg-secondary/50 relative overflow-hidden">
+      
+      {/* Floating Icons - Decorative */}
+      <AnimatedIcon className="top-1/4 left-[5%] hidden lg:block"><IconPhotoshop /></AnimatedIcon>
+      <AnimatedIcon className="top-1/3 right-[8%] hidden lg:block" style={{ animationDelay: '1s' }}><IconTally /></AnimatedIcon>
+      <AnimatedIcon className="bottom-1/4 left-[10%]" style={{ animationDelay: '2s' }}><IconExcel /></AnimatedIcon>
+      <AnimatedIcon className="bottom-[15%] right-[5%]" style={{ animationDelay: '0.5s' }}><IconWord /></AnimatedIcon>
+      <AnimatedIcon className="top-[15%] right-[20%]" style={{ animationDelay: '1.5s' }}><IconCorel className="h-8 w-8" /></AnimatedIcon>
+
+      <div className="container relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">
