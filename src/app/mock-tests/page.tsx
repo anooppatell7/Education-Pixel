@@ -137,7 +137,7 @@ export default function MockTestsPage() {
                                 const result = latestResultsMap.get(test.id);
 
                                 return (
-                                    <Card key={test.id} className="flex flex-col shadow-sm hover:shadow-lg transition-shadow bg-background">
+                                    <Card key={test.id} className="flex flex-col shadow-sm hover:shadow-lg transition-shadow bg-background border-t-4 border-t-accent">
                                         <CardHeader>
                                             <CardTitle className="font-headline text-xl text-primary">{test.title}</CardTitle>
                                             <CardDescription className="line-clamp-3 h-[60px]">{test.description}</CardDescription>
