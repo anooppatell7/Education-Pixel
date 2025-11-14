@@ -121,6 +121,13 @@ export type UserProgress = {
 };
 
 // Types for Mock Test System
+export type TestCategory = {
+    id: string; // This will be the slug
+    title: string;
+    description: string;
+    icon: string; // e.g., an emoji or a lucide-icon name
+};
+
 export type TestQuestion = {
     id: string;
     questionText: string;
@@ -138,6 +145,8 @@ export type MockTest = {
     totalMarks: number;
     questions: TestQuestion[];
     isPublished: boolean;
+    categoryId: string;
+    categoryName: string;
 };
 
 export type TestResponse = {
