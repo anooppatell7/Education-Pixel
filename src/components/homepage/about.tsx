@@ -29,8 +29,8 @@ const IconCorel = ({ className }: { className?: string }) => (
     <svg className={cn("h-10 w-10 text-teal-500", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 16.5a.5.5 0 01-.5-.5V6a.5.5 0 011 0v12a.5.5 0 01-.5.5z" fill="currentColor" /><path d="M17.5 12a.5.5 0 01-.5.5H6a.5.5 0 010-1h11a.5.5 0 01.5.5z" fill="currentColor" /></svg>
 );
 
-const AnimatedIcon = ({ children, className }: { children: React.ReactNode, className?: string }) => (
-  <div className={cn("absolute bg-card/60 backdrop-blur-sm p-3 rounded-full shadow-lg border border-border/20 animate-float", className)}>
+const AnimatedIcon = ({ children, className, style }: { children: React.ReactNode, className?: string, style?: React.CSSProperties }) => (
+  <div className={cn("absolute bg-card/60 backdrop-blur-sm p-3 rounded-full shadow-lg border border-border/20 animate-float", className)} style={style}>
       {children}
   </div>
 );
