@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 // Simple SVG Icon components for branded software
 const IconPhotoshop = ({ className }: { className?: string }) => (
-    <svg className={cn("h-10 w-10 text-blue-500", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="4" fill="#31a8ff"/><path d="M9.5 8.5H12C13.3807 8.5 14.5 9.61929 14.5 11C14.5 12.3807 13.3807 13.5 12 13.5H9.5V16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12.5 16L15 18.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9.5 8.5V13.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <svg className={cn("h-10 w-10 text-blue-500", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="4" fill="#31a8ff"/><path d="M9.5 8.5H12C13.3807 8.5 14.5 9.61929 14.5 11C14.5 12.3807 13.3807 13.5 12 13.5H9.5V16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9.5 8.5V13.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 );
 
 const IconTally = ({ className }: { className?: string }) => (
@@ -18,15 +18,15 @@ const IconTally = ({ className }: { className?: string }) => (
 );
 
 const IconExcel = ({ className }: { className?: string }) => (
-    <svg className={cn("h-10 w-10 text-green-600", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="4" fill="#10b981"/><path d="M8 8L12 12M12 8L8 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 16V8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <svg className={cn("h-10 w-10 text-green-600", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="4" fill="#10b981"/><path d="M9.5 9.5L14.5 14.5M14.5 9.5L9.5 14.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 );
 
 const IconWord = ({ className }: { className?: string }) => (
-    <svg className={cn("h-10 w-10 text-blue-600", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="4" fill="#2563eb"/><path d="M8 8V16M8 8H12C14 8 16 10 16 12C16 14 14 16 12 16H8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <svg className={cn("h-10 w-10 text-blue-600", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="4" fill="#2563eb"/><path d="M8 8L10 16L12 10L14 16L16 8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 );
 
 const IconCorel = ({ className }: { className?: string }) => (
-    <svg className={cn("h-10 w-10 text-teal-500", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="4" fill="#14b8a6"/><path d="M12 7V17M7 12H17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <svg className={cn("h-10 w-10 text-teal-500", className)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="4" fill="#14b8a6"/><path d="M16 8L8 16M8 8L16 16L12 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 );
 
 
