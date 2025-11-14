@@ -4,7 +4,7 @@
 import Link from "next/link";
 import React, { useState, useEffect, use } from "react";
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo } from "lucide-react";
+import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -68,7 +68,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Logo from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, LearningCourse, LearningModule, Lesson, MockTest, TestQuestion } from "@/lib/types";
+import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, LearningCourse, LearningModule, Lesson, MockTest, TestQuestion, TestCategory } from "@/lib/types";
 import { auth, db } from "@/lib/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, setDoc, Timestamp, where, arrayUnion, arrayRemove, getDoc, writeBatch } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
@@ -79,7 +79,7 @@ import coursesData from "@/lib/data/courses.json";
 import marketingCoursesData from "@/lib/data/marketing-courses.json";
 
 
-type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'learningCourse' | 'learningModule' | 'learningLesson' | 'mockTest' | 'testQuestion';
+type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'learningCourse' | 'learningModule' | 'learningLesson' | 'mockTest' | 'testQuestion' | 'testCategory';
 
 export default function AdminDashboardPage() {
     const [user, authLoading, authError] = useAuthState(auth);
@@ -93,6 +93,7 @@ export default function AdminDashboardPage() {
     const [contacts, setContacts] = useState<ContactSubmission[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [mockTests, setMockTests] = useState<MockTest[]>([]);
+    const [testCategories, setTestCategories] = useState<TestCategory[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
@@ -192,6 +193,13 @@ export default function AdminDashboardPage() {
                 return { id: doc.id, ...data, submittedAt } as Review;
             });
             setReviews(reviewList);
+            
+            // Test Categories
+            const categoriesQuery = query(collection(db, "testCategories"));
+            const categoriesSnapshot = await getDocs(categoriesQuery);
+            const categoriesList = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TestCategory));
+            setTestCategories(categoriesList);
+
 
             // Mock Tests
             const mockTestsQuery = query(collection(db, "mockTests"));
@@ -256,6 +264,7 @@ export default function AdminDashboardPage() {
                 if (type === 'learningCourse') await deleteDoc(doc(db, "learningCourses", id));
                 if (type === 'learningModule' && parentIds?.courseId) await deleteDoc(doc(db, "learningCourses", parentIds.courseId, "modules", id));
                 if (type === 'learningLesson' && parentIds?.courseId && parentIds?.moduleId) await deleteDoc(doc(db, "learningCourses", parentIds.courseId, "modules", parentIds.moduleId, "lessons", id));
+                if (type === 'testCategory') await deleteDoc(doc(db, "testCategories", id));
                 if (type === 'mockTest') {
                     // Delete the mock test itself
                     await deleteDoc(doc(db, "mockTests", id));
@@ -469,6 +478,14 @@ export default function AdminDashboardPage() {
                 } else { // Course
                     collectionRef = collection(db, "learningCourses");
                 }
+            } else if (activeTab === 'test-categories') {
+                 collectionRef = collection(db, "testCategories");
+                 docId = (editingItem as any)?.id;
+                 if (!docId) { // For new categories
+                     docId = createSlug(dataToSave.title);
+                     if (!docId) throw new Error("Category must have a title to generate an ID.");
+                     dataToSave.id = docId;
+                 }
             } else if (activeTab === 'mock-tests') {
                 if(formParentIds?.testId) { // It's a question
                     const testRef = doc(db, "mockTests", formParentIds.testId);
@@ -491,21 +508,24 @@ export default function AdminDashboardPage() {
                     if(!editingItem) {
                         dataToSave.questions = [];
                     }
+                    const category = testCategories.find(c => c.id === dataToSave.categoryId);
+                    dataToSave.categoryName = category?.title || '';
                 }
             }
 
             // Standard DB operations for non-question items
             if (activeTab !== 'mock-tests' || !formParentIds?.testId) {
                 if (editingItem && docId) {
-                    if(activeTab === 'blog' || activeTab === 'guidance' || (activeTab === 'learn-content' && !formParentIds?.courseId)) {
+                    if(activeTab === 'blog' || activeTab === 'guidance' || (activeTab === 'learn-content' && !formParentIds?.courseId) || activeTab === 'test-categories') {
                          await setDoc(doc(collectionRef, docId), dataToSave);
                     } else {
                          await updateDoc(doc(collectionRef, docId), dataToSave);
                     }
                 } else {
-                     if(activeTab === 'blog' || activeTab === 'guidance' || activeTab === 'learn-content') {
+                     if(activeTab === 'blog' || activeTab === 'guidance' || activeTab === 'learn-content' || activeTab === 'test-categories') {
                         docId = dataToSave.id || createSlug(dataToSave.title);
                         if (!docId) throw new Error("Slug/ID could not be created for new item.");
+                        dataToSave.id = docId;
                         await setDoc(doc(collectionRef, docId), dataToSave);
                      } else {
                         await addDoc(collectionRef, dataToSave);
@@ -684,6 +704,7 @@ export default function AdminDashboardPage() {
         if (activeTab === 'blog') return isEditing ? 'Edit Blog Post' : 'Add New Blog Post';
         if (activeTab === 'guidance') return isEditing ? 'Edit Guidance Article' : 'Add New Guidance Article';
         if (activeTab === 'resources') return isEditing ? 'Edit Resource' : 'Add New Resource';
+        if (activeTab === 'test-categories') return isEditing ? 'Edit Test Category' : 'Add New Test Category';
         if (activeTab === 'mock-tests') {
             if (formParentIds?.testId) return isEditing ? 'Edit Question' : 'Add New Question';
             return isEditing ? 'Edit Mock Test' : 'Add New Mock Test';
@@ -900,11 +921,42 @@ export default function AdminDashboardPage() {
                     </div>
                 </>
             );
+             case 'testCategory': return (
+                <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="id">Category ID (Slug)</Label>
+                        <Input id="id" name="id" value={formData.id || ''} onChange={handleFormChange} disabled={!!editingItem} placeholder="e.g., ms-word"/>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="title">Title</Label>
+                        <Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea id="description" name="description" value={formData.description || ''} onChange={handleFormChange} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="icon">Icon (Emoji)</Label>
+                        <Input id="icon" name="icon" value={formData.icon || ''} onChange={handleFormChange} placeholder="e.g., 📄"/>
+                    </div>
+                </>
+            );
             case 'mockTest': return (
                 <>
                     <div className="grid gap-2">
                         <Label htmlFor="title">Test Title</Label>
                         <Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} />
+                    </div>
+                     <div className="grid gap-2">
+                        <Label htmlFor="categoryId">Category</Label>
+                        <Select name="categoryId" value={formData.categoryId || ''} onValueChange={(val) => setFormData({ ...formData, categoryId: val })}>
+                             <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+                             <SelectContent>
+                                {testCategories.map(cat => (
+                                    <SelectItem key={cat.id} value={cat.id}>{cat.title}</SelectItem>
+                                ))}
+                             </SelectContent>
+                        </Select>
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="description">Description</Label>
@@ -1001,6 +1053,7 @@ export default function AdminDashboardPage() {
                                     <TabsTrigger value="guidance"><Briefcase className="mr-2 h-4 w-4"/>Career Guidance</TabsTrigger>
                                     <TabsTrigger value="resources">Resources</TabsTrigger>
                                     <TabsTrigger value="learn-content">Learn Content</TabsTrigger>
+                                    <TabsTrigger value="test-categories"><BookCopy className="mr-2 h-4 w-4"/>Test Categories</TabsTrigger>
                                     <TabsTrigger value="mock-tests"><ListTodo className="mr-2 h-4 w-4" />Mock Tests</TabsTrigger>
                                     <TabsTrigger value="reviews"><Star className="mr-2 h-4 w-4" />Reviews</TabsTrigger>
                                     <TabsTrigger value="internal-links"><Link2 className="mr-2 h-4 w-4"/>Internal Links</TabsTrigger>
@@ -1323,6 +1376,58 @@ export default function AdminDashboardPage() {
                                 </CardContent>
                             </Card>
                         </TabsContent>
+                         <TabsContent value="test-categories">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Test Categories</CardTitle>
+                                    <CardDescription>Manage the categories for your mock tests.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {loading ? <p>Loading categories...</p> :
+                                    <ScrollArea className="w-full whitespace-nowrap">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Title</TableHead>
+                                                    <TableHead>ID (Slug)</TableHead>
+                                                    <TableHead>
+                                                        <span className="sr-only">Actions</span>
+                                                    </TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {testCategories.map(category => (
+                                                    <TableRow key={category.id}>
+                                                        <TableCell className="font-medium flex items-center gap-2">
+                                                           {category.icon && <span className="text-xl">{category.icon}</span>}
+                                                           {category.title}
+                                                        </TableCell>
+                                                        <TableCell>{category.id}</TableCell>
+                                                        <TableCell className="text-right">
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                                                                        <MoreHorizontal className="h-4 w-4" />
+                                                                    </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end">
+                                                                    <DropdownMenuItem onClick={() => handleEdit(category)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                                    <DropdownMenuItem className="text-destructive" onClick={() => openConfirmationDialog('testCategory', category.id)}>
+                                                                        <Trash className="mr-2 h-4 w-4" />Delete
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                        <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
+                                    }
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
                         <TabsContent value="mock-tests">
                             <Card>
                                 <CardHeader>
@@ -1337,7 +1442,10 @@ export default function AdminDashboardPage() {
                                                     <div className="flex items-center pr-4 hover:bg-muted/50 rounded-lg">
                                                         <AccordionTrigger className="flex-1 px-4 py-2 hover:no-underline">
                                                             <div className="flex items-center justify-between w-full">
-                                                                <span className="font-semibold text-lg">{test.title}</span>
+                                                                <div>
+                                                                  <span className="font-semibold text-lg">{test.title}</span>
+                                                                  <Badge variant="outline" className="ml-2">{test.categoryName || 'Uncategorized'}</Badge>
+                                                                </div>
                                                                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                                                     <span>{test.questions?.length || 0} Questions</span>
                                                                     <span>{test.duration} mins</span>
@@ -1724,8 +1832,6 @@ export default function AdminDashboardPage() {
     );
 }
 
-
-    
 
     
 
