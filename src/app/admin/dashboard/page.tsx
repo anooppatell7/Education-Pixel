@@ -516,20 +516,20 @@ export default function AdminDashboardPage() {
             // Standard DB operations for non-question items
             if (activeTab !== 'mock-tests' || !formParentIds?.testId) {
                 if (editingItem && docId) {
-                    if (activeTab === 'blog' || activeTab === 'guidance' || (activeTab === 'learn-content' && !formParentIds?.courseId) || activeTab === 'test-categories') {
+                    if (activeTab === 'blog' || activeTab === 'guidance' || (activeTab === 'learn-content' && !formParentIds?.courseId)) {
+                         await setDoc(doc(collectionRef, docId), dataToSave);
+                    } else if (activeTab === 'test-categories') {
+                        // This case was causing the bug. docId is already defined.
+                        if (!docId) throw new Error("ID was not created for the new test category.");
                         await setDoc(doc(collectionRef, docId), dataToSave);
                     } else {
                         await updateDoc(doc(collectionRef, docId), dataToSave);
                     }
                 } else {
-                    if (activeTab === 'blog' || activeTab === 'guidance' || activeTab === 'learn-content') {
+                    if (activeTab === 'blog' || activeTab === 'guidance' || activeTab === 'learn-content' || activeTab === 'test-categories') {
                         docId = dataToSave.id || createSlug(dataToSave.title);
                         if (!docId) throw new Error("Slug/ID could not be created for new item.");
                         dataToSave.id = docId;
-                        await setDoc(doc(collectionRef, docId), dataToSave);
-                    } else if (activeTab === 'test-categories') {
-                        // This case was causing the bug. docId is already defined.
-                        if (!docId) throw new Error("ID was not created for the new test category.");
                         await setDoc(doc(collectionRef, docId), dataToSave);
                     } else {
                         await addDoc(collectionRef, dataToSave);
@@ -740,6 +740,9 @@ export default function AdminDashboardPage() {
             } else {
                 currentActiveTab = 'mockTest';
             }
+        }
+        if (activeTab === 'test-categories') {
+            currentActiveTab = 'testCategory';
         }
 
         switch(currentActiveTab) {
@@ -1836,6 +1839,8 @@ export default function AdminDashboardPage() {
     );
 }
 
+
+    
 
     
 
