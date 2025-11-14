@@ -78,6 +78,7 @@ export default function ResultPage() {
 
             const resultData = { id: resultSnap.id, ...resultSnap.data() } as TestResult;
             setResult(resultData);
+            document.title = `Result: ${resultData.testTitle} - MTech IT Institute`;
 
             const testRef = doc(db, 'mockTests', resultData.testId);
             const testSnap = await getDoc(testRef);

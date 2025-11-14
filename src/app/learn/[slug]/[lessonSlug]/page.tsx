@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useState, use, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -125,6 +125,7 @@ export default function LessonPage({ params }: { params: { slug: string; lessonS
     const { user, isLoading: userLoading } = useUser();
     const router = useRouter();
     const { updateLastVisitedLesson } = useLearnProgress();
+    const pathname = usePathname();
 
     const [lessonData, setLessonData] = useState<{
         course: LearningCourse;
@@ -163,16 +164,18 @@ export default function LessonPage({ params }: { params: { slug: string; lessonS
     useEffect(() => {
         if (userLoading) return;
         if (!user) {
-            router.push(`/login?redirect=/learn/${slug}/${lessonSlug}`);
+            router.push(`/login?redirect=${pathname}`);
             return;
         }
         fetchLesson();
-    }, [slug, lessonSlug, user, userLoading, router, fetchLesson]);
+    }, [slug, lessonSlug, user, userLoading, router, fetchLesson, pathname]);
 
     // This effect runs only when lessonData is successfully fetched
     useEffect(() => {
         if(lessonData) {
             updateLastVisitedLesson(slug, lessonSlug);
+            // Dynamically set page title
+            document.title = `${lessonData.lesson.title} | ${lessonData.course.title} - MTech IT Institute`;
         }
     }, [lessonData, slug, lessonSlug, updateLastVisitedLesson]);
     

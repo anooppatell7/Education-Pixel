@@ -1,5 +1,37 @@
 
 import LearnSidebar from "@/components/learn/sidebar";
+import { getCourseData } from "@/lib/learn-helpers";
+import type { Metadata } from 'next';
+
+type Props = {
+  params: { slug: string }
+}
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const course = await getCourseData(params.slug)
+
+  if (!course) {
+    return {
+      title: 'Course not found'
+    }
+  }
+
+  return {
+    title: `Learn ${course.title}`,
+    description: `Start learning ${course.title}. ${course.description}`,
+    alternates: {
+      canonical: `${siteUrl}/learn/${params.slug}`,
+    },
+    openGraph: {
+      title: `Learn ${course.title} | MTech IT Institute`,
+      description: course.description,
+      url: `${siteUrl}/learn/${params.slug}`,
+    },
+  }
+}
+
 
 export default function LearnCourseLayout({ 
     children,

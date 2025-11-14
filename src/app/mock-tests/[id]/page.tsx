@@ -94,6 +94,7 @@ function MockTestClientComponent({ testId }: { testId: string }) {
                 const data = { id: testSnap.id, ...testSnap.data() } as MockTest;
                 if(data.isPublished) {
                     setTestData(data);
+                    document.title = `${data.title} - MTech IT Institute`;
                 } else {
                     notFound();
                 }

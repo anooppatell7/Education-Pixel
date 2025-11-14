@@ -58,7 +58,9 @@ export default function MockTestsByCategoryPage() {
                 const categoryRef = doc(db, "testCategories", categoryId);
                 const categorySnap = await getDoc(categoryRef);
                 if (categorySnap.exists()) {
-                    setCategory({ id: categorySnap.id, ...categorySnap.data() } as TestCategory);
+                    const categoryData = { id: categorySnap.id, ...categorySnap.data() } as TestCategory
+                    setCategory(categoryData);
+                    document.title = `${categoryData.title} Tests - MTech IT Institute`;
                 } else {
                     notFound();
                     return;
