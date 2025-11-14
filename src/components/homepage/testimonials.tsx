@@ -1,4 +1,6 @@
 
+"use client";
+
 import { db } from "@/lib/firebase";
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 import type { Review } from "@/lib/types";
@@ -12,9 +14,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
-
-// This forces the component to be dynamically rendered
-export const revalidate = 0;
+import { useEffect, useState } from "react";
 
 async function getFeaturedReviews(): Promise<Review[]> {
     const reviewsQuery = query(
@@ -28,8 +28,27 @@ async function getFeaturedReviews(): Promise<Review[]> {
 }
 
 
-export default async function Testimonials() {
-  const reviews = await getFeaturedReviews();
+export default function Testimonials() {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getFeaturedReviews().then(data => {
+        setReviews(data);
+        setLoading(false);
+    });
+  }, []);
+
+  if (loading) {
+    return (
+        <section className="py-16 sm:py-24 bg-background">
+            <div className="container text-center">
+                 <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">What Our Students Say</h2>
+                 <p className="mt-4 max-w-2xl mx-auto text-lg text-primary/80">Loading testimonials...</p>
+            </div>
+        </section>
+    );
+  }
 
   if (reviews.length === 0) {
     return null; // Don't render the section if there are no approved reviews
@@ -56,7 +75,7 @@ export default async function Testimonials() {
                     {reviews.map((review) => (
                         <CarouselItem key={review.id} className="md:basis-1/2 lg:basis-1/3">
                             <div className="p-1 h-full">
-                               <Card className="h-full flex flex-col shadow-lg bg-secondary/50 border-0">
+                               <Card className="h-full flex flex-col shadow-lg bg-secondary/50 border-t-4 border-t-accent">
                                     <CardContent className="p-8 flex-grow flex flex-col justify-between">
                                        <div>
                                             <div className="flex items-center mb-4">

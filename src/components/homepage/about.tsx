@@ -1,3 +1,6 @@
+
+"use client";
+
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
@@ -25,7 +28,7 @@ export default function About() {
             </div>
           </div>
           <div className="w-full">
-            <Card className="overflow-hidden shadow-2xl rounded-xl border-4 border-white">
+            <Card className="overflow-hidden shadow-2xl rounded-xl border-t-4 border-t-accent">
               <CardContent className="p-0">
                 <Image
                   src="https://res.cloudinary.com/dzr4xjizf/image/upload/v1757136324/ChatGPT_Image_Sep_5_2025_10_25_03_PM_w0e2ry.png"

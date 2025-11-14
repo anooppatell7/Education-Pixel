@@ -70,7 +70,7 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="w-full">
-              <Card className="overflow-hidden shadow-lg rounded-lg">
+              <Card className="overflow-hidden shadow-lg rounded-lg border-t-4 border-t-accent">
                 <CardContent className="p-0">
                   <Image
                     src="https://res.cloudinary.com/dzr4xjizf/image/upload/v1757136324/ChatGPT_Image_Sep_5_2025_10_25_03_PM_w0e2ry.png"
@@ -98,7 +98,7 @@ export default function AboutPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {highlights.map((highlight, index) => (
-              <Card key={index} className="text-center shadow-md hover:shadow-xl transition-shadow duration-300 bg-card">
+              <Card key={index} className="text-center shadow-md hover:shadow-xl transition-shadow duration-300 bg-card border-t-4 border-t-accent">
                 <CardContent className="p-6">
                   <div className="flex justify-center mb-4">{highlight.icon}</div>
                   <h3 className="font-headline text-xl text-primary font-semibold">{highlight.title}</h3>

@@ -1,4 +1,6 @@
 
+"use client";
+
 import Image from "next/image";
 import type { Course } from "@/lib/types";
 import {
@@ -23,7 +25,7 @@ export default function CourseCard({ course }: CourseCardProps) {
     : course.description;
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-xl group">
+    <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-xl group border-t-4 border-t-accent">
       <CardHeader className="p-0">
         <div className="relative h-48 w-full overflow-hidden">
             <Image

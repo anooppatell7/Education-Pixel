@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import Image from "next/image";
 import { Calendar, User, Tag } from "lucide-react";
@@ -18,7 +19,7 @@ type BlogCardProps = {
 
 export default function BlogCard({ post }: BlogCardProps) {
   return (
-    <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-xl group">
+    <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-xl group border-t-4 border-t-accent">
       <CardHeader className="p-0">
         <Link href={`/blog/${post.slug}`} className="block relative h-56 w-full">
             <Image

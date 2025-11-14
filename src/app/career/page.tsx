@@ -50,21 +50,21 @@ export default async function CareerPage() {
         <SectionDivider style="wave" className="text-background" position="top"/>
         <div className="container py-16 sm:py-24">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-              <Card className="text-center">
+              <Card className="text-center border-t-4 border-t-accent">
                   <CardHeader>
                       <div className="flex justify-center mb-4"><Briefcase className="h-10 w-10 text-accent" /></div>
                       <CardTitle className="font-headline text-xl text-primary">Explore IT Jobs</CardTitle>
                       <CardDescription className="pt-2">Understand the various roles and opportunities available in the IT sector after the 12th grade.</CardDescription>
                   </CardHeader>
               </Card>
-              <Card className="text-center">
+              <Card className="text-center border-t-4 border-t-accent">
                   <CardHeader>
                       <div className="flex justify-center mb-4"><Lightbulb className="h-10 w-10 text-accent" /></div>
                       <CardTitle className="font-headline text-xl text-primary">Skill Development</CardTitle>
                       <CardDescription className="pt-2">Learn which skills are in demand for coding, marketing, and design jobs, and how to acquire them.</CardDescription>
                   </CardHeader>
               </Card>
-              <Card className="text-center">
+              <Card className="text-center border-t-4 border-t-accent">
                   <CardHeader>
                       <div className="flex justify-center mb-4"><TrendingUp className="h-10 w-10 text-accent" /></div>
                       <CardTitle className="font-headline text-xl text-primary">Career Growth</CardTitle>
@@ -78,7 +78,7 @@ export default async function CareerPage() {
               <div className="space-y-6">
                   {guidanceArticles.length > 0 ? (
                       guidanceArticles.map((article) => (
-                          <Card key={article.slug} className="shadow-sm hover:shadow-md transition-shadow bg-background">
+                          <Card key={article.slug} className="shadow-sm hover:shadow-md transition-shadow bg-background border-t-4 border-t-accent">
                               <CardContent className="p-6">
                                   <h3 className="font-headline text-xl text-primary mb-2">
                                       <Link href={`/blog/${article.slug}`} className="hover:text-accent transition-colors">

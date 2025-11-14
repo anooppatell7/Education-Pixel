@@ -1,3 +1,4 @@
+
 import type { Resource } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +30,7 @@ export default function ResourceCard({ resource, onPreview }: ResourceCardProps)
   }
 
   return (
-    <Card className="shadow-sm hover:shadow-md transition-shadow flex flex-col">
+    <Card className="shadow-sm hover:shadow-md transition-shadow flex flex-col border-t-4 border-t-accent">
         <CardHeader className="flex flex-row items-center gap-4">
             {iconMap[resource.type]}
             <div>
