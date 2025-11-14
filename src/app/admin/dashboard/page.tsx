@@ -442,7 +442,7 @@ export default function AdminDashboardPage() {
             // Determine collection path and data based on active tab and context
             if (activeTab === 'courses') {
                 collectionRef = collection(db, "courses");
-                dataToSave.image = dataToSave.image || `https://picsum.photos/seed/${dataToSave.title || 'course'}/600/400`;
+                dataToSave.image = dataToSave.image || "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png";
                 dataToSave.actualPrice = String(dataToSave.actualPrice || '');
                 dataToSave.discountPrice = String(dataToSave.discountPrice || '');
             } else if (activeTab === 'blog' || activeTab === 'guidance') {
@@ -1724,6 +1724,8 @@ export default function AdminDashboardPage() {
     );
 }
 
+
+    
 
     
 
