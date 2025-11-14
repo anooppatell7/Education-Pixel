@@ -516,20 +516,24 @@ export default function AdminDashboardPage() {
             // Standard DB operations for non-question items
             if (activeTab !== 'mock-tests' || !formParentIds?.testId) {
                 if (editingItem && docId) {
-                    if(activeTab === 'blog' || activeTab === 'guidance' || (activeTab === 'learn-content' && !formParentIds?.courseId) || activeTab === 'test-categories') {
-                         await setDoc(doc(collectionRef, docId), dataToSave);
+                    if (activeTab === 'blog' || activeTab === 'guidance' || (activeTab === 'learn-content' && !formParentIds?.courseId) || activeTab === 'test-categories') {
+                        await setDoc(doc(collectionRef, docId), dataToSave);
                     } else {
-                         await updateDoc(doc(collectionRef, docId), dataToSave);
+                        await updateDoc(doc(collectionRef, docId), dataToSave);
                     }
                 } else {
-                     if(activeTab === 'blog' || activeTab === 'guidance' || activeTab === 'learn-content' || activeTab === 'test-categories') {
+                    if (activeTab === 'blog' || activeTab === 'guidance' || activeTab === 'learn-content') {
                         docId = dataToSave.id || createSlug(dataToSave.title);
                         if (!docId) throw new Error("Slug/ID could not be created for new item.");
                         dataToSave.id = docId;
                         await setDoc(doc(collectionRef, docId), dataToSave);
-                     } else {
+                    } else if (activeTab === 'test-categories') {
+                        // This case was causing the bug. docId is already defined.
+                        if (!docId) throw new Error("ID was not created for the new test category.");
+                        await setDoc(doc(collectionRef, docId), dataToSave);
+                    } else {
                         await addDoc(collectionRef, dataToSave);
-                     }
+                    }
                 }
             }
             
@@ -538,7 +542,7 @@ export default function AdminDashboardPage() {
             handleCloseForm();
         } catch(error) {
             console.error("Error saving document: ", error);
-             toast({ title: "Error", description: "Could not save data.", variant: "destructive" });
+             toast({ title: "Error", description: (error as Error).message || "Could not save data.", variant: "destructive" });
         }
     };
 
@@ -1832,6 +1836,8 @@ export default function AdminDashboardPage() {
     );
 }
 
+
+    
 
     
 
