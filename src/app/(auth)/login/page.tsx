@@ -11,6 +11,7 @@ import Logo from "@/components/logo";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser } from "@/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import Head from "next/head";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -87,50 +88,59 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[80vh] bg-secondary">
-      <Card className="mx-auto max-w-sm w-full">
-        <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <Logo />
-            </div>
-             <CardTitle className="text-2xl font-headline">Login</CardTitle>
-             <CardDescription>Enter your credentials to access your account.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <form onSubmit={handleLogin} className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="user@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+    <>
+      <Head>
+        <title>Login - MTech IT Institute</title>
+        <meta name="description" content="Login to your MTech IT Institute account to access your courses and learning materials." />
+        <meta name="robots" content="noindex, follow" />
+      </Head>
+      <div className="flex items-center justify-center min-h-[80vh] bg-secondary">
+        <Card className="mx-auto max-w-sm w-full">
+          <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <Logo />
               </div>
-               <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Logging in...' : 'Login'}
-              </Button>
-              <div className="mt-4 text-center text-sm">
-                Don't have an account?{' '}
-                <a href="/signup" className="underline">
-                    Sign up
-                </a>
-               </div>
-            </form>
-        </CardContent>
-      </Card>
-    </div>
+               <CardTitle className="text-2xl font-headline">Login</CardTitle>
+               <CardDescription>Enter your credentials to access your account.</CardDescription>
+          </CardHeader>
+          <CardContent>
+              <form onSubmit={handleLogin} className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="user@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                 <div className="grid gap-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? 'Logging in...' : 'Login'}
+                </Button>
+                <div className="mt-4 text-center text-sm">
+                  Don't have an account?{' '}
+                  <a href="/signup" className="underline">
+                      Sign up
+                  </a>
+                 </div>
+              </form>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }
+
+    

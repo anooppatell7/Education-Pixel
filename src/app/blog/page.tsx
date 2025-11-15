@@ -15,6 +15,9 @@ import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import SectionDivider from "@/components/section-divider";
+import Head from "next/head";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
 
 export default function BlogPage() {
@@ -71,6 +74,15 @@ export default function BlogPage() {
 
   return (
     <>
+      <Head>
+        <title>Tech Blog - Tutorials and Career Advice | MTech IT Institute</title>
+        <meta name="description" content="Explore insights, tutorials, and career advice from IT experts at MTech IT Institute. Stay updated with the latest trends in technology, programming, and digital marketing." />
+        <meta name="keywords" content="tech blog, it tutorials, career advice, programming help, mtech it institute blog" />
+        <link rel="canonical" href={`${siteUrl}/blog`} />
+        <meta property="og:title" content="Tech Blog - Tutorials and Career Advice | MTech IT Institute" />
+        <meta property="og:description" content="Explore insights, tutorials, and career advice from IT experts at MTech IT Institute." />
+        <meta property="og:url" content={`${siteUrl}/blog`} />
+      </Head>
       <div className="bg-background">
         <div className="container py-16 sm:py-24 text-center">
           <h1 className="font-headline text-4xl font-bold text-primary sm:text-5xl">Our Tech Blog<span className="text-accent">.</span></h1>
@@ -149,3 +161,5 @@ export default function BlogPage() {
     </>
   );
 }
+
+    
