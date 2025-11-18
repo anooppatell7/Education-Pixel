@@ -35,7 +35,9 @@ const formSchema = z.object({
   city: z.string().min(2, "City is required."),
   state: z.string().min(2, "State is required."),
   pinCode: z.string().length(6, "Pin code must be 6 digits."),
-  photo: z.any().refine(file => file.length == 1, "Photo is required.").refine(file => file[0]?.size <= 2000000, `Max file size is 2MB.`)
+  photo: z.any()
+    .refine(files => files?.length == 1, "Photo is required.")
+    .refine(files => files?.[0]?.size <= 2000000, `Max file size is 2MB.`)
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -61,13 +63,15 @@ export default function ExamRegistrationPage() {
         }
     });
 
+    const photoRef = form.register("photo");
+
     const onSubmit: SubmitHandler<FormData> = async (data) => {
         setIsLoading(true);
         try {
             const photoFile = data.photo[0];
             const storage = getStorage();
-            const photoRef = ref(storage, `exam_photos/${Date.now()}_${photoFile.name}`);
-            const snapshot = await uploadBytes(photoRef, photoFile);
+            const storageRef = ref(storage, `exam_photos/${Date.now()}_${photoFile.name}`);
+            const snapshot = await uploadBytes(storageRef, photoFile);
             const photoUrl = await getDownloadURL(snapshot.ref);
 
             // Generate Registration Number
@@ -331,7 +335,7 @@ export default function ExamRegistrationPage() {
                                             <FormItem>
                                               <FormLabel>Upload Photo</FormLabel>
                                               <FormControl>
-                                                <Input type="file" accept="image/png, image/jpeg, image/jpg" {...form.register('photo')} />
+                                                <Input type="file" accept="image/png, image/jpeg, image/jpg" {...photoRef} />
                                               </FormControl>
                                               <FormMessage />
                                             </FormItem>
@@ -352,4 +356,3 @@ export default function ExamRegistrationPage() {
         </>
     );
 }
-
