@@ -184,7 +184,6 @@ export type ExamRegistration = {
   city: string;
   state: string;
   pinCode: string;
-  photoUrl: string;
   registeredAt: any; // Firestore Timestamp
 };
 

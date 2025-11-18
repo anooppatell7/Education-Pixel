@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo, use } from 'react';
-import { notFound, useParams, useRouter } from 'next/navigation';
+import { notFound, useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -58,7 +58,11 @@ function TestPageSkeleton() {
 function MockTestClientComponent({ testId }: { testId: string }) {
     const { user, isLoading: userLoading } = useUser();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { toast } = useToast();
+    
+    const registrationNumber = searchParams.get('regNo');
+    const studentName = searchParams.get('studentName');
 
     const [testData, setTestData] = useState<MockTest | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -76,11 +80,12 @@ function MockTestClientComponent({ testId }: { testId: string }) {
         isTimeUp,
         isSubmitting,
         handleSubmit,
-    } = useMockTest(testId);
+    } = useMockTest(testId, registrationNumber, studentName);
 
     useEffect(() => {
-        if (userLoading) return;
-        if (!user) {
+        // If it's a registered exam, we don't need a logged-in user.
+        // If it's a regular mock test, we do.
+        if (!registrationNumber && !user && !userLoading) {
             router.push(`/login?redirect=/mock-tests/${testId}`);
             return;
         }
@@ -105,7 +110,7 @@ function MockTestClientComponent({ testId }: { testId: string }) {
         };
 
         fetchTest();
-    }, [testId, user, userLoading, router]);
+    }, [testId, user, userLoading, registrationNumber, router]);
 
     useEffect(() => {
         if (testData && !isInitialized) {
@@ -114,7 +119,8 @@ function MockTestClientComponent({ testId }: { testId: string }) {
     }, [testData, isInitialized, initializeTest]);
 
     const handleTestSubmit = (isAuto: boolean) => {
-        if (testData && user) {
+        if (testData) {
+            // Pass the user object which can be null for registered exams
             handleSubmit(isAuto, router, toast, testData, user);
         }
     }
@@ -134,7 +140,7 @@ function MockTestClientComponent({ testId }: { testId: string }) {
         return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }, [timeLeft]);
 
-    if (isLoading || userLoading || !isInitialized) {
+    if (isLoading || (userLoading && !registrationNumber) || !isInitialized) {
         return <TestPageSkeleton />;
     }
 

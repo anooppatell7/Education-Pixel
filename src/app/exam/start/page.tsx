@@ -16,8 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 } from 'lucide-react';
-import Image from 'next/image';
+import { Loader2, User } from 'lucide-react';
 import SectionDivider from '@/components/section-divider';
 
 const validationSchema = z.object({
@@ -88,7 +87,7 @@ export default function StartExamPage() {
     // Here you would typically store the registration number in a secure context or session
     // For simplicity, we'll pass it via query params which is NOT secure for real applications.
     // A better approach would use server-side sessions or a state management library that persists through navigation.
-    router.push(`/mock-tests/${selectedTestId}?regNo=${studentDetails?.registrationNumber}`);
+    router.push(`/mock-tests/${selectedTestId}?regNo=${studentDetails?.registrationNumber}&studentName=${studentDetails?.fullName}`);
   };
 
   return (
@@ -132,8 +131,8 @@ export default function StartExamPage() {
                             <div className="space-y-6">
                                 <Card className="bg-primary/5">
                                     <CardHeader className="text-center">
-                                        <div className="w-24 h-24 rounded-full mx-auto overflow-hidden border-4 border-white shadow-md">
-                                            <Image src={studentDetails.photoUrl} alt="Student Photo" width={96} height={96} className="object-cover w-full h-full" />
+                                        <div className="w-24 h-24 rounded-full mx-auto overflow-hidden border-4 border-white shadow-md bg-muted flex items-center justify-center">
+                                            <User className="h-12 w-12 text-muted-foreground" />
                                         </div>
                                         <CardTitle className="mt-4">{studentDetails.fullName}</CardTitle>
                                         <CardDescription>{studentDetails.registrationNumber}</CardDescription>

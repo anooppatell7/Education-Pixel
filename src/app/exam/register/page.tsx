@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, runTransaction, serverTimestamp } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useToast } from '@/hooks/use-toast';
 
 import { Button } from "@/components/ui/button";
@@ -35,13 +34,6 @@ const formSchema = z.object({
   city: z.string().min(2, "City is required."),
   state: z.string().min(2, "State is required."),
   pinCode: z.string().length(6, "Pin code must be 6 digits."),
-  photo: z.any()
-    .refine((files) => files?.length == 1, "Photo is required.")
-    .refine((files) => files?.[0]?.size <= 2000000, `Max file size is 2MB.`)
-    .refine(
-      (files) => ["image/jpeg", "image/jpg", "image/png"].includes(files?.[0]?.type),
-      "Only .jpg, .jpeg, and .png formats are supported."
-    ),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -66,17 +58,9 @@ export default function ExamRegistrationPage() {
         }
     });
 
-    const photoRef = form.register("photo");
-
     const onSubmit: SubmitHandler<FormData> = async (data) => {
         setIsLoading(true);
         try {
-            const photoFile = data.photo[0];
-            const storage = getStorage();
-            const storageRef = ref(storage, `exam_photos/${Date.now()}_${photoFile.name}`);
-            const snapshot = await uploadBytes(storageRef, photoFile);
-            const photoUrl = await getDownloadURL(snapshot.ref);
-
             // Generate Registration Number
             const counterRef = doc(db, 'counters', 'examRegistrations');
             const newRegNumber = await runTransaction(db, async (transaction) => {
@@ -99,11 +83,9 @@ export default function ExamRegistrationPage() {
             const registrationData = {
                 ...data,
                 dob: format(data.dob, 'yyyy-MM-dd'),
-                photoUrl,
                 registrationNumber: newRegNumber,
                 registeredAt: serverTimestamp(),
             };
-            delete (registrationData as any).photo;
 
             await addDoc(collection(db, "examRegistrations"), registrationData);
 
@@ -330,19 +312,6 @@ export default function ExamRegistrationPage() {
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
-                                        />
-                                        <FormField
-                                          control={form.control}
-                                          name="photo"
-                                          render={({ field }) => (
-                                            <FormItem>
-                                              <FormLabel>Upload Photo</FormLabel>
-                                              <FormControl>
-                                                <Input type="file" accept="image/png, image/jpeg, image/jpg" {...photoRef} />
-                                              </FormControl>
-                                              <FormMessage />
-                                            </FormItem>
-                                          )}
                                         />
                                     </div>
 

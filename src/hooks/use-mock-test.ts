@@ -7,9 +7,9 @@ import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.share
 import { User } from 'firebase/auth';
 import type { MockTest, TestQuestion, TestResponse, TestResult, ExamResult } from '@/lib/types';
 import { saveTestResult, saveExamResult } from '@/lib/firebase';
-import { UseToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
-export const useMockTest = (testId: string, registrationNumber?: string | null) => {
+export const useMockTest = (testId: string, registrationNumber?: string | null, studentName?: string | null) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [isInitialized, setIsInitialized] = useState(false);
 
@@ -115,10 +115,9 @@ export const useMockTest = (testId: string, registrationNumber?: string | null) 
     const handleSubmit = useCallback(async (
         isAutoSubmit: boolean, 
         router: AppRouterInstance, 
-        toast: ReturnType<typeof UseToast>['toast'],
+        toast: ReturnType<typeof useToast>['toast'],
         testData: MockTest,
-        user: User | null,
-        studentName?: string // For registered exams
+        user: User | null
         ) => {
         
         if (isSubmitting) return;
@@ -236,7 +235,7 @@ export const useMockTest = (testId: string, registrationNumber?: string | null) 
              setIsSubmitting(false);
         }
 
-    }, [selectedAnswers, timeLeft, cleanupLocalStorage, isSubmitting, registrationNumber]);
+    }, [selectedAnswers, timeLeft, cleanupLocalStorage, isSubmitting, registrationNumber, studentName]);
 
     return {
         isInitialized,
