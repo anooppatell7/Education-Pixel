@@ -170,6 +170,38 @@ export type TestResult = {
     submittedAt: any; // Firestore Timestamp
 };
 
+export type ExamRegistration = {
+  id: string;
+  registrationNumber: string;
+  fullName: string;
+  fatherName: string;
+  phone: string;
+  email: string;
+  dob: string;
+  gender: 'Male' | 'Female' | 'Other';
+  course: string;
+  address: string;
+  city: string;
+  state: string;
+  pinCode: string;
+  photoUrl: string;
+  registeredAt: any; // Firestore Timestamp
+};
+
+export type ExamResult = {
+  id: string;
+  registrationNumber: string;
+  studentName: string;
+  testId: string;
+  testName: string;
+  score: number;
+  totalMarks: number;
+  accuracy: number;
+  timeTaken: number; // in seconds
+  responses: TestResponse[];
+  submittedAt: any; // Firestore Timestamp
+};
+
 
 // Add types for more complex schemas
 export type HowToSchema = HowTo;
