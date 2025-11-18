@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -9,6 +10,7 @@ import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, runTransaction, serverTimestamp, getDocs, query, orderBy } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { Course } from '@/lib/types';
+import type { Metadata } from 'next';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +25,16 @@ import { format } from 'date-fns';
 import SectionDivider from '@/components/section-divider';
 import Link from 'next/link';
 import { isValidTLD } from '@/lib/tld-validator';
+
+// This metadata will not be applied because it's a client component.
+// We will set the title dynamically using useEffect.
+// However, having it here is good for reference.
+const pageMetadata: Metadata = {
+  title: "Exam Registration - MTech IT Institute",
+  description: "Register for your upcoming computer course examination at MTech IT Institute. Fill in your details to get your unique registration number.",
+  keywords: ["exam registration", "computer course exam", "student registration patti", "mtech it institute exam"],
+};
+
 
 const formSchema = z.object({
   fullName: z.string().min(3, "Full name must be at least 3 characters."),
@@ -51,6 +63,11 @@ export default function ExamRegistrationPage() {
     const [courses, setCourses] = useState<Course[]>([]);
     const [coursesLoading, setCoursesLoading] = useState(true);
     const { toast } = useToast();
+    
+    // Set document title on client side
+    useEffect(() => {
+        document.title = pageMetadata.title as string;
+    }, []);
 
     useEffect(() => {
         const fetchCourses = async () => {
