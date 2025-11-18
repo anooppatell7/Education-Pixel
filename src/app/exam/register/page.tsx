@@ -6,7 +6,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, runTransaction, serverTimestamp, getDocs } from 'firebase/firestore';
+import { collection, addDoc, doc, runTransaction, serverTimestamp, getDocs, query, orderBy } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { Course } from '@/lib/types';
 
@@ -27,7 +27,10 @@ const formSchema = z.object({
   fullName: z.string().min(3, "Full name must be at least 3 characters."),
   fatherName: z.string().min(3, "Father's name must be at least 3 characters."),
   phone: z.string().min(10, "Please enter a valid 10-digit phone number.").max(10),
-  email: z.string().email("Please enter a valid email address."),
+  email: z.string().email("Please enter a valid email address.").refine(
+    (email) => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email),
+    { message: "Please enter a valid email format (e.g., user@example.com)." }
+  ),
   dob: z.date({ required_error: "Date of birth is required." }),
   gender: z.enum(['Male', 'Female', 'Other']),
   course: z.string().min(1, "Please select a course."),
@@ -51,8 +54,8 @@ export default function ExamRegistrationPage() {
         const fetchCourses = async () => {
             setCoursesLoading(true);
             try {
-                const coursesCollection = collection(db, "courses");
-                const courseSnapshot = await getDocs(coursesCollection);
+                const coursesQuery = query(collection(db, "courses"), orderBy("title"));
+                const courseSnapshot = await getDocs(coursesQuery);
                 const courseList = courseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
                 setCourses(courseList);
             } catch (error) {
@@ -78,9 +81,10 @@ export default function ExamRegistrationPage() {
             phone: '',
             email: '',
             address: '',
-            city: '',
-            state: '',
-            pinCode: '',
+            city: 'Patti',
+            state: 'Uttar Pradesh',
+            pinCode: '230135',
+            course: '',
         }
     });
 
@@ -360,3 +364,5 @@ export default function ExamRegistrationPage() {
         </>
     );
 }
+
+    
