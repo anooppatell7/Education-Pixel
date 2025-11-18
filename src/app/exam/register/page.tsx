@@ -22,15 +22,17 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import SectionDivider from '@/components/section-divider';
 import Link from 'next/link';
+import { isValidTLD } from '@/lib/tld-validator';
 
 const formSchema = z.object({
   fullName: z.string().min(3, "Full name must be at least 3 characters."),
   fatherName: z.string().min(3, "Father's name must be at least 3 characters."),
   phone: z.string().min(10, "Please enter a valid 10-digit phone number.").max(10),
-  email: z.string().email("Please enter a valid email address.").refine(
-    (email) => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email),
-    { message: "Please enter a valid email format (e.g., user@example.com)." }
-  ),
+  email: z.string()
+    .email({ message: "Please enter a valid email address." })
+    .refine(email => isValidTLD(email), {
+        message: "The email address must have a valid domain (e.g., .com, .in)."
+    }),
   dob: z.date({ required_error: "Date of birth is required." }),
   gender: z.enum(['Male', 'Female', 'Other']),
   course: z.string().min(1, "Please select a course."),
@@ -364,5 +366,3 @@ export default function ExamRegistrationPage() {
         </>
     );
 }
-
-    
