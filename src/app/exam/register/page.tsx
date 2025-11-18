@@ -219,9 +219,12 @@ export default function ExamRegistrationPage() {
                                                         <PopoverContent className="w-auto p-0" align="start">
                                                             <Calendar
                                                                 mode="single"
+                                                                captionLayout="dropdown-buttons"
+                                                                fromYear={new Date().getFullYear() - 100}
+                                                                toYear={new Date().getFullYear()}
                                                                 selected={field.value}
                                                                 onSelect={field.onChange}
-                                                                disabled={(date) => date > new Date() || date < new Date("1950-01-01")}
+                                                                disabled={(date) => date > new Date() || date < new Date("1924-01-01")}
                                                                 initialFocus
                                                             />
                                                         </PopoverContent>
