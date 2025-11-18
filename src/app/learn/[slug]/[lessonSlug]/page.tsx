@@ -6,12 +6,13 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Code, BookOpen, CheckCircle, Circle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Code, BookOpen, CheckCircle, Circle, Copy, Check } from 'lucide-react';
 import { getLessonData, getNextPrevLessons } from '@/lib/learn-helpers';
 import { useLearnProgress } from '@/hooks/use-learn-progress';
 import { useUser } from '@/firebase';
 import type { LearningCourse, LearningModule, Lesson } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 function LessonPageContent({
     course, module, lesson, nextLesson, prevLesson
@@ -24,11 +25,25 @@ function LessonPageContent({
 }) {
     const { isLessonCompleted, toggleLessonCompleted } = useLearnProgress();
     const isCompleted = isLessonCompleted(course.id, lesson.id);
+    const { toast } = useToast();
+    const [isCopied, setIsCopied] = useState(false);
 
     const handleToggleComplete = () => {
         toggleLessonCompleted(course.id, lesson.id);
     }
     
+    const handleCopyCode = () => {
+        if (!lesson.exampleCode) return;
+        navigator.clipboard.writeText(lesson.exampleCode).then(() => {
+            setIsCopied(true);
+            toast({ title: "Code Copied!", description: "The example code has been copied to your clipboard." });
+            setTimeout(() => setIsCopied(false), 2000);
+        }).catch(err => {
+            console.error("Failed to copy code:", err);
+            toast({ title: "Error", description: "Could not copy code to clipboard.", variant: "destructive" });
+        });
+    }
+
     return (
         <div className="w-full">
             <div className="mb-8">
@@ -51,12 +66,18 @@ function LessonPageContent({
 
                 {lesson.exampleCode && (
                     <Card>
-                        <CardHeader className="flex flex-row items-center gap-3">
-                            <Code className="h-6 w-6 text-accent" />
-                            <CardTitle className="font-headline text-2xl text-primary">Code Example</CardTitle>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Code className="h-6 w-6 text-accent" />
+                                <CardTitle className="font-headline text-2xl text-primary">Code Example</CardTitle>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={handleCopyCode}>
+                                {isCopied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
+                                <span className="sr-only">Copy code</span>
+                            </Button>
                         </CardHeader>
                         <CardContent>
-                            <div className="p-4 bg-muted rounded-lg text-sm overflow-x-auto">
+                            <div className="p-4 bg-muted rounded-lg text-sm overflow-x-auto relative">
                                 <pre><code>{lesson.exampleCode}</code></pre>
                             </div>
                         </CardContent>
