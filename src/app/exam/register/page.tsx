@@ -1,13 +1,14 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, runTransaction, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, runTransaction, serverTimestamp, getDocs } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import type { Course } from '@/lib/types';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,7 +43,32 @@ export default function ExamRegistrationPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [registrationSuccess, setRegistrationSuccess] = useState(false);
     const [registrationNumber, setRegistrationNumber] = useState('');
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [coursesLoading, setCoursesLoading] = useState(true);
     const { toast } = useToast();
+
+    useEffect(() => {
+        const fetchCourses = async () => {
+            setCoursesLoading(true);
+            try {
+                const coursesCollection = collection(db, "courses");
+                const courseSnapshot = await getDocs(coursesCollection);
+                const courseList = courseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
+                setCourses(courseList);
+            } catch (error) {
+                console.error("Failed to fetch courses:", error);
+                toast({
+                    title: "Error",
+                    description: "Could not load course list. Please try refreshing.",
+                    variant: "destructive",
+                });
+            } finally {
+                setCoursesLoading(false);
+            }
+        };
+        fetchCourses();
+    }, [toast]);
+
 
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
@@ -61,7 +87,6 @@ export default function ExamRegistrationPage() {
     const onSubmit: SubmitHandler<FormData> = async (data) => {
         setIsLoading(true);
         try {
-            // Generate Registration Number
             const counterRef = doc(db, 'counters', 'examRegistrations');
             const newRegNumber = await runTransaction(db, async (transaction) => {
                 const counterDoc = await transaction.get(counterRef);
@@ -258,13 +283,17 @@ export default function ExamRegistrationPage() {
                                                 <FormItem>
                                                     <FormLabel>Course / Test Name</FormLabel>
                                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select a course or test" /></SelectTrigger></FormControl>
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder={coursesLoading ? "Loading courses..." : "Select a course or test"} />
+                                                            </SelectTrigger>
+                                                        </FormControl>
                                                         <SelectContent>
-                                                            <SelectItem value="CCC">CCC</SelectItem>
-                                                            <SelectItem value="ADCA">ADCA</SelectItem>
-                                                            <SelectItem value="O-Level">O-Level</SelectItem>
-                                                            <SelectItem value="Tally">Tally</SelectItem>
-                                                            <SelectItem value="Web Development">Web Development</SelectItem>
+                                                            {courses.map(course => (
+                                                                <SelectItem key={course.id} value={course.title}>
+                                                                    {course.title}
+                                                                </SelectItem>
+                                                            ))}
                                                             <SelectItem value="Other">Other</SelectItem>
                                                         </SelectContent>
                                                     </Select>
