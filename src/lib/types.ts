@@ -44,6 +44,9 @@ export type Resource = {
 export type NavItem = {
   title: string;
   href: string;
+  auth?: boolean;
+  registeredOnly?: boolean;
+  hideWhenRegistered?: boolean;
 };
 
 export type Enrollment = {
@@ -171,7 +174,7 @@ export type TestResult = {
 };
 
 export type ExamRegistration = {
-  id: string;
+  id: string; // Should be user.uid
   registrationNumber: string;
   fullName: string;
   fatherName: string;

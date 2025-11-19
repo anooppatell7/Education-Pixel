@@ -7,10 +7,11 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, runTransaction, serverTimestamp, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, doc, runTransaction, serverTimestamp, getDocs, query, orderBy, getDoc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import type { Course } from '@/lib/types';
-import type { Metadata } from 'next';
+import type { Course, ExamRegistration } from '@/lib/types';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,15 +26,7 @@ import { format } from 'date-fns';
 import SectionDivider from '@/components/section-divider';
 import Link from 'next/link';
 import { isValidTLD } from '@/lib/tld-validator';
-
-// This metadata will not be applied because it's a client component.
-// We will set the title dynamically using useEffect.
-// However, having it here is good for reference.
-const pageMetadata: Metadata = {
-  title: "Exam Registration - MTech IT Institute",
-  description: "Register for your upcoming computer course examination at MTech IT Institute. Fill in your details to get your unique registration number.",
-  keywords: ["exam registration", "computer course exam", "student registration patti", "mtech it institute exam"],
-};
+import ProfilePage from '@/app/profile/page';
 
 
 const formSchema = z.object({
@@ -57,17 +50,39 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export default function ExamRegistrationPage() {
+    const { user, isLoading: userLoading } = useUser();
+    const router = useRouter();
+
     const [isLoading, setIsLoading] = useState(false);
     const [registrationSuccess, setRegistrationSuccess] = useState(false);
     const [registrationNumber, setRegistrationNumber] = useState('');
+    const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
+    
     const [courses, setCourses] = useState<Course[]>([]);
     const [coursesLoading, setCoursesLoading] = useState(true);
     const { toast } = useToast();
     
-    // Set document title on client side
     useEffect(() => {
-        document.title = pageMetadata.title as string;
+        document.title = "Exam Registration - MTech IT Institute";
     }, []);
+
+    useEffect(() => {
+        if (userLoading) return;
+        if (!user) {
+            router.push('/login?redirect=/exam/register');
+            return;
+        }
+
+        const checkRegistration = async () => {
+            const docRef = doc(db, 'examRegistrations', user.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                setIsAlreadyRegistered(true);
+            }
+        };
+
+        checkRegistration();
+    }, [user, userLoading, router]);
 
     useEffect(() => {
         const fetchCourses = async () => {
@@ -108,7 +123,12 @@ export default function ExamRegistrationPage() {
     });
 
     const onSubmit: SubmitHandler<FormData> = async (data) => {
+        if (!user) {
+            toast({ title: "Error", description: "You must be logged in to register.", variant: "destructive" });
+            return;
+        }
         setIsLoading(true);
+
         try {
             const counterRef = doc(db, 'counters', 'examRegistrations');
             const newRegNumber = await runTransaction(db, async (transaction) => {
@@ -128,14 +148,14 @@ export default function ExamRegistrationPage() {
             
             setRegistrationNumber(newRegNumber);
 
-            const registrationData = {
+            const registrationData: Omit<ExamRegistration, 'id'> = {
                 ...data,
                 dob: format(data.dob, 'yyyy-MM-dd'),
                 registrationNumber: newRegNumber,
                 registeredAt: serverTimestamp(),
             };
 
-            await addDoc(collection(db, "examRegistrations"), registrationData);
+            await setDoc(doc(db, "examRegistrations", user.uid), registrationData);
 
             toast({
                 title: "Registration Successful!",
@@ -156,6 +176,18 @@ export default function ExamRegistrationPage() {
         }
     };
     
+    if (userLoading) {
+        return (
+             <div className="flex justify-center items-center h-screen">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        )
+    }
+    
+    if (isAlreadyRegistered) {
+        return <ProfilePage />;
+    }
+
     if (registrationSuccess) {
         return (
              <div className="bg-secondary">
@@ -166,12 +198,12 @@ export default function ExamRegistrationPage() {
                             <CardDescription>Your registration number has been generated.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-muted-foreground">Please save this number for the exam:</p>
+                            <p className="text-muted-foreground">Please save this number for future reference:</p>
                             <div className="my-4 p-4 bg-primary/10 border-2 border-dashed border-primary rounded-lg">
                                 <p className="text-2xl font-bold text-primary tracking-widest">{registrationNumber}</p>
                             </div>
                             <Button asChild className="mt-6">
-                                <Link href="/exam/start">Proceed to Exam</Link>
+                                <Link href="/profile">View My Profile</Link>
                             </Button>
                         </CardContent>
                     </Card>

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -72,8 +73,12 @@ export default function ResultPage() {
             const resultSnap = await getDoc(resultRef);
 
             if (!resultSnap.exists() || resultSnap.data().userId !== user.uid) {
-                notFound();
-                return;
+                // Also check admin access
+                const isAdmin = user.email && ["mtechitinstitute@gmail.com", "anooppbh8@gmail.com"].includes(user.email);
+                if (!isAdmin) {
+                    notFound();
+                    return;
+                }
             }
 
             const resultData = { id: resultSnap.id, ...resultSnap.data() } as TestResult;
@@ -91,7 +96,6 @@ export default function ResultPage() {
             
             setIsLoading(false);
             
-            // Fetch rank after getting result
             fetchRank(resultData);
         };
         
@@ -105,14 +109,13 @@ export default function ResultPage() {
                 const querySnapshot = await getDocs(resultsQuery);
                 const allResults = querySnapshot.docs.map(doc => doc.data() as TestResult);
 
-                // Sort by score desc, then timeTaken asc
                 allResults.sort((a, b) => b.score - a.score || a.timeTaken - b.timeTaken);
 
                 const currentUserRank = allResults.findIndex(r => r.userId === currentResult.userId) + 1;
                 setRank(currentUserRank > 0 ? currentUserRank : null);
             } catch (error) {
                 console.error("Failed to calculate rank:", error);
-                setRank(null); // Set rank to null on error
+                setRank(null);
             } finally {
                 setIsRankLoading(false);
             }

@@ -2,11 +2,13 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X, User as UserIcon, LogOut, LayoutDashboard } from "lucide-react";
-import { useState } from "react";
+import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, UserCircle } from "lucide-react";
+import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useUser, useAuth } from "@/firebase";
 import { signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 import { cn } from "@/lib/utils";
 import Logo from "@/components/logo";
@@ -23,18 +25,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import type { NavItem } from "@/lib/types";
 
-const navItems: NavItem[] = [
-  { title: "Home", href: "/" },
-  { title: "About", href: "/about" },
-  { title: "Courses", href: "/courses" },
-  { title: "Learn", href: "/learn" },
-  { title: "Tests", href: "/mock-tests" },
-  { title: "Registration", href: "/exam/register" },
-  { title: "Blog", href: "/blog" },
-  { title: "Career", href: "/career" },
-  { title: "Resources", href: "/resources" },
-  { title: "Contact", href: "/contact" },
-];
 
 const ADMIN_EMAILS = ["mtechitinstitute@gmail.com", "anooppbh8@gmail.com"];
 
@@ -44,11 +34,39 @@ export default function Header() {
   const auth = useAuth();
   const { user, isLoading } = useUser();
   const router = useRouter();
+  const [isRegistered, setIsRegistered] = useState(false);
 
   const isLearnPage = pathname.startsWith('/learn');
   const courseSlug = isLearnPage && pathname.split('/')[2] ? pathname.split('/')[2] : '';
 
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
+
+  useEffect(() => {
+    if (user && !isAdmin) {
+      const checkRegistration = async () => {
+        const docRef = doc(db, "examRegistrations", user.uid);
+        const docSnap = await getDoc(docRef);
+        setIsRegistered(docSnap.exists());
+      };
+      checkRegistration();
+    } else {
+      setIsRegistered(false);
+    }
+  }, [user, isAdmin]);
+
+  const navItems: NavItem[] = [
+    { title: "Home", href: "/" },
+    { title: "About", href: "/about" },
+    { title: "Courses", href: "/courses" },
+    { title: "Learn", href: "/learn", auth: true },
+    { title: "Exam", href: "/exam", auth: true, registeredOnly: true },
+    { title: "Tests", href: "/mock-tests" },
+    { title: "Registration", href: "/exam/register", auth: true, hideWhenRegistered: true },
+    { title: "Blog", href: "/blog" },
+    { title: "Career", href: "/career" },
+    { title: "Resources", href: "/resources" },
+    { title: "Contact", href: "/contact" },
+  ];
 
   const handleLogout = async () => {
     if (auth) {
@@ -64,7 +82,10 @@ export default function Header() {
 
         <nav className="hidden md:flex md:items-center md:gap-6">
           {navItems.map((item) => {
-            if (item.href === '/learn' && !user && !isLoading) return null;
+            if (item.auth && !user && !isLoading) return null;
+            if (item.registeredOnly && !isRegistered) return null;
+            if (item.hideWhenRegistered && isRegistered) return null;
+
             return (
                 <Link
                   key={item.href}
@@ -108,10 +129,16 @@ export default function Header() {
                                <span>Dashboard</span>
                             </DropdownMenuItem>
                         ) : (
+                          <>
+                            <DropdownMenuItem onClick={() => router.push('/profile')}>
+                               <UserCircle className="mr-2 h-4 w-4" />
+                               <span>My Profile</span>
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => router.push('/learn')}>
                                <LayoutDashboard className="mr-2 h-4 w-4" />
                                <span>My Learning</span>
                             </DropdownMenuItem>
+                          </>
                         )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout}>
@@ -154,7 +181,9 @@ export default function Header() {
                 <>
                   <nav className="grid grid-flow-row auto-rows-max text-sm">
                     {navItems.map((item) => {
-                      if (item.href === '/learn' && !user) return null;
+                      if (item.auth && !user) return null;
+                      if (item.registeredOnly && !isRegistered) return null;
+                      if (item.hideWhenRegistered && isRegistered) return null;
                       return (
                         <Link
                           key={item.href}

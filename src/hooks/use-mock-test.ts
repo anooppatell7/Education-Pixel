@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -13,18 +14,23 @@ export const useMockTest = (testId: string, registrationNumber?: string | null, 
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [isInitialized, setIsInitialized] = useState(false);
 
-    const storageKeyPrefix = registrationNumber ? `exam-${testId}-${registrationNumber}` : `test-${testId}`;
+    // Use a more generic key and then add user-specific part if available
+    const getStorageKey = (base: string) => {
+        if (registrationNumber) return `exam-${testId}-${registrationNumber}-${base}`;
+        // Fallback for non-registered tests, assumes a user is logged in, but we handle that in the component
+        return `test-${testId}-${base}`;
+    }
 
     const [selectedAnswers, setSelectedAnswers] = useLocalStorage<(number | null)[]>(
-        `${storageKeyPrefix}-answers`, 
+        getStorageKey('answers'), 
         []
     );
     const [markedForReview, setMarkedForReview] = useLocalStorage<number[]>(
-        `${storageKeyPrefix}-review`,
+        getStorageKey('review'),
         []
     );
 
-    const [timeLeft, setTimeLeft] = useLocalStorage<number>(`${storageKeyPrefix}-time`, 0);
+    const [timeLeft, setTimeLeft] = useLocalStorage<number>(getStorageKey('time'), 0);
     const [isTimeUp, setIsTimeUp] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,14 +42,14 @@ export const useMockTest = (testId: string, registrationNumber?: string | null, 
 
         initialDurationRef.current = durationMinutes * 60;
         
-        const storedTimeItem = typeof window !== 'undefined' ? localStorage.getItem(`${storageKeyPrefix}-time`) : null;
+        const storedTimeItem = typeof window !== 'undefined' ? localStorage.getItem(getStorageKey('time')) : null;
         const storedTime = storedTimeItem ? Number(JSON.parse(storedTimeItem)) : NaN;
         
         if (isNaN(storedTime) || storedTime <= 0) {
             setTimeLeft(initialDurationRef.current);
         }
 
-        const storedAnswersItem = typeof window !== 'undefined' ? localStorage.getItem(`${storageKeyPrefix}-answers`) : null;
+        const storedAnswersItem = typeof window !== 'undefined' ? localStorage.getItem(getStorageKey('answers')) : null;
         if (storedAnswersItem === null) {
             setSelectedAnswers(Array(questionCount).fill(null));
         } else {
@@ -58,7 +64,7 @@ export const useMockTest = (testId: string, registrationNumber?: string | null, 
         }
         
         setIsInitialized(true);
-    }, [isInitialized, storageKeyPrefix, setTimeLeft, setSelectedAnswers]);
+    }, [isInitialized, testId, registrationNumber, setTimeLeft, setSelectedAnswers]);
 
 
     // Timer effect
@@ -107,10 +113,10 @@ export const useMockTest = (testId: string, registrationNumber?: string | null, 
     }, [setMarkedForReview]);
 
     const cleanupLocalStorage = useCallback(() => {
-        window.localStorage.removeItem(`${storageKeyPrefix}-answers`);
-        window.localStorage.removeItem(`${storageKeyPrefix}-review`);
-        window.localStorage.removeItem(`${storageKeyPrefix}-time`);
-    }, [storageKeyPrefix]);
+        window.localStorage.removeItem(getStorageKey('answers'));
+        window.localStorage.removeItem(getStorageKey('review'));
+        window.localStorage.removeItem(getStorageKey('time'));
+    }, [testId, registrationNumber]);
 
     const handleSubmit = useCallback(async (
         isAutoSubmit: boolean, 
@@ -122,10 +128,10 @@ export const useMockTest = (testId: string, registrationNumber?: string | null, 
         
         if (isSubmitting) return;
         
-        if (!user?.uid && !registrationNumber) {
+        if (!user) {
             toast({
                 title: "Authentication Error",
-                description: "You must be logged in or registered to submit a test.",
+                description: "You must be logged in to submit a test.",
                 variant: 'destructive'
             });
             return;
@@ -184,44 +190,25 @@ export const useMockTest = (testId: string, registrationNumber?: string | null, 
                 ? "Time's up! Your test has been automatically submitted."
                 : "Your test has been submitted successfully.";
 
-            if (registrationNumber && studentName) {
-                // This is a registered exam
-                const resultData: Omit<ExamResult, 'id' | 'submittedAt'> = {
-                    registrationNumber,
-                    studentName,
-                    testId: testData.id,
-                    testName: testData.title,
-                    score,
-                    totalMarks: testData.totalMarks,
-                    accuracy: parseFloat(accuracy.toFixed(2)) || 0,
-                    timeTaken: timeTaken,
-                    responses,
-                };
-                const finalData = cleanData(resultData);
-                resultId = await saveExamResult(finalData);
-                 toast({ title: "Exam Submitted", description: message });
-                router.push(`/exam/result/${resultId}`);
+            // For both registered and non-registered users, we now save the result to the same collection `testResults`.
+            // The result page can then handle displaying it.
+            const resultData: Omit<TestResult, 'id' | 'submittedAt'> = {
+                userId: user.uid,
+                userName: studentName || user.displayName || user.email || 'Anonymous',
+                testId: testData.id,
+                testTitle: testData.title,
+                score,
+                totalMarks: testData.totalMarks,
+                accuracy: parseFloat(accuracy.toFixed(2)) || 0,
+                timeTaken: timeTaken,
+                responses,
+            };
+            const finalData = cleanData(resultData);
+            resultId = await saveTestResult(finalData);
 
-            } else if (user) {
-                // This is a regular mock test for a logged-in user
-                const resultData: Omit<TestResult, 'id' | 'submittedAt'> = {
-                    userId: user.uid,
-                    userName: user.displayName || user.email || 'Anonymous',
-                    testId: testData.id,
-                    testTitle: testData.title,
-                    score,
-                    totalMarks: testData.totalMarks,
-                    accuracy: parseFloat(accuracy.toFixed(2)) || 0,
-                    timeTaken: timeTaken,
-                    responses,
-                };
-                const finalData = cleanData(resultData);
-                resultId = await saveTestResult(finalData);
-                toast({ title: "Test Submitted", description: message });
-                router.push(`/mock-tests/result/${resultId}`);
-            } else {
-                throw new Error("Cannot submit result without user login or registration number.");
-            }
+            toast({ title: "Test Submitted", description: message });
+            // Always redirect to the standard result page
+            router.push(`/mock-tests/result/${resultId}`);
             
             cleanupLocalStorage();
 
