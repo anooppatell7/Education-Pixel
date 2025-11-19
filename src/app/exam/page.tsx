@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from "react";
@@ -167,7 +168,7 @@ export default function StudentExamPage() {
                                                         </Link>
                                                     </Button>
                                                     <Button asChild className="w-full">
-                                                        <Link href={`/mock-tests/${test.id}?regNo=${registration.registrationNumber}&studentName=${registration.fullName}`}>
+                                                        <Link href={`/mock-tests/${test.id}`}>
                                                             Re-attempt Exam <ArrowRight className="ml-2 h-4 w-4" />
                                                         </Link>
                                                     </Button>

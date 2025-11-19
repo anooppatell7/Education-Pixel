@@ -1414,7 +1414,7 @@ export default function AdminDashboardPage() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Test Categories</CardTitle>
-                                    <CardDescription>Manage the categories for your mock tests.</CardDescription>
+                                    <CardDescription>Manage the categories for your mock tests. Create a category called "Student Exam" for registered student exams.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     {loading ? <p>Loading categories...</p> :
@@ -1466,7 +1466,7 @@ export default function AdminDashboardPage() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Mock Tests</CardTitle>
-                                    <CardDescription>Create and manage mock tests for your students.</CardDescription>
+                                    <CardDescription>Create and manage mock tests. Assign tests to the "Student Exam" category to make them visible only to registered students.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     {loading ? <p>Loading mock tests...</p> : (
