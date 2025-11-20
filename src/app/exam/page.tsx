@@ -7,7 +7,7 @@ import { useParams, notFound } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ListChecks, Clock, ArrowRight, BarChart, ChevronLeft } from "lucide-react";
-import type { MockTest, TestResult, TestCategory } from "@/lib/types";
+import type { MockTest, TestResult, TestCategory, ExamResult } from "@/lib/types";
 import { useUser, useFirestore } from "@/firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -40,7 +40,7 @@ export default function StudentExamPage() {
     const firestore = useFirestore();
 
     const [mockTests, setMockTests] = useState<MockTest[]>([]);
-    const [userResults, setUserResults] = useState<TestResult[]>([]);
+    const [userResults, setUserResults] = useState<ExamResult[]>([]);
     
     const [isLoading, setIsLoading] = useState(true);
 
@@ -81,17 +81,26 @@ export default function StudentExamPage() {
             const testIds = mockTests.map(t => t.id);
             if (testIds.length === 0) return;
 
+            // Fetch registration details to get registrationNumber
+            const regRef = doc(firestore, 'examRegistrations', user.uid);
+            const regSnap = await getDoc(regRef);
+            if (!regSnap.exists()) {
+                // Not a registered student, so no official exam results to fetch
+                return;
+            }
+            const registrationNumber = regSnap.data().registrationNumber;
+
             try {
                 const resultsQuery = query(
-                    collection(firestore, 'testResults'),
-                    where('userId', '==', user.uid),
+                    collection(firestore, 'examResults'),
+                    where('registrationNumber', '==', registrationNumber),
                     where('testId', 'in', testIds)
                 );
                 const resultsSnapshot = await getDocs(resultsQuery);
                 let results = resultsSnapshot.docs.map(doc => {
                     const data = doc.data();
                     const submittedAt = data.submittedAt?.toDate ? data.submittedAt.toDate() : new Date(0);
-                    return { id: doc.id, ...data, submittedAt } as TestResult
+                    return { id: doc.id, ...data, submittedAt } as ExamResult
                 });
 
                 results.sort((a, b) => b.submittedAt.getTime() - a.submittedAt.getTime());
@@ -106,7 +115,7 @@ export default function StudentExamPage() {
         }
     }, [user, userLoading, firestore, isLoading, mockTests]);
     
-    const latestResultsMap = new Map<string, TestResult>();
+    const latestResultsMap = new Map<string, ExamResult>();
     userResults.forEach(result => {
         if (!latestResultsMap.has(result.testId)) {
             latestResultsMap.set(result.testId, result);
@@ -159,23 +168,16 @@ export default function StudentExamPage() {
                                                 </div>
                                             </div>
                                         </CardContent>
-                                        <CardFooter className="flex flex-col sm:flex-row gap-2">
+                                        <CardFooter className="flex">
                                             {user && hasAttempted && result ? (
-                                                <>
-                                                    <Button asChild variant="outline" className="w-full">
-                                                        <Link href={`/mock-tests/result/${result.id}`}>
-                                                            <BarChart className="mr-2 h-4 w-4" /> View Result
-                                                        </Link>
-                                                    </Button>
-                                                    <Button asChild className="w-full">
-                                                        <Link href={`/mock-tests/${test.id}`}>
-                                                            Re-attempt Exam <ArrowRight className="ml-2 h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
-                                                </>
+                                                <Button asChild variant="outline" className="w-full">
+                                                    <Link href={`/exam/result/${result.id}`}>
+                                                        <BarChart className="mr-2 h-4 w-4" /> View Result
+                                                    </Link>
+                                                </Button>
                                             ) : (
                                                 <Button asChild className="w-full">
-                                                    <Link href={user ? `/mock-tests/${test.id}`: `/login?redirect=/exam`}>
+                                                    <Link href={user ? `/exam/start`: `/login?redirect=/exam`}>
                                                         Start Exam <ArrowRight className="ml-2 h-4 w-4" />
                                                     </Link>
                                                 </Button>

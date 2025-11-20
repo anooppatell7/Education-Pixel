@@ -98,8 +98,8 @@ export default function MockTestsByCategoryPage() {
 
             try {
                 const resultsQuery = query(
-                    collection(firestore, 'testResults'),
-                    where('userId', '==', user.uid),
+                    collection(firestore, 'examResults'),
+                    where('registrationNumber', '==', user.uid), // Using UID for practice tests
                     where('testId', 'in', testIds)
                 );
                 const resultsSnapshot = await getDocs(resultsQuery);
@@ -186,7 +186,7 @@ export default function MockTestsByCategoryPage() {
                                             {user && hasAttempted && result ? (
                                                 <>
                                                     <Button asChild variant="outline" className="w-full">
-                                                        <Link href={`/mock-tests/result/${result.id}`}>
+                                                        <Link href={`/exam/result/${result.id}`}>
                                                             <BarChart className="mr-2 h-4 w-4" /> View Result
                                                         </Link>
                                                     </Button>
