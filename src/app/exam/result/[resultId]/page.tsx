@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, notFound, useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { MockTest, ExamResult as ExamResultType, ExamRegistration } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -326,5 +326,7 @@ export default function ExamResultPage() {
         </div>
     );
 }
+
+    
 
     
