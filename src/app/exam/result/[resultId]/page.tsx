@@ -124,19 +124,24 @@ export default function ExamResultPage() {
                     where("testId", "==", currentResult.testId)
                 );
                 const querySnapshot = await getDocs(resultsQuery);
-                const allResults = querySnapshot.docs.map(doc => doc.data() as ExamResultType);
+                const allResults = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ExamResultType));
 
-                // Ensure submittedAt is a valid date for sorting
                 allResults.forEach(r => {
                     if (r.submittedAt && r.submittedAt.seconds) {
                         r.submittedAt = new Date(r.submittedAt.seconds * 1000);
+                    } else if (typeof r.submittedAt === 'string') {
+                        r.submittedAt = new Date(r.submittedAt);
                     }
                 });
 
-                allResults.sort((a, b) => b.score - a.score || a.timeTaken - b.timeTaken);
-
-                const currentUserRank = allResults.findIndex(r => r.registrationNumber === currentResult.registrationNumber && new Date(r.submittedAt).getTime() === new Date(currentResult.submittedAt).getTime()) + 1;
-
+                allResults.sort((a, b) => {
+                    if (b.score !== a.score) {
+                        return b.score - a.score;
+                    }
+                    return a.timeTaken - b.timeTaken;
+                });
+                
+                const currentUserRank = allResults.findIndex(r => r.id === currentResult.id) + 1;
 
                 setRank(currentUserRank > 0 ? currentUserRank : null);
             } catch (error) {
@@ -326,6 +331,8 @@ export default function ExamResultPage() {
         </div>
     );
 }
+
+    
 
     
 
