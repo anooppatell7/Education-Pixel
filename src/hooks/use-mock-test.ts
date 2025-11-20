@@ -125,9 +125,7 @@ export const useMockTest = (testId: string) => {
         isAutoSubmit: boolean, 
         router: AppRouterInstance, 
         testData: MockTest,
-        user: User,
-        regNo?: string | null,
-        studentName?: string | null
+        user: User
         ) => {
         
         if (isSubmitting) return;
@@ -137,6 +135,22 @@ export const useMockTest = (testId: string) => {
         if (timerRef.current) {
             clearInterval(timerRef.current);
         }
+
+        // --- Start of Fix ---
+        // Fetch registration details safely.
+        const regRef = doc(db, 'examRegistrations', user.uid);
+        const regSnap = await getDoc(regRef);
+
+        let finalRegistrationNumber = user.uid; // Fallback to user ID
+        let finalStudentName = user.displayName || user.email || 'Anonymous'; // Fallback to user display name or email
+
+        // Only access regSnap.data() if the document exists. This prevents the crash.
+        if (regSnap.exists()) {
+            const regData = regSnap.data() as ExamRegistration;
+            finalRegistrationNumber = regData.registrationNumber;
+            finalStudentName = regData.fullName;
+        }
+        // --- End of Fix ---
 
         let score = 0;
         let correctAnswers = 0;
@@ -177,27 +191,6 @@ export const useMockTest = (testId: string) => {
         };
 
         try {
-            const isOfficialExam = !!regNo && !!studentName;
-
-            let finalRegistrationNumber = user.uid;
-            let finalStudentName = user.displayName || user.email || 'Anonymous';
-
-            if(isOfficialExam) {
-                 finalRegistrationNumber = regNo;
-                 finalStudentName = studentName;
-            } else {
-                // For non-official exams, we still check if the user is registered
-                // to associate the result with their proper name and REG number.
-                const regRef = doc(db, 'examRegistrations', user.uid);
-                const regSnap = await getDoc(regRef);
-                if (regSnap.exists()) {
-                    const regData = regSnap.data() as ExamRegistration;
-                    finalRegistrationNumber = regData.registrationNumber;
-                    finalStudentName = regData.fullName;
-                }
-            }
-
-
             const resultData: Omit<ExamResult, 'id' | 'submittedAt'> = {
                 registrationNumber: finalRegistrationNumber,
                 studentName: finalStudentName,
@@ -225,7 +218,7 @@ export const useMockTest = (testId: string) => {
             // The result page will handle authorization based on user ID or admin role
             router.push(`/exam/result/${resultId}`);
             
-            cleanupLocalStorage(regNo);
+            cleanupLocalStorage();
 
         } catch (error) {
              console.error("Failed to save test results:", error);
