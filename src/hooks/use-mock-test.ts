@@ -125,7 +125,9 @@ export const useMockTest = (testId: string) => {
         isAutoSubmit: boolean, 
         router: AppRouterInstance, 
         testData: MockTest,
-        user: User
+        user: User,
+        registrationNumber: string | null,
+        studentName: string | null
         ) => {
         
         if (isSubmitting) return;
@@ -135,22 +137,22 @@ export const useMockTest = (testId: string) => {
         if (timerRef.current) {
             clearInterval(timerRef.current);
         }
+        
+        const isOfficialExam = !!registrationNumber;
 
-        // --- Start of Fix ---
-        // Fetch registration details safely.
-        const regRef = doc(db, 'examRegistrations', user.uid);
-        const regSnap = await getDoc(regRef);
+        let finalRegistrationNumber = registrationNumber || user.uid;
+        let finalStudentName = studentName || user.displayName || user.email || 'Anonymous';
 
-        let finalRegistrationNumber = user.uid; // Fallback to user ID
-        let finalStudentName = user.displayName || user.email || 'Anonymous'; // Fallback to user display name or email
-
-        // Only access regSnap.data() if the document exists. This prevents the crash.
-        if (regSnap.exists()) {
-            const regData = regSnap.data() as ExamRegistration;
-            finalRegistrationNumber = regData.registrationNumber;
-            finalStudentName = regData.fullName;
+        // For official exams, re-verify details from Firestore to ensure accuracy.
+        if (isOfficialExam) {
+             const regQuery = query(collection(db, "examRegistrations"), where("registrationNumber", "==", finalRegistrationNumber));
+             const regSnap = await getDocs(regQuery);
+             
+             if (!regSnap.empty) {
+                const regData = regSnap.docs[0].data() as ExamRegistration;
+                finalStudentName = regData.fullName;
+             }
         }
-        // --- End of Fix ---
 
         let score = 0;
         let correctAnswers = 0;
@@ -207,18 +209,16 @@ export const useMockTest = (testId: string) => {
             
             const resultId = await saveExamResult(finalData);
 
-            toast({ 
-                title: "Test Submitted", 
-                description: isAutoSubmit 
-                    ? "Time's up! Your test has been automatically submitted."
-                    : "Your test has been submitted successfully."
+            toast({
+                title: isOfficialExam ? "Exam Submitted" : "Test Submitted",
+                description: isAutoSubmit
+                    ? `Time's up! Your ${isOfficialExam ? 'exam' : 'test'} has been automatically submitted.`
+                    : `Your ${isOfficialExam ? 'exam' : 'test'} has been submitted successfully.`
             });
             
-            // For both official and unofficial tests, we redirect to the same result page structure
-            // The result page will handle authorization based on user ID or admin role
             router.push(`/exam/result/${resultId}`);
             
-            cleanupLocalStorage();
+            cleanupLocalStorage(registrationNumber);
 
         } catch (error) {
              console.error("Failed to save test results:", error);
@@ -230,7 +230,7 @@ export const useMockTest = (testId: string) => {
              setIsSubmitting(false);
         }
 
-    }, [selectedAnswers, timeLeft, cleanupLocalStorage, isSubmitting, toast]);
+    }, [selectedAnswers, timeLeft, cleanupLocalStorage, isSubmitting, toast, getStorageKey]);
 
     return {
         isInitialized,
