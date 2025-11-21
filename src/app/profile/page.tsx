@@ -148,11 +148,14 @@ export default function ProfilePage() {
             });
 
             const issueDate = new Date();
+             // Safely get the exam date
+            const examDateObj = result.submittedAt?.toDate ? result.submittedAt.toDate() : new Date(result.submittedAt);
+            
             const certDataForPdf = {
                 ...result,
                 certificateId: certIdNumber,
                 issueDate: issueDate.toLocaleDateString('en-GB'),
-                examDate: (result.submittedAt.toDate() as Date).toLocaleDateString('en-GB'),
+                examDate: examDateObj.toLocaleDateString('en-GB'),
                 percentage: (result.score / result.totalMarks) * 100
             };
 
