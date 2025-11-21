@@ -262,7 +262,7 @@ export default function ExamRegistrationPage() {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Phone Number</FormLabel>
-                                                    <FormControl><Input type="tel" placeholder="e.g., 9876543210" {...field} /></FormControl>
+                                                    <FormControl><Input type="tel" placeholder="e.g., 1234567890" {...field} /></FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -415,3 +415,5 @@ export default function ExamRegistrationPage() {
         </>
     );
 }
+
+    
