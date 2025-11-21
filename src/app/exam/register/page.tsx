@@ -240,7 +240,7 @@ export default function ExamRegistrationPage() {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Full Name</FormLabel>
-                                                    <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
+                                                    <FormControl><Input placeholder="e.g., John Doe" {...field} /></FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -251,7 +251,7 @@ export default function ExamRegistrationPage() {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Father's Name</FormLabel>
-                                                    <FormControl><Input placeholder="Richard Doe" {...field} /></FormControl>
+                                                    <FormControl><Input placeholder="e.g., Richard Doe" {...field} /></FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -262,7 +262,7 @@ export default function ExamRegistrationPage() {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Phone Number</FormLabel>
-                                                    <FormControl><Input type="tel" placeholder="9876543210" {...field} /></FormControl>
+                                                    <FormControl><Input type="tel" placeholder="e.g., 9876543210" {...field} /></FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
