@@ -143,7 +143,7 @@ export default function ExamRegistrationPage() {
                     transaction.update(counterRef, { count: newCount });
                 }
                 
-                return `REG-${currentYear}-${String(newCount).padStart(4, '0')}`;
+                return `MTECH-${currentYear}-${String(newCount).padStart(4, '0')}`;
             });
             
             setRegistrationNumber(newRegNumber);
@@ -415,5 +415,7 @@ export default function ExamRegistrationPage() {
         </>
     );
 }
+
+    
 
     
