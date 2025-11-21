@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
 import SectionDivider from '@/components/section-divider';
 
 const formSchema = z.object({
@@ -93,7 +93,7 @@ export default function CheckResultPage() {
                       <FormItem>
                         <FormLabel>Registration Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., REG-2025-0001" {...field} />
+                          <Input placeholder="e.g., MTECH-2025-0001" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

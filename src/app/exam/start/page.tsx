@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -120,7 +121,7 @@ export default function StartExamPage() {
                                     <Label htmlFor="registrationNumber">Registration Number</Label>
                                     <Input
                                         id="registrationNumber"
-                                        placeholder="e.g., REG-2025-0001"
+                                        placeholder="e.g., MTECH-2025-0001"
                                         {...register("registrationNumber")}
                                     />
                                     {errors.registrationNumber && (
