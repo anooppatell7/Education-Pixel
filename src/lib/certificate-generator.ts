@@ -35,8 +35,8 @@ export async function generateCertificatePdf(data: CertificateData): Promise<str
   // Preload and convert images to data URLs to avoid CORS issues with html2canvas
   const [logoUrl, directorSignUrl, controllerSignUrl] = await Promise.all([
     imageToDataUrl("https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png"),
-    imageToDataUrl("https://res.cloudinary.com/dzr4xjizf/image/upload/v1758117769/director-sign_kscbec.png"),
-    imageToDataUrl("https://res.cloudinary.com/dzr4xjizf/image/upload/v1758117768/controller-sign_qfcvme.png"),
+    imageToDataUrl("https://res.cloudinary.com/dqycipmr0/image/upload/v1763721267/signature_kfj27k.png"),
+    imageToDataUrl("https://res.cloudinary.com/dqycipmr0/image/upload/v1763721267/signature_kfj27k.png"),
   ]);
 
   const certificateDataWithImages = {
