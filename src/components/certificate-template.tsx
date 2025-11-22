@@ -165,8 +165,6 @@ export default function CertificateTemplate(data: CertificateData) {
                         <p style={styles.studentName}>{data.studentName}</p>
                         <p style={styles.bodyText}>
                             has successfully completed the
-                            <br/>
-                            <span style={styles.courseSubtitle}>(Course / Mock Test Assessment)</span>
                             <br />
                             <span style={styles.courseName}>{data.testName}</span>
                             <br />
