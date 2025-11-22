@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -118,25 +119,29 @@ export default function ProfilePage() {
         setIsGeneratingCert(result.id);
 
         try {
-            // This is a placeholder for a unique ID
             const certIdNumber = `MTECH-${new Date().getFullYear()}-${Math.floor(Math.random() * 9000) + 1000}`;
 
             const issueDate = new Date();
             let examDateObj;
             if (result.submittedAt && typeof result.submittedAt.toDate === 'function') {
                 examDateObj = result.submittedAt.toDate();
+            } else if (result.submittedAt && result.submittedAt.seconds) {
+                examDateObj = new Date(result.submittedAt.seconds * 1000);
             } else if (result.submittedAt) {
-                // Handle cases where submittedAt might be a string or number (milliseconds)
-                examDateObj = new Date(result.submittedAt.seconds ? result.submittedAt.seconds * 1000 : result.submittedAt);
+                examDateObj = new Date(result.submittedAt);
             } else {
                 examDateObj = new Date(); // Fallback
             }
             
+             if (isNaN(examDateObj.getTime())) {
+                throw new Error("Invalid exam date could not be parsed.");
+            }
+
             const certDataForPdf = {
                 ...result,
                 certificateId: certIdNumber,
-                issueDate: issueDate.toLocaleDateString('en-GB'),
-                examDate: examDateObj.toLocaleDateString('en-GB'),
+                issueDate: issueDate.toISOString(),
+                examDate: examDateObj.toISOString(),
                 percentage: (result.score / result.totalMarks) * 100
             };
             
