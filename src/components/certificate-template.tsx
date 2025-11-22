@@ -95,7 +95,7 @@ export default function CertificateTemplate(data: CertificateData) {
         certifyText: {
             fontSize: '12pt',
             color: '#333',
-            margin: '10px 0 5px 0',
+            margin: '10px 0 0 0',
         },
         studentName: {
             fontFamily: '"Great Vibes", cursive',
@@ -108,14 +108,14 @@ export default function CertificateTemplate(data: CertificateData) {
             fontSize: '13pt',
             lineHeight: 1.6,
             color: '#333',
-            margin: '10px 0',
+            margin: '0 0 10px 0',
         },
         courseName: {
             fontWeight: 'bold',
         },
         bottomSection: {
             position: 'absolute',
-            bottom: '80px',
+            bottom: '60px',
             left: '60px',
             right: '60px',
             display: 'flex',
