@@ -123,7 +123,8 @@ export default function CertificateTemplate(data: CertificateData) {
             bottom: '40px',
             left: '40px',
             right: '40px',
-            textAlign: 'center' as 'center',
+            display: 'flex',
+            justifyContent: 'space-between',
             fontSize: '10pt',
             color: '#777',
         }
@@ -164,7 +165,8 @@ export default function CertificateTemplate(data: CertificateData) {
 
                 <div style={styles.footerContainer}>
                     <span>Certificate ID: {data.certificateId}</span>
-                    <span style={{ float: 'right' }}>Issued on: {data.issueDate}</span>
+                    <span>Registration No: {data.registrationNumber}</span>
+                    <span>Issued on: {data.issueDate}</span>
                 </div>
             </div>
         </div>
