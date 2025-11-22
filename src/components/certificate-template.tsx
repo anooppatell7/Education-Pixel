@@ -10,8 +10,6 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   watermarkUrl: string;
   goldSealUrl: string;
   signatureUrl: string;
-  leftSealUrl: string;
-  rightSealUrl: string;
 }
 
 export default function CertificateTemplate(data: CertificateData) {
@@ -151,15 +149,6 @@ export default function CertificateTemplate(data: CertificateData) {
             fontWeight: 'bold',
             color: '#001F54',
         },
-        sealOverlay: {
-            position: 'absolute',
-            bottom: '25px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '60px',
-            height: '60px',
-            opacity: 0.8,
-        },
         footerContainer: {
             position: 'absolute',
             bottom: '30px',
@@ -200,7 +189,6 @@ export default function CertificateTemplate(data: CertificateData) {
                             <img src={data.signatureUrl} style={styles.signatureImage} alt="Director's Signature" />
                             <div style={styles.signatureLine}></div>
                             <p style={styles.signatureTitle}>Director</p>
-                            <img src={data.leftSealUrl} style={styles.sealOverlay} alt="Director Seal" />
                         </div>
                         
                         <img src={data.goldSealUrl} style={styles.mainSeal} alt="Golden Seal" />
@@ -209,7 +197,6 @@ export default function CertificateTemplate(data: CertificateData) {
                              <img src={data.signatureUrl} style={styles.signatureImage} alt="Controller's Signature" />
                             <div style={styles.signatureLine}></div>
                             <p style={styles.signatureTitle}>Exam Controller</p>
-                            <img src={data.rightSealUrl} style={styles.sealOverlay} alt="Controller Seal" />
                         </div>
                     </div>
 
