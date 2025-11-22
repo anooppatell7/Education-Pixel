@@ -80,12 +80,11 @@ export default function CertificateTemplate(data: CertificateData) {
             color: '#001F54',
         },
         mainTitle: {
-            fontFamily: '"Playfair Display", serif',
-            fontSize: '34pt',
-            fontWeight: 'bold',
+            fontFamily: '"Great Vibes", cursive',
+            fontSize: '42pt',
+            fontWeight: 'normal',
             color: '#001F54',
-            letterSpacing: '1px',
-            margin: '5px 0',
+            margin: '15px 0 5px 0',
         },
         presentedTo: {
             fontSize: '14pt',
