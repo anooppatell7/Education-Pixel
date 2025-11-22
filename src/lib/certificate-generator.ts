@@ -30,61 +30,68 @@ async function imageToDataUrl(url: string): Promise<string> {
 }
 
 
-export async function generateCertificatePdf(data: CertificateData): Promise<string> {
-  
-  // Preload and convert images to data URLs to avoid CORS issues with html2canvas
-  const [logoUrl, directorSignUrl, controllerSignUrl] = await Promise.all([
-    imageToDataUrl("https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png"),
-    imageToDataUrl("https://res.cloudinary.com/dqycipmr0/image/upload/v1763721267/signature_kfj27k.png"),
-    imageToDataUrl("https://res.cloudinary.com/dqycipmr0/image/upload/v1763721267/signature_kfj27k.png"),
-  ]);
+export async function generateCertificatePdf(data: CertificateData): Promise<Blob> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Preload and convert images to data URLs to avoid CORS issues with html2canvas
+      const [logoUrl, directorSignUrl, controllerSignUrl] = await Promise.all([
+        imageToDataUrl("https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png"),
+        imageToDataUrl("https://res.cloudinary.com/dqycipmr0/image/upload/v1763721267/signature_kfj27k.png"),
+        imageToDataUrl("https://res.cloudinary.com/dqycipmr0/image/upload/v1763721267/signature_kfj27k.png"),
+      ]);
 
-  const certificateDataWithImages = {
-    ...data,
-    logoUrl,
-    directorSignUrl,
-    controllerSignUrl,
-  };
+      const certificateDataWithImages = {
+        ...data,
+        logoUrl,
+        directorSignUrl,
+        controllerSignUrl,
+      };
 
+      // Create a container element to render the component into
+      const container = document.createElement('div');
+      // Position it off-screen
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.width = '297mm'; // A4 width
+      container.style.height = '210mm'; // A4 height
+      document.body.appendChild(container);
 
-  // Create a container element to render the component into
-  const container = document.createElement('div');
-  // Position it off-screen
-  container.style.position = 'absolute';
-  container.style.left = '-9999px';
-  container.style.width = '297mm'; // A4 width
-  container.style.height = '210mm'; // A4 height
-  document.body.appendChild(container);
+      // Render the React component to an HTML string
+      const staticMarkup = renderToStaticMarkup(CertificateTemplate({ ...certificateDataWithImages }));
+      container.innerHTML = staticMarkup;
+      
+      // Use html2canvas to capture the rendered component
+      const canvas = await html2canvas(container, {
+        scale: 2, // Use scale: 2 for a good balance of quality and file size
+        useCORS: true,
+        backgroundColor: null
+      });
 
-  // Render the React component to an HTML string
-  const staticMarkup = renderToStaticMarkup(CertificateTemplate({ ...certificateDataWithImages }));
-  container.innerHTML = staticMarkup;
-  
-  // Use html2canvas to capture the rendered component
-  const canvas = await html2canvas(container, {
-    scale: 2, // Reduced scale for smaller file size to prevent timeouts
-    useCORS: true,
-    backgroundColor: null
+      // Clean up the off-screen container
+      document.body.removeChild(container);
+
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Create a new jsPDF instance
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
+      });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      // Add the captured image to the PDF
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      
+      // Return the PDF as a Blob
+      const pdfBlob = pdf.output('blob');
+      resolve(pdfBlob);
+
+    } catch (error) {
+      console.error("Error in PDF generation process: ", error);
+      reject(error);
+    }
   });
-
-  // Clean up the off-screen container
-  document.body.removeChild(container);
-
-  const imgData = canvas.toDataURL('image/png');
-  
-  // Create a new jsPDF instance
-  const pdf = new jsPDF({
-    orientation: 'landscape',
-    unit: 'mm',
-    format: 'a4',
-  });
-  
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = pdf.internal.pageSize.getHeight();
-
-  // Add the captured image to the PDF
-  pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-  
-  // Return the PDF as a data URL string
-  return pdf.output('datauristring');
 }

@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { generateCertificatePdf } from '@/lib/certificate-generator';
-import { getDownloadURL, ref, uploadString } from 'firebase/storage';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { saveCertificate } from '@/lib/firebase';
 
 function ProfileSkeleton() {
@@ -133,6 +133,7 @@ export default function ProfilePage() {
         setIsGeneratingCert(result.id);
 
         try {
+            // Step 1: Generate a unique Certificate ID
             const counterRef = doc(db, 'counters', 'certificates');
             const certIdNumber = await runTransaction(db, async (transaction) => {
                 const counterDoc = await transaction.get(counterRef);
@@ -148,16 +149,16 @@ export default function ProfilePage() {
             });
 
             const issueDate = new Date();
-             // Safely get the exam date
             let examDateObj;
             if (result.submittedAt && typeof result.submittedAt.toDate === 'function') {
                 examDateObj = result.submittedAt.toDate();
             } else if (result.submittedAt) {
                 examDateObj = new Date(result.submittedAt);
             } else {
-                examDateObj = new Date(); // Fallback to now
+                examDateObj = new Date(); // Fallback
             }
             
+            // Step 2: Prepare data for the PDF template
             const certDataForPdf = {
                 ...result,
                 certificateId: certIdNumber,
@@ -166,11 +167,15 @@ export default function ProfilePage() {
                 percentage: (result.score / result.totalMarks) * 100
             };
 
-            const pdfString = await generateCertificatePdf(certDataForPdf);
-            const storageRef = ref(storage, `certificates/${result.registrationNumber}/${result.testName.replace(/\s+/g, '_')}_${result.id}.pdf`);
-            const uploadResult = await uploadString(storageRef, pdfString, 'data_url');
-            const downloadUrl = await getDownloadURL(uploadResult.ref);
+            // Step 3: Generate the PDF as a Blob
+            const pdfBlob = await generateCertificatePdf(certDataForPdf);
 
+            // Step 4: Upload the Blob to Firebase Storage
+            const storageRef = ref(storage, `certificates/${result.registrationNumber}/${result.testName.replace(/\s+/g, '_')}_${result.id}.pdf`);
+            await uploadBytes(storageRef, pdfBlob);
+            const downloadUrl = await getDownloadURL(storageRef);
+
+            // Step 5: Save certificate metadata to Firestore
             const certificateDbRecord: Omit<Certificate, 'id'> = {
                 certificateId: certIdNumber,
                 studentName: result.studentName,
@@ -187,7 +192,7 @@ export default function ProfilePage() {
 
             const newCertId = await saveCertificate(certificateDbRecord);
             
-            // Add new certificate to local state to re-render UI
+            // Step 6: Update local state to show the new certificate in the UI
             setCertificates(prevCerts => [{ ...certificateDbRecord, id: newCertId }, ...prevCerts]);
 
             toast({
@@ -203,6 +208,7 @@ export default function ProfilePage() {
                 variant: "destructive"
             });
         } finally {
+            // Step 7: Always reset the loading state
             setIsGeneratingCert(null);
         }
     }
