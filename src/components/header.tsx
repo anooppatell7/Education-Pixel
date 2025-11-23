@@ -180,12 +180,12 @@ export default function Header() {
         <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
                 <NavigationMenuItem>
-                    <Link href="/" passHref asChild>
+                    <Link href="/" legacyBehavior passHref>
                       <NavigationMenuLink className={navigationMenuTriggerStyle()}>Home</NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                     <Link href="/about" passHref asChild>
+                     <Link href="/about" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>About</NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
@@ -194,9 +194,11 @@ export default function Header() {
                     <NavigationMenuContent>
                       <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                         {academicsComponents.map((component) => (
-                          <ListItem key={component.title} title={component.title} href={component.href}>
-                            {component.description}
-                          </ListItem>
+                           <Link href={component.href} key={component.title} legacyBehavior>
+                            <ListItem title={component.title}>
+                                {component.description}
+                            </ListItem>
+                           </Link>
                         ))}
                       </ul>
                     </NavigationMenuContent>
@@ -210,26 +212,28 @@ export default function Header() {
                            if (component.registeredOnly && !isRegistered) return null;
                            if (component.hideWhenRegistered && isRegistered && !isAdmin) return null;
                            return (
-                              <ListItem key={component.title} title={component.title} href={component.href}>
-                                {component.description}
-                              </ListItem>
+                              <Link href={component.href} key={component.title} legacyBehavior>
+                                <ListItem title={component.title}>
+                                    {component.description}
+                                </ListItem>
+                               </Link>
                            )
                         })}
                       </ul>
                     </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href="/blog" passHref asChild>
+                    <Link href="/blog" legacyBehavior passHref>
                       <NavigationMenuLink className={navigationMenuTriggerStyle()}>Blog</NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href="/verify-certificate" passHref asChild>
+                    <Link href="/verify-certificate" legacyBehavior passHref>
                          <NavigationMenuLink className={navigationMenuTriggerStyle()}>Verify Certificate</NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href="/contact" passHref asChild>
+                    <Link href="/contact" legacyBehavior passHref>
                       <NavigationMenuLink className={navigationMenuTriggerStyle()}>Contact</NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
