@@ -71,26 +71,26 @@ export default function CertificateTemplate(data: CertificateData) {
         logo: {
             width: '80px',
             height: '80px',
-            marginBottom: '10px',
+            marginBottom: '5px',
         },
         instituteName: {
             fontFamily: '"Playfair Display", serif',
             fontSize: '24pt',
             fontWeight: 'bold',
             color: '#001F54',
-            margin: '0 0 10px 0',
+            margin: '0 0 5px 0',
         },
         mainTitle: {
             fontFamily: '"UnifrakturMaguntia", cursive',
             fontSize: '48pt',
             fontWeight: 'normal',
             color: '#001F54',
-            margin: '0 0 10px 0',
+            margin: '0 0 5px 0',
         },
         presentedTo: {
             fontSize: '14pt',
             color: '#555',
-            margin: '20px 0 0 0',
+            margin: '10px 0 0 0',
             textTransform: 'uppercase',
         },
         certifyText: {
@@ -103,20 +103,20 @@ export default function CertificateTemplate(data: CertificateData) {
             fontSize: '52pt',
             fontWeight: 'normal',
             color: '#C9A24B',
-            margin: '-10px 0 5px 0',
+            margin: '-25px 0 0 0',
         },
         bodyText: {
             fontSize: '13pt',
             lineHeight: 1.6,
             color: '#333',
-            margin: '10px 0 0 0',
+            margin: '0 0 0 0',
         },
         courseName: {
             fontWeight: 'bold',
         },
         bottomSection: {
             position: 'absolute',
-            bottom: '30px',
+            bottom: '25px',
             left: '60px',
             right: '60px',
             display: 'flex',
@@ -130,10 +130,10 @@ export default function CertificateTemplate(data: CertificateData) {
             position: 'relative',
         },
         mainSeal: {
-             width: '110px',
-             height: '110px',
+             width: '120px',
+             height: '120px',
              alignSelf: 'center',
-             marginBottom: '20px'
+             marginBottom: '15px'
         },
         signatureImage: {
             height: '40px',
