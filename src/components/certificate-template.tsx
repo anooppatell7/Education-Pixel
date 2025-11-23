@@ -103,7 +103,7 @@ export default function CertificateTemplate(data: CertificateData) {
             fontSize: '52pt',
             fontWeight: 'normal',
             color: '#C9A24B',
-            margin: '-10px 0 0 0', // Adjusted top margin
+            margin: '-10px 0 0 0',
         },
         bodyText: {
             fontSize: '13pt',
@@ -168,7 +168,7 @@ export default function CertificateTemplate(data: CertificateData) {
             color: '#555',
             zIndex: 2,
         },
-        issueDateTopLeft: {
+        certificateIdTopLeft: {
              position: 'absolute',
             top: '20px',
             left: '40px',
@@ -182,8 +182,8 @@ export default function CertificateTemplate(data: CertificateData) {
         <div style={styles.page}>
             <div style={styles.borderOuter}>
                 <div style={styles.borderInner}>
+                    <span style={styles.certificateIdTopLeft}>Certificate ID: {data.certificateId}</span>
                     <span style={styles.registrationNumber}>Registration No: {data.registrationNumber}</span>
-                    <span style={styles.issueDateTopLeft}>Issued on: {formatDate(data.issueDate)}</span>
                     <img src={data.watermarkUrl} style={styles.watermark} alt="Watermark" />
                     <div style={styles.content}>
                         <img src={data.logoUrl} style={styles.logo} alt="MTech IT Institute Logo" />
@@ -218,7 +218,7 @@ export default function CertificateTemplate(data: CertificateData) {
                     </div>
 
                      <div style={styles.footerContainer}>
-                        <span>Certificate ID: {data.certificateId}</span>
+                        <span>Issued on: {formatDate(data.issueDate)}</span>
                     </div>
                 </div>
             </div>
