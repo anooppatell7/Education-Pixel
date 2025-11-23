@@ -23,6 +23,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
@@ -174,10 +180,14 @@ export default function Header() {
         <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
                 <NavigationMenuItem>
-                    <Link href="/" legacyBehavior passHref><NavigationMenuLink className={navigationMenuTriggerStyle()}>Home</NavigationMenuLink></Link>
+                    <Link href="/" passHref>
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>Home</NavigationMenuLink>
+                    </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href="/about" legacyBehavior passHref><NavigationMenuLink className={navigationMenuTriggerStyle()}>About</NavigationMenuLink></Link>
+                     <Link href="/about" passHref>
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>About</NavigationMenuLink>
+                    </Link>
                 </NavigationMenuItem>
                  <NavigationMenuItem>
                     <NavigationMenuTrigger>Academics</NavigationMenuTrigger>
@@ -209,13 +219,19 @@ export default function Header() {
                     </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href="/blog" legacyBehavior passHref><NavigationMenuLink className={navigationMenuTriggerStyle()}>Blog</NavigationMenuLink></Link>
+                     <Link href="/blog" passHref>
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>Blog</NavigationMenuLink>
+                    </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href="/verify-certificate" legacyBehavior passHref><NavigationMenuLink className={navigationMenuTriggerStyle()}>Verify Certificate</NavigationMenuLink></Link>
+                     <Link href="/verify-certificate" passHref>
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>Verify Certificate</NavigationMenuLink>
+                    </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href="/contact" legacyBehavior passHref><NavigationMenuLink className={navigationMenuTriggerStyle()}>Contact</NavigationMenuLink></Link>
+                     <Link href="/contact" passHref>
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>Contact</NavigationMenuLink>
+                    </Link>
                 </NavigationMenuItem>
             </NavigationMenuList>
         </NavigationMenu>
@@ -334,4 +350,3 @@ export default function Header() {
     </header>
   );
 }
-
