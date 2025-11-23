@@ -103,13 +103,13 @@ export default function CertificateTemplate(data: CertificateData) {
             fontSize: '52pt',
             fontWeight: 'normal',
             color: '#C9A24B',
-            margin: '-25px 0 0 0',
+            margin: '-20px 0 0 0',
         },
         bodyText: {
             fontSize: '13pt',
             lineHeight: 1.6,
             color: '#333',
-            margin: '0 0 0 0',
+            margin: '10px 0 0 0',
         },
         courseName: {
             fontWeight: 'bold',
