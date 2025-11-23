@@ -181,12 +181,16 @@ export default function Header() {
             <NavigationMenuList>
                 <NavigationMenuItem>
                     <Link href="/" legacyBehavior passHref>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>Home</NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <a className={navigationMenuTriggerStyle()}>Home</a>
+                      </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                      <Link href="/about" legacyBehavior passHref>
-                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>About</NavigationMenuLink>
+                        <NavigationMenuLink asChild>
+                            <a className={navigationMenuTriggerStyle()}>About</a>
+                        </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                  <NavigationMenuItem>
@@ -194,7 +198,7 @@ export default function Header() {
                     <NavigationMenuContent>
                       <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                         {academicsComponents.map((component) => (
-                           <Link href={component.href} key={component.title} legacyBehavior>
+                          <Link href={component.href} key={component.title}>
                             <ListItem title={component.title}>
                                 {component.description}
                             </ListItem>
@@ -212,7 +216,7 @@ export default function Header() {
                            if (component.registeredOnly && !isRegistered) return null;
                            if (component.hideWhenRegistered && isRegistered && !isAdmin) return null;
                            return (
-                              <Link href={component.href} key={component.title} legacyBehavior>
+                              <Link href={component.href} key={component.title}>
                                 <ListItem title={component.title}>
                                     {component.description}
                                 </ListItem>
@@ -224,17 +228,23 @@ export default function Header() {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                     <Link href="/blog" legacyBehavior passHref>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>Blog</NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <a className={navigationMenuTriggerStyle()}>Blog</a>
+                      </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                     <Link href="/verify-certificate" legacyBehavior passHref>
-                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>Verify Certificate</NavigationMenuLink>
+                         <NavigationMenuLink asChild>
+                            <a className={navigationMenuTriggerStyle()}>Verify Certificate</a>
+                          </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                     <Link href="/contact" legacyBehavior passHref>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>Contact</NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <a className={navigationMenuTriggerStyle()}>Contact</a>
+                      </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
             </NavigationMenuList>
@@ -285,14 +295,14 @@ export default function Header() {
                     </DropdownMenuContent>
                  </DropdownMenu>
               ) : (
-                <>
-                  <Button variant="ghost" asChild className="hidden md:inline-flex">
+                <div className='hidden md:flex'>
+                  <Button variant="ghost" asChild>
                      <Link href="/login">Log In</Link>
                   </Button>
-                  <Button asChild className="hidden md:inline-flex">
+                  <Button asChild>
                      <Link href="/signup">Sign Up</Link>
                   </Button>
-                </>
+                </div>
               )
             )}
 
