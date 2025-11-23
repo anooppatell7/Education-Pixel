@@ -54,8 +54,8 @@ export default function CertificateTemplate(data: CertificateData) {
             top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
             opacity: 0.15,
-            width: '500px',
-            height: '500px',
+            width: '600px', // Increased size
+            height: '600px',
             zIndex: 1,
         },
         content: {
@@ -103,7 +103,7 @@ export default function CertificateTemplate(data: CertificateData) {
             fontSize: '52pt',
             fontWeight: 'normal',
             color: '#C9A24B',
-            margin: '-15px 0 0 0',
+            margin: '-10px 0 0 0', // Adjusted top margin
         },
         bodyText: {
             fontSize: '13pt',
@@ -167,6 +167,14 @@ export default function CertificateTemplate(data: CertificateData) {
             fontSize: '10pt',
             color: '#555',
             zIndex: 2,
+        },
+        issueDateTopLeft: {
+             position: 'absolute',
+            top: '20px',
+            left: '40px',
+            fontSize: '10pt',
+            color: '#555',
+            zIndex: 2,
         }
     };
     
@@ -175,6 +183,7 @@ export default function CertificateTemplate(data: CertificateData) {
             <div style={styles.borderOuter}>
                 <div style={styles.borderInner}>
                     <span style={styles.registrationNumber}>Registration No: {data.registrationNumber}</span>
+                    <span style={styles.issueDateTopLeft}>Issued on: {formatDate(data.issueDate)}</span>
                     <img src={data.watermarkUrl} style={styles.watermark} alt="Watermark" />
                     <div style={styles.content}>
                         <img src={data.logoUrl} style={styles.logo} alt="MTech IT Institute Logo" />
@@ -188,9 +197,7 @@ export default function CertificateTemplate(data: CertificateData) {
                         <p style={styles.bodyText}>
                             has successfully completed the
                             <br />
-                            <span style={styles.courseName}>{data.testName}</span>
-                            <br/>
-                            with a score of <strong>{data.score}/{data.totalMarks} ({data.percentage.toFixed(2)}%)</strong> on {formatDate(data.examDate)}.
+                            <span style={styles.courseName}>{data.testName} Course</span>
                         </p>
                     </div>
 
@@ -212,7 +219,6 @@ export default function CertificateTemplate(data: CertificateData) {
 
                      <div style={styles.footerContainer}>
                         <span>Certificate ID: {data.certificateId}</span>
-                        <span>Issued on: {formatDate(data.issueDate)}</span>
                     </div>
                 </div>
             </div>
