@@ -136,14 +136,14 @@ export default function CertificateTemplate(data: CertificateData) {
              marginBottom: '15px'
         },
         signatureImage: {
-            height: '40px',
+            height: '50px',
             width: 'auto',
             marginBottom: '5px',
         },
         signatureLine: {
             borderTop: '1px solid #555',
             margin: '0 auto',
-            width: '80%',
+            width: '70%',
         },
         signatureTitle: {
             marginTop: '8px',
