@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useActionState, useEffect, useRef } from "react";
-import { useFormStatus } from "react-dom";
+import { useState, useEffect, useRef } from "react";
+import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -55,7 +55,7 @@ export function ReviewFormModal({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [rating, setRating] = useState(0);
     const initialState: ReviewFormState = { message: "", isSuccess: false };
-    const [state, formAction] = useActionState(submitReviewForm, initialState);
+    const [state, formAction] = useFormState(submitReviewForm, initialState);
     const formRef = useRef<HTMLFormElement>(null);
     const { toast } = useToast();
 

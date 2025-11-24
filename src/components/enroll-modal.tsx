@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useActionState, useEffect, useRef, useTransition } from "react";
-import { useFormStatus } from "react-dom";
+import { useState, useEffect, useRef, useTransition } from "react";
+import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,7 +36,7 @@ function SubmitButton() {
 
 function EnrollmentForm({ onFormSuccess }: { onFormSuccess: () => void }) {
     const initialState: EnrollmentFormState = { message: "", isSuccess: false };
-    const [state, formAction] = useActionState(submitEnrollmentForm, initialState);
+    const [state, formAction] = useFormState(submitEnrollmentForm, initialState);
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(() => {
