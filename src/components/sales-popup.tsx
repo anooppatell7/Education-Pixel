@@ -64,7 +64,7 @@ export default function SalesPopup({ settings }: { settings: PopupSettings }) {
             {/* Image section */}
             <div className={cn(
                 "relative hidden md:flex items-center justify-center p-8",
-                settings.imageUrl ? "h-full" : "bg-black/20 rounded-l-2xl"
+                settings.imageUrl ? "h-full" : "rounded-l-2xl"
             )}>
                  {settings.imageUrl ? (
                     <Image 
@@ -74,13 +74,13 @@ export default function SalesPopup({ settings }: { settings: PopupSettings }) {
                         className="object-cover md:rounded-l-2xl"
                     />
                  ) : (
-                    <div className="flex flex-col items-center justify-center gap-4 opacity-80">
+                    <div className="flex flex-col items-center justify-center gap-4 h-full">
                       <Image
                         src="https://res.cloudinary.com/dzr4xjizf/image/upload/v1763980341/trasparent_logo_ok6afb.png"
                         alt="MTech IT Institute Logo"
-                        width={150}
-                        height={150}
-                        className="h-40 w-40 object-contain"
+                        width={200}
+                        height={200}
+                        className="h-52 w-52 object-contain"
                       />
                     </div>
                  )}
