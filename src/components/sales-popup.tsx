@@ -62,10 +62,7 @@ export default function SalesPopup({ settings }: { settings: PopupSettings }) {
 
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 items-center">
             {/* Image section */}
-            <div className={cn(
-                "relative hidden md:flex items-center justify-center p-8 min-h-full",
-                settings.imageUrl ? "h-full" : "rounded-l-2xl"
-            )}>
+            <div className="relative h-full hidden md:flex items-center justify-center p-8 min-h-[300px]">
                  {settings.imageUrl ? (
                     <Image 
                         src={settings.imageUrl} 
@@ -75,11 +72,12 @@ export default function SalesPopup({ settings }: { settings: PopupSettings }) {
                     />
                  ) : (
                     <Image
-                        src="https://res.cloudinary.com/dzr4xjizf/image/upload/v1763980341/trasparent_logo_ok6afb.png"
-                        alt="MTech IT Institute Logo"
-                        width={200}
-                        height={200}
-                        className="h-52 w-52 object-contain"
+                        src="https://res.cloudinary.com/dzr4xjizf/image/upload/v1764268686/3d-male-character-sitting-on-a-sofa-and-working-on-a-laptop-with-a-cup-of-coffee-on-the-side_1_a5trg5.png"
+                        alt="Cartoon student learning on computer"
+                        data-ai-hint="cartoon student"
+                        width={300}
+                        height={300}
+                        className="object-contain"
                     />
                  )}
             </div>
