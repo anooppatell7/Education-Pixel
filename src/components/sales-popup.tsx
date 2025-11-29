@@ -9,6 +9,7 @@ import Link from 'next/link';
 import type { PopupSettings } from '@/lib/types';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import Logo from './logo';
 
 const POPUP_DISMISSED_KEY = 'salesPopupDismissed_v2'; // Version updated to show new design
 
@@ -62,16 +63,21 @@ export default function SalesPopup({ settings }: { settings: PopupSettings }) {
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 items-center">
             {/* Image section */}
             <div className={cn(
-                "relative w-full md:h-full",
-                settings.imageUrl ? "h-64 md:h-full" : "h-0" // Collapse if no image
+                "relative hidden md:flex items-center justify-center p-8",
+                settings.imageUrl ? "h-full" : "bg-black/20 rounded-l-2xl"
             )}>
-                 {settings.imageUrl && (
+                 {settings.imageUrl ? (
                     <Image 
                         src={settings.imageUrl} 
                         alt={settings.title} 
                         fill
                         className="object-cover md:rounded-l-2xl"
                     />
+                 ) : (
+                    <div className="flex flex-col items-center justify-center gap-4 opacity-80">
+                      <Logo className="flex-col gap-4" textClassName="text-2xl text-white" />
+                      <div className="w-24 h-px bg-purple-300/50 mt-2"></div>
+                    </div>
                  )}
             </div>
             
