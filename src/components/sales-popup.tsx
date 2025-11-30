@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -36,7 +37,7 @@ export default function SalesPopup({ settings }: { settings: PopupSettings }) {
     setIsOpen(false);
   };
   
-  const defaultImageUrl = "https://res.cloudinary.com/dzr4xjizf/image/upload/v1764057861/student-cartoon_jdiqj1.png";
+  const defaultImageUrl = "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png";
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
