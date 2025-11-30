@@ -59,8 +59,8 @@ const ListItem = React.forwardRef<
           )}
           {...props}
         >
-          <div className="text-sm font-medium leading-none group-hover:text-card">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground group-hover:text-accent-foreground">
+          <div className="text-sm font-medium leading-none">{title}</div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
           </p>
         </a>
@@ -85,7 +85,7 @@ export default function Header() {
   }, []);
 
   const isLearnPage = pathname.startsWith('/learn');
-  const courseSlug = isLearnPage && pathname.split('/')[2] ? pathname.split('/')[2] : '';
+  const courseSlug = isLearnPage ? pathname.split('/')[2] : '';
 
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
 
@@ -164,39 +164,39 @@ export default function Header() {
 
   if (!isMounted) {
     return (
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-[#0d1a3a] to-blue-900/80 text-white">
         <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
-          <Logo />
+          <Logo textClassName="text-white" />
         </div>
       </header>
     );
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-blue-800/20 bg-gradient-to-r from-[#0d1a3a] to-blue-900/80 text-white backdrop-blur-sm">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
-        <Logo />
+        <Logo textClassName="text-white" />
 
         <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
                 <NavigationMenuItem>
                     <Link href="/" legacyBehavior passHref>
                       <NavigationMenuLink asChild>
-                        <a className={navigationMenuTriggerStyle()}>Home</a>
+                        <a className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-white/10")}>Home</a>
                       </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                      <Link href="/about" legacyBehavior passHref>
                         <NavigationMenuLink asChild>
-                            <a className={navigationMenuTriggerStyle()}>About</a>
+                            <a className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-white/10")}>About</a>
                         </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                  <NavigationMenuItem>
-                    <NavigationMenuTrigger>Academics</NavigationMenuTrigger>
+                    <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/10 data-[state=open]:bg-white/10">Academics</NavigationMenuTrigger>
                     <NavigationMenuContent>
-                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] bg-background text-foreground">
                         {academicsComponents.map((component) => (
                           <Link href={component.href} key={component.title} className="group">
                             <ListItem title={component.title}>
@@ -208,9 +208,9 @@ export default function Header() {
                     </NavigationMenuContent>
                 </NavigationMenuItem>
                  <NavigationMenuItem>
-                    <NavigationMenuTrigger>Exams</NavigationMenuTrigger>
+                    <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/10 data-[state=open]:bg-white/10">Exams</NavigationMenuTrigger>
                     <NavigationMenuContent>
-                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px]">
+                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] bg-background text-foreground">
                         {examsComponents.map((component) => {
                            if (component.auth && !user) return null;
                            if (component.registeredOnly && !isRegistered) return null;
@@ -229,21 +229,21 @@ export default function Header() {
                 <NavigationMenuItem>
                     <Link href="/blog" legacyBehavior passHref>
                       <NavigationMenuLink asChild>
-                        <a className={navigationMenuTriggerStyle()}>Blog</a>
+                        <a className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-white/10")}>Blog</a>
                       </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                     <Link href="/verify-certificate" legacyBehavior passHref>
                          <NavigationMenuLink asChild>
-                            <a className={navigationMenuTriggerStyle()}>Verify Certificate<span className="text-accent">.</span></a>
+                            <a className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-white/10")}>Verify Certificate<span className="text-green-300">.</span></a>
                           </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                     <Link href="/contact" legacyBehavior passHref>
                       <NavigationMenuLink asChild>
-                        <a className={navigationMenuTriggerStyle()}>Contact</a>
+                        <a className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-white/10")}>Contact</a>
                       </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
@@ -255,7 +255,7 @@ export default function Header() {
               user ? (
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                        <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-white/10">
                            <Avatar className="h-8 w-8">
                                 <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || 'User'} />
                                 <AvatarFallback>{user.displayName?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
@@ -296,10 +296,10 @@ export default function Header() {
                  </DropdownMenu>
               ) : (
                 <div className='hidden md:flex'>
-                  <Button variant="ghost" asChild>
+                  <Button variant="ghost" asChild className="text-white hover:bg-white/10 hover:text-white">
                      <Link href="/login">Log In</Link>
                   </Button>
-                  <Button asChild>
+                  <Button asChild className="bg-white text-primary hover:bg-white/90">
                      <Link href="/signup">Sign Up</Link>
                   </Button>
                 </div>
@@ -309,7 +309,7 @@ export default function Header() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="md:hidden text-white hover:bg-white/10"
             onClick={() => setIsOpen(!isOpen)}
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
