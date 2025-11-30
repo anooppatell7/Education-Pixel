@@ -1,10 +1,9 @@
-
-'use client';
+"use client";
 
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, Sparkles, Code, Cpu, Database, Server, GraduationCap } from 'lucide-react';
+import { X, Sparkles, Code, Cpu, Database } from 'lucide-react';
 import Link from 'next/link';
 import type { PopupSettings } from '@/lib/types';
 import Image from 'next/image';
@@ -37,6 +36,8 @@ export default function SalesPopup({ settings }: { settings: PopupSettings }) {
     setIsOpen(false);
   };
   
+  const defaultImageUrl = "https://res.cloudinary.com/dzr4xjizf/image/upload/v1764057861/student-cartoon_jdiqj1.png";
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
         if (!open) handleClose();
@@ -47,18 +48,14 @@ export default function SalesPopup({ settings }: { settings: PopupSettings }) {
         onInteractOutside={handleClose}
       >
         <div className="grid grid-cols-1 md:grid-cols-2">
-            <div className="relative hidden md:flex flex-col items-center justify-center p-8 bg-gray-900/50 rounded-l-2xl">
-                {settings.imageUrl ? (
-                    <Image
-                        src={settings.imageUrl}
-                        alt="Promotional image"
-                        width={400}
-                        height={400}
-                        className="object-contain"
-                    />
-                ) : (
-                    <Image src="https://res.cloudinary.com/dzr4xjizf/image/upload/v1764057861/student-cartoon_jdiqj1.png" alt="Student learning" width={300} height={300} className="object-contain" />
-                )}
+            <div className="relative hidden md:flex flex-col items-center justify-center p-8 rounded-l-2xl">
+                <Image
+                    src={settings.imageUrl || defaultImageUrl}
+                    alt="Promotional image"
+                    width={400}
+                    height={400}
+                    className="object-contain"
+                />
             </div>
             
             <div className="relative p-8 sm:p-10 flex flex-col items-center justify-center text-center bg-gradient-to-br from-indigo-900/80 via-purple-950/70 to-blue-900/80 rounded-r-2xl rounded-l-2xl md:rounded-l-none">
