@@ -37,17 +37,17 @@ export default function Hero() {
           </Button>
         </div>
 
-        <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <div className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm">
-                <Award className="h-5 w-5 text-white" />
+        <div className="mt-10 flex flex-wrap justify-center gap-6">
+            <div className="flex items-center gap-2 text-sm font-medium text-white">
+                <Award className="h-5 w-5 text-green-300" />
                 <span>20+ Years Of Experience</span>
             </div>
-            <div className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm">
-                <Users className="h-5 w-5 text-white" />
+            <div className="flex items-center gap-2 text-sm font-medium text-white">
+                <Users className="h-5 w-5 text-green-300" />
                 <span>1000+ Students Trained</span>
             </div>
-            <div className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm">
-                <Briefcase className="h-5 w-5 text-white" />
+            <div className="flex items-center gap-2 text-sm font-medium text-white">
+                <Briefcase className="h-5 w-5 text-green-300" />
                 <span>Job-Ready IT Skills</span>
             </div>
         </div>
