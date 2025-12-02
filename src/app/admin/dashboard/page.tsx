@@ -9,7 +9,7 @@
 import Link from "next/link";
 import React, { useState, useEffect, use } from "react";
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv } from "lucide-react";
+import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -774,12 +774,12 @@ export default function AdminDashboardPage() {
         }
     };
 
-    const handleUploadLearnContent = async () => {
+    const handleUploadAllContent = async () => {
         if (!db) {
             toast({ title: "Error", description: "Database not initialized.", variant: "destructive" });
             return;
         }
-        if (!confirm("Are you sure you want to upload all static content to Firestore? This will overwrite existing data with the same IDs.")) {
+        if (!confirm("Are you sure you want to upload all static course content? This will overwrite existing data in 'learningCourses' and 'courses' collections based on their IDs.")) {
             return;
         }
         
@@ -794,13 +794,13 @@ export default function AdminDashboardPage() {
                 batch.set(courseRef, courseDocData);
 
                 for (const module of course.modules) {
-                    const moduleRef = doc(collection(courseRef, "modules"), module.id);
-                     const moduleDocData = { ...module };
-                     delete (moduleDocData as any).lessons;
+                    const moduleRef = doc(db, "learningCourses", course.id, "modules", module.id);
+                    const moduleDocData = { ...module };
+                    delete (moduleDocData as any).lessons;
                     batch.set(moduleRef, moduleDocData);
 
                     for (const lesson of module.lessons) {
-                        const lessonRef = doc(collection(moduleRef, "lessons"), lesson.id);
+                        const lessonRef = doc(db, "learningCourses", course.id, "modules", module.id, "lessons", lesson.id);
                         batch.set(lessonRef, lesson);
                     }
                 }
@@ -808,17 +808,17 @@ export default function AdminDashboardPage() {
             
             // Upload Marketing Courses from marketing-courses.json
             for (const course of marketingCoursesData) {
-                const courseRef = doc(collection(db, "courses"));
+                const courseRef = doc(db, "courses", course.id);
                 batch.set(courseRef, course);
             }
 
             await batch.commit();
-            toast({ title: "Success", description: "All static course content uploaded to Firestore." });
+            toast({ title: "Success", description: "All static course content has been uploaded to Firestore." });
             await fetchData(); // Refresh data in the dashboard
 
         } catch (error) {
             console.error("Error uploading content:", error);
-            toast({ title: "Error", description: "Could not upload content.", variant: "destructive" });
+            toast({ title: "Error", description: "Could not upload content to Firestore.", variant: "destructive" });
         }
     };
 
@@ -1199,6 +1199,7 @@ export default function AdminDashboardPage() {
                                         {unreadEnrollments > 0 && <Badge className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{unreadEnrollments}</Badge>}
                                     </TabsTrigger>
                                     <TabsTrigger value="contacts"><MessageSquare className="mr-2 h-4 w-4"/>Contacts</TabsTrigger>
+                                    <TabsTrigger value="data-management"><Database className="mr-2 h-4 w-4"/>Data Management</TabsTrigger>
                                     <TabsTrigger value="site-settings"><Megaphone className="mr-2 h-4 w-4"/>Announcements</TabsTrigger>
                                     <TabsTrigger value="popup-settings"><Tv className="mr-2 h-4 w-4"/>Popup</TabsTrigger>
                                     <TabsTrigger value="settings"><Settings className="mr-2 h-4 w-4"/>Settings</TabsTrigger>
@@ -1206,7 +1207,7 @@ export default function AdminDashboardPage() {
                                 <ScrollBar orientation="horizontal" />
                             </ScrollArea>
                              <div className="ml-auto flex items-center gap-2 pl-4">
-                                {activeTab !== 'settings' && activeTab !== 'site-settings' && activeTab !== 'popup-settings' && activeTab !== 'enrollments' && activeTab !== 'contacts' && activeTab !== 'internal-links' && activeTab !== 'reviews' && activeTab !== 'exam-registrations' && activeTab !== 'exam-results' && activeTab !== 'certificates' && (
+                                {activeTab !== 'settings' && activeTab !== 'site-settings' && activeTab !== 'popup-settings' && activeTab !== 'enrollments' && activeTab !== 'contacts' && activeTab !== 'internal-links' && activeTab !== 'reviews' && activeTab !== 'exam-registrations' && activeTab !== 'exam-results' && activeTab !== 'certificates' && activeTab !== 'data-management' && (
                                 <Button size="sm" className="h-8 gap-1" onClick={() => handleAddNew()}>
                                     <PlusCircle className="h-3.5 w-3.5" />
                                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -1515,11 +1516,6 @@ export default function AdminDashboardPage() {
                                         </div>
                                     )}
                                 </CardContent>
-                                 <CardFooter>
-                                    <Button onClick={handleUploadLearnContent} variant="outline">
-                                        <Upload className="mr-2 h-4 w-4"/> Upload All Static Content
-                                    </Button>
-                                </CardFooter>
                             </Card>
                         </TabsContent>
                          <TabsContent value="test-categories">
@@ -2035,6 +2031,29 @@ export default function AdminDashboardPage() {
                                          <ScrollBar orientation="horizontal" />
                                      </ScrollArea>
                                      }
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                         <TabsContent value="data-management">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Data Management</CardTitle>
+                                    <CardDescription>
+                                        Use these tools to manage your site's static content.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4 max-w-md">
+                                        <div className="rounded-lg border p-4">
+                                            <h3 className="font-semibold">Upload All Static Course Content</h3>
+                                            <p className="text-sm text-muted-foreground mt-1">
+                                                This will upload content from your local JSON files (`courses.json` & `marketing-courses.json`) to Firestore. This will overwrite any existing courses with the same IDs.
+                                            </p>
+                                            <Button onClick={handleUploadAllContent} variant="outline" className="mt-4">
+                                                <Upload className="mr-2 h-4 w-4"/> Upload All Content
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </CardContent>
                             </Card>
                         </TabsContent>
