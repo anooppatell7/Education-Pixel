@@ -7,7 +7,7 @@ import { useParams, notFound } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ListChecks, Clock, ArrowRight, BarChart, ChevronLeft } from "lucide-react";
-import type { MockTest, TestResult, TestCategory, ExamResult } from "@/lib/types";
+import type { MockTest, TestResult, TestCategory, ExamResult, ExamRegistration } from "@/lib/types";
 import { useUser, useFirestore } from "@/firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,6 +41,7 @@ export default function StudentExamPage() {
 
     const [mockTests, setMockTests] = useState<MockTest[]>([]);
     const [userResults, setUserResults] = useState<ExamResult[]>([]);
+    const [registration, setRegistration] = useState<ExamRegistration | null>(null);
     
     const [isLoading, setIsLoading] = useState(true);
 
@@ -51,18 +52,32 @@ export default function StudentExamPage() {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                // Fetch tests for this category. We assume 'exam' is a special categoryId for registered students
+                 // 1. Fetch user's registration details first
+                const regRef = doc(db, 'examRegistrations', user.uid);
+                const regSnap = await getDoc(regRef);
+
+                if (!regSnap.exists()) {
+                    // If user is not registered, they shouldn't see any exams.
+                    setIsLoading(false);
+                    return;
+                }
+                
+                const regData = { id: regSnap.id, ...regSnap.data() } as ExamRegistration;
+                setRegistration(regData);
+
+                // 2. Fetch tests that match the user's registered course
                 const testsQuery = query(
                     collection(db, "mockTests"),
                     where("categoryName", "==", "Student Exam"),
-                    where("isPublished", "==", true)
+                    where("isPublished", "==", true),
+                    where("title", "==", regData.course) // <-- This is the new restriction
                 );
                 const testsSnapshot = await getDocs(testsQuery);
                 const testList = testsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MockTest));
                 setMockTests(testList);
 
             } catch (error) {
-                console.error("Failed to fetch mock tests by category:", error);
+                console.error("Failed to fetch mock tests:", error);
             } finally {
                 setIsLoading(false);
             }
@@ -74,26 +89,17 @@ export default function StudentExamPage() {
     // Fetch results for the current user
     useEffect(() => {
         const fetchUserResults = async () => {
-            if (!user || !firestore || mockTests.length === 0) {
+            if (!user || !firestore || mockTests.length === 0 || !registration) {
                 return;
             };
 
             const testIds = mockTests.map(t => t.id);
             if (testIds.length === 0) return;
 
-            // Fetch registration details to get registrationNumber
-            const regRef = doc(firestore, 'examRegistrations', user.uid);
-            const regSnap = await getDoc(regRef);
-            if (!regSnap.exists()) {
-                // Not a registered student, so no official exam results to fetch
-                return;
-            }
-            const registrationNumber = regSnap.data().registrationNumber;
-
             try {
                 const resultsQuery = query(
                     collection(firestore, 'examResults'),
-                    where('registrationNumber', '==', registrationNumber),
+                    where('registrationNumber', '==', registration.registrationNumber),
                     where('testId', 'in', testIds)
                 );
                 const resultsSnapshot = await getDocs(resultsQuery);
@@ -113,7 +119,7 @@ export default function StudentExamPage() {
         if (!userLoading && !isLoading) {
             fetchUserResults();
         }
-    }, [user, userLoading, firestore, isLoading, mockTests]);
+    }, [user, userLoading, firestore, isLoading, mockTests, registration]);
     
     const latestResultsMap = new Map<string, ExamResult>();
     userResults.forEach(result => {
@@ -133,7 +139,7 @@ export default function StudentExamPage() {
                     }
                     {pageLoading ? <Skeleton className="h-6 w-1/2 mx-auto mt-4" /> :
                       <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-50">
-                          These are the official exams available for registered students.
+                          These are the official exams available for your registered course.
                       </p>
                     }
                 </div>
@@ -190,8 +196,8 @@ export default function StudentExamPage() {
                     ) : (
                         <Card>
                             <CardContent className="p-12 text-center text-muted-foreground">
-                                <p className="text-lg">No official exams are available right now.</p>
-                                <p className="mt-2 text-sm">Please check back later.</p>
+                                <p className="text-lg">{!registration ? "You are not registered for any official exams." : "No official exams are available for your course right now."}</p>
+                                <p className="mt-2 text-sm">{!registration ? <Link href="/exam/register" className="text-accent underline">Click here to register.</Link> : "Please check back later."}</p>
                             </CardContent>
                         </Card>
                     )}
