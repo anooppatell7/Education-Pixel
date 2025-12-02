@@ -3,21 +3,23 @@
 
 import { useEffect, useState } from 'react';
 import { useUser } from '@/firebase';
-import { doc, getDoc, collection, query, where, getDocs, orderBy, runTransaction, serverTimestamp, setDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, orderBy, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { ExamRegistration, ExamResult, Certificate } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, Mail, Phone, Calendar, Key, UserCheck, Briefcase, FileText, BarChart, GraduationCap, Award, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Key, UserCheck, Briefcase, FileText, BarChart, GraduationCap, Award, Loader2, Edit } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { generateCertificatePdf } from '@/lib/certificate-generator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 function ProfileSkeleton() {
     return (
@@ -74,6 +76,9 @@ export default function ProfilePage() {
     const [registration, setRegistration] = useState<ExamRegistration | null>(null);
     const [examHistory, setExamHistory] = useState<ExamResult[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
+    const [formData, setFormData] = useState<Partial<ExamRegistration>>({});
+    const [isSaving, setIsSaving] = useState(false);
     const [isGeneratingCert, setIsGeneratingCert] = useState<string | null>(null);
     const router = useRouter();
     const { toast } = useToast();
@@ -93,6 +98,7 @@ export default function ProfilePage() {
             if (docSnap.exists()) {
                 const regData = { id: docSnap.id, ...docSnap.data() } as ExamRegistration;
                 setRegistration(regData);
+                setFormData(regData);
 
                 // Fetch Exam History
                 const historyQuery = query(
@@ -113,6 +119,31 @@ export default function ProfilePage() {
 
         fetchProfileData();
     }, [user, userLoading, router]);
+
+    const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSaveChanges = async () => {
+        if (!user || !registration) return;
+        setIsSaving(true);
+        try {
+            const docRef = doc(db, 'examRegistrations', user.uid);
+            // Ensure the course cannot be changed
+            const dataToUpdate = { ...formData, course: registration.course };
+            await updateDoc(docRef, dataToUpdate);
+            setRegistration(dataToUpdate as ExamRegistration);
+            setIsEditing(false);
+            toast({ title: "Success", description: "Your profile has been updated." });
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            toast({ title: "Error", description: "Failed to update profile. Please try again.", variant: "destructive" });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
 
     const handleGenerateCertificate = async (result: ExamResult) => {
         if (!registration || !result.certificateId) {
@@ -214,6 +245,9 @@ export default function ProfilePage() {
             </div>
         );
     }
+    
+    const dobValue = typeof formData.dob === 'string' ? formData.dob : format(new Date(), 'yyyy-MM-dd');
+
 
     return (
         <div className="bg-secondary">
@@ -230,18 +264,63 @@ export default function ProfilePage() {
                                    <Mail className="h-4 w-4" /> {registration.email}
                                 </CardDescription>
                             </div>
+                            {!isEditing && (
+                                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="sm:ml-auto">
+                                    <Edit className="mr-2 h-4 w-4" /> Edit Profile
+                                </Button>
+                            )}
                         </div>
                     </CardHeader>
                     <CardContent className="p-8 bg-background">
                         <h3 className="font-headline text-2xl text-primary mb-6 border-l-4 border-accent pl-4">Personal Information</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
-                            <ProfileDetail icon={<Key className="h-6 w-6"/>} label="Registration Number" value={registration.registrationNumber} />
-                            <ProfileDetail icon={<Briefcase className="h-6 w-6"/>} label="Course" value={registration.course} />
-                            <ProfileDetail icon={<User className="h-6 w-6"/>} label="Father's Name" value={registration.fatherName} />
-                            <ProfileDetail icon={<Phone className="h-6 w-6"/>} label="Phone Number" value={registration.phone} />
-                            <ProfileDetail icon={<Calendar className="h-6 w-6"/>} label="Date of Birth" value={format(new Date(registration.dob), "PPP")} />
-                            <ProfileDetail icon={<UserCheck className="h-6 w-6"/>} label="Gender" value={registration.gender} />
-                        </div>
+                        
+                        {isEditing ? (
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="fullName">Full Name</Label>
+                                        <Input id="fullName" name="fullName" value={formData.fullName || ''} onChange={handleFormChange} />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="fatherName">Father's Name</Label>
+                                        <Input id="fatherName" name="fatherName" value={formData.fatherName || ''} onChange={handleFormChange} />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="email">Email</Label>
+                                        <Input id="email" name="email" type="email" value={formData.email || ''} onChange={handleFormChange} />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="phone">Phone Number</Label>
+                                        <Input id="phone" name="phone" value={formData.phone || ''} onChange={handleFormChange} />
+                                    </div>
+                                     <div className="grid gap-2">
+                                        <Label htmlFor="dob">Date of Birth</Label>
+                                        <Input id="dob" name="dob" type="date" value={dobValue} onChange={handleFormChange} />
+                                    </div>
+                                     <div className="grid gap-2">
+                                        <Label>Course (Locked)</Label>
+                                        <Input value={registration.course} disabled />
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-4 mt-6">
+                                    <Button variant="outline" onClick={() => { setIsEditing(false); setFormData(registration); }}>Cancel</Button>
+                                    <Button onClick={handleSaveChanges} disabled={isSaving}>
+                                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                        Save Changes
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                                <ProfileDetail icon={<Key className="h-6 w-6"/>} label="Registration Number" value={registration.registrationNumber} />
+                                <ProfileDetail icon={<Briefcase className="h-6 w-6"/>} label="Course" value={registration.course} />
+                                <ProfileDetail icon={<User className="h-6 w-6"/>} label="Father's Name" value={registration.fatherName} />
+                                <ProfileDetail icon={<Phone className="h-6 w-6"/>} label="Phone Number" value={registration.phone} />
+                                <ProfileDetail icon={<Calendar className="h-6 w-6"/>} label="Date of Birth" value={format(parseISO(registration.dob), "PPP")} />
+                                <ProfileDetail icon={<UserCheck className="h-6 w-6"/>} label="Gender" value={registration.gender} />
+                            </div>
+                        )}
+
 
                         <div className="mt-12 pt-8 border-t">
                             <h3 className="font-headline text-2xl text-primary mb-6 border-l-4 border-accent pl-4">Exam History</h3>
