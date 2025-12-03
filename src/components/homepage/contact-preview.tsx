@@ -51,7 +51,7 @@ export default function ContactPreview() {
           </div>
           <div className="rounded-lg overflow-hidden shadow-lg border">
             <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3591.319152288344!2d82.2033033750868!3d25.826207477313364!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399a6015560731a5%3A0x8e83b6b3c668615!2sMTech%20IT%20Institute%20-%20Best%20Computer%20Institute%20in%20Patti%2C%20Pratapgarh!5e0!3m2!1sen!2sin!4v1758500057404!5m2!1sen!2sin"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d957.3305907170931!2d82.19267631634396!3d25.922230757602886!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399a9f8abb1173f7%3A0xf70478b1a3aa12da!2sMTECH%20IT%20INSTITUTE!5e0!3m2!1sen!2sin!4v1764752987433!5m2!1sen!2sin"
                 width="100%"
                 height="450"
                 style={{ border: 0 }}
