@@ -4,6 +4,7 @@
 
 
 
+
 "use client";
 
 import Link from "next/link";
@@ -554,6 +555,7 @@ export default function AdminDashboardPage() {
                 dataToSave.image = dataToSave.image || "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png";
                 dataToSave.actualPrice = String(dataToSave.actualPrice || '');
                 dataToSave.discountPrice = String(dataToSave.discountPrice || '');
+                dataToSave.isFeatured = !!dataToSave.isFeatured;
             } else if (activeTab === 'blog' || activeTab === 'guidance') {
                 collectionRef = collection(db, "blog");
                 docId = (editingItem as BlogPost)?.slug;
@@ -704,6 +706,19 @@ export default function AdminDashboardPage() {
         } catch (error) {
             console.error("Error updating popup settings:", error);
             toast({ title: "Error", description: "Could not update popup settings.", variant: "destructive" });
+        }
+    };
+
+    const handleFeatureToggle = async (courseId: string, isFeatured: boolean) => {
+        if (!db) return;
+        try {
+            const courseRef = doc(db, "courses", courseId);
+            await updateDoc(courseRef, { isFeatured });
+            setCourses(courses.map(c => c.id === courseId ? { ...c, isFeatured } : c));
+            toast({ title: "Success", description: `Course feature status updated.` });
+        } catch (error) {
+            console.error("Error updating course feature status:", error);
+            toast({ title: "Error", description: "Could not update course status.", variant: "destructive" });
         }
     };
 
@@ -903,6 +918,10 @@ export default function AdminDashboardPage() {
                     <div className="grid gap-2">
                         <Label htmlFor="image">Image URL</Label>
                         <Input id="image" name="image" value={formData.image || ''} onChange={handleFormChange} placeholder="https://example.com/image.jpg"/>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Switch id="isFeatured" name="isFeatured" checked={formData.isFeatured || false} onCheckedChange={(checked) => setFormData({...formData, isFeatured: checked})} />
+                        <Label htmlFor="isFeatured">Feature on Homepage</Label>
                     </div>
                 </>
             );
@@ -1222,7 +1241,7 @@ export default function AdminDashboardPage() {
                                 <CardHeader>
                                     <CardTitle>Courses</CardTitle>
                                     <CardDescription>
-                                        Manage your institute's courses.
+                                        Manage your institute's courses. Enable the "Featured" toggle to show a course on the homepage.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
@@ -1234,6 +1253,7 @@ export default function AdminDashboardPage() {
                                                     <TableHead className="hidden sm:table-cell">Image</TableHead>
                                                     <TableHead>Title</TableHead>
                                                     <TableHead>Price</TableHead>
+                                                    <TableHead>Featured</TableHead>
                                                     <TableHead className="hidden md:table-cell">Duration</TableHead>
                                                     <TableHead>
                                                         <span className="sr-only">Actions</span>
@@ -1248,6 +1268,12 @@ export default function AdminDashboardPage() {
                                                         </TableCell>
                                                         <TableCell className="font-medium">{course.title}</TableCell>
                                                         <TableCell>{course.discountPrice}</TableCell>
+                                                        <TableCell>
+                                                            <Switch
+                                                                checked={course.isFeatured}
+                                                                onCheckedChange={(checked) => handleFeatureToggle(course.id, checked)}
+                                                            />
+                                                        </TableCell>
                                                         <TableCell className="hidden md:table-cell">{course.duration}</TableCell>
                                                         <TableCell className="text-right">
                                                             <DropdownMenu>

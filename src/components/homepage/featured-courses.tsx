@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import CourseCard from "@/components/course-card";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, limit, query } from "firebase/firestore";
+import { collection, getDocs, limit, query, where } from "firebase/firestore";
 import type { Course } from "@/lib/types";
 import marketingCourses from '@/lib/data/marketing-courses.json';
 
@@ -14,12 +14,16 @@ export const revalidate = 0;
 
 async function getFeaturedCourses(): Promise<Course[]> {
     try {
-        const coursesQuery = query(collection(db, "courses"), limit(3));
+        const coursesQuery = query(
+            collection(db, "courses"), 
+            where("isFeatured", "==", true), 
+            limit(3)
+        );
         const courseSnapshot = await getDocs(coursesQuery);
         
         if (courseSnapshot.empty) {
-            console.log('No courses found in Firestore, falling back to local data.');
-            // Fallback to local data if Firestore is empty
+            console.log('No featured courses found in Firestore, falling back to local data.');
+            // Fallback to local data if no featured courses are set
             return marketingCourses.slice(0, 3) as Course[];
         }
 

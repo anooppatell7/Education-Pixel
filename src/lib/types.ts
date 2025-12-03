@@ -18,6 +18,7 @@ export type Course = {
   syllabus: string[];
   image: string;
   eligibility?: string;
+  isFeatured?: boolean;
 };
 
 export type BlogPost = {
