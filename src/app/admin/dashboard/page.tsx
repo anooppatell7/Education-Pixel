@@ -6,6 +6,7 @@
 
 
 
+
 "use client";
 
 import Link from "next/link";
@@ -189,7 +190,7 @@ export default function AdminDashboardPage() {
             const enrollmentList = enrollmentSnapshot.docs.map(doc => {
               const data = doc.data();
               const submittedAt = (data.submittedAt as Timestamp)?.toDate().toLocaleString() || new Date().toLocaleString();
-              return { id: doc.id, ...data, submittedAt } as Enrollment;
+              return { id: doc.id, ...data, submittedAt, isRead: data.isRead || false } as Enrollment;
             });
             setEnrollments(enrollmentList);
             
@@ -232,7 +233,7 @@ export default function AdminDashboardPage() {
             const examRegList = examRegSnapshot.docs.map(doc => {
                 const data = doc.data();
                 const registeredAt = (data.registeredAt as Timestamp)?.toDate().toLocaleString() || new Date().toLocaleString();
-                return { id: doc.id, ...data, registeredAt } as ExamRegistration;
+                return { id: doc.id, ...data, registeredAt, isRead: data.isRead || false } as ExamRegistration;
             });
             setExamRegistrations(examRegList);
 
@@ -623,16 +624,14 @@ export default function AdminDashboardPage() {
             // Standard DB operations for non-question items
             if (activeTab !== 'mock-tests' || !formParentIds?.testId) {
                 if (editingItem && docId) {
-                    if (activeTab === 'blog' || activeTab === 'guidance' || (activeTab === 'learn-content' && !formParentIds?.courseId)) {
+                    // For test-categories, we use setDoc because the ID (slug) might change
+                    if (activeTab === 'blog' || activeTab === 'guidance' || activeTab === 'test-categories' || (activeTab === 'learn-content' && !formParentIds?.courseId)) {
                          await setDoc(doc(collectionRef, docId), dataToSave);
-                    } else if (activeTab === 'test-categories') {
-                        // This case was causing the bug. docId is already defined.
-                        if (!docId) throw new Error("ID was not created for the new test category.");
-                        await setDoc(doc(collectionRef, docId), dataToSave);
                     } else {
                         await updateDoc(doc(collectionRef, docId), dataToSave);
                     }
                 } else {
+                    // For test-categories, the docId is the slug we generate
                     if (activeTab === 'blog' || activeTab === 'guidance' || activeTab === 'learn-content' || activeTab === 'test-categories') {
                         docId = dataToSave.id || createSlug(dataToSave.title);
                         if (!docId) throw new Error("Slug/ID could not be created for new item.");
@@ -2234,3 +2233,4 @@ export default function AdminDashboardPage() {
         </>
     );
 }
+
