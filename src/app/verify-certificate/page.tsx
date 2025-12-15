@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, CheckCircle, XCircle, Award } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { db } from '@/lib/firebase';
+import { db } from '@/firebase';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import SectionDivider from '@/components/section-divider';
 import type { ExamResult } from '@/lib/types';

@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, notFound, useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
 import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/firebase';
 import type { MockTest, ExamResult as ExamResultType, ExamRegistration } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { BarChart, Clock, Target, Check, X, ShieldQuestion, HelpCircle, Award, Loader2 } from 'lucide-react';

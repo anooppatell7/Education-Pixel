@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import CourseCard from "@/components/course-card";
-import { db } from "@/lib/firebase";
+import { db } from "@/firebase";
 import { collection, getDocs, limit, query, where } from "firebase/firestore";
 import type { Course } from "@/lib/types";
 import marketingCourses from '@/lib/data/marketing-courses.json';

@@ -6,6 +6,10 @@ import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import type { BlogPost, SiteSettings, UserProgress, TestResult, ExamResult, Certificate, PopupSettings } from "./types";
 
+// NOTE: This file is now deprecated in favor of the new src/firebase/index.ts setup.
+// It is kept for reference but new imports should point to the new structure.
+// The core logic has been moved to src/firebase/index.ts and related provider files.
+
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -16,17 +20,12 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
+
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-// This is needed for phone auth to work with app check
-if (typeof window !== "undefined") {
-    // @ts-ignore
-    self.FIREBASE_APPCHECK_DEBUG_TOKEN = process.env.NODE_ENV === 'development';
-}
 
 export async function getBlogPostsByCategory(category: string): Promise<BlogPost[]> {
     const blogQuery = query(

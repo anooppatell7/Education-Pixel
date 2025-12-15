@@ -5,7 +5,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { notFound, useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/firebase';
 import type { MockTest, TestQuestion } from '@/lib/types';
 import { useMockTest } from '@/hooks/use-mock-test';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';

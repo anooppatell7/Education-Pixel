@@ -1,5 +1,5 @@
 
-import { db } from "@/lib/firebase";
+import { db } from "@/firebase";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import type { Review } from "@/lib/types";
 import type { Metadata } from 'next';

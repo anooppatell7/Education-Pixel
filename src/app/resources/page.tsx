@@ -1,5 +1,5 @@
 
-import { db } from "@/lib/firebase";
+import { db } from "@/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import type { Resource } from "@/lib/types";
 import AdPlaceholder from "@/components/ad-placeholder";

@@ -3,11 +3,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { LearningCourse, UserProgress } from '@/lib/types';
-import { useUser } from '@/firebase';
-import { updateUserProgress } from '@/lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-
+import { useUser, useFirestore } from '@/firebase';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 
 // Helper to get total lesson count from a LIVE course object
 const getTotalLessonsFromCourse = (course: LearningCourse | null): number => {
@@ -17,8 +14,15 @@ const getTotalLessonsFromCourse = (course: LearningCourse | null): number => {
 
 export const useLearnProgress = () => {
     const { user } = useUser();
+    const db = useFirestore();
     const [progress, setProgress] = useState<UserProgress>({});
     const [isLoading, setIsLoading] = useState(true);
+
+    const updateUserProgress = async (userId: string, newProgress: UserProgress) => {
+        if (!db) return;
+        const docRef = doc(db, 'userProgress', userId);
+        await setDoc(docRef, newProgress, { merge: true });
+    };
 
     // Set up a real-time listener for user progress
     useEffect(() => {
@@ -46,7 +50,7 @@ export const useLearnProgress = () => {
             setProgress({});
             setIsLoading(false);
         }
-    }, [user]);
+    }, [user, db]);
 
     // This function now ONLY writes to the database.
     // The local state will be updated by the onSnapshot listener.

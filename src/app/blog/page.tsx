@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { db } from "@/lib/firebase";
+import { db } from "@/firebase";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import type { BlogPost } from "@/lib/types";
 import BlogCard from "@/components/blog-card";
@@ -161,5 +161,3 @@ export default function BlogPage() {
     </>
   );
 }
-
-    

@@ -3,7 +3,7 @@
 "use server";
 
 import { z } from "zod";
-import { db } from "@/lib/firebase";
+import { db } from "@/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const contactFormSchema = z.object({

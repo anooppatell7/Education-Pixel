@@ -5,13 +5,22 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocalStorage } from './use-local-storage';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { User } from 'firebase/auth';
-import { db, storage } from '@/lib/firebase';
-import { doc, getDocs, query, collection, where, runTransaction, serverTimestamp, getDoc } from "firebase/firestore";
+import { db, storage } from '@/firebase';
+import { doc, getDocs, query, collection, where, runTransaction, serverTimestamp, getDoc, addDoc } from "firebase/firestore";
 import type { MockTest, TestQuestion, TestResponse, TestResult, ExamResult, ExamRegistration, Certificate } from '@/lib/types';
-import { saveExamResult, saveCertificate } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import { generateCertificatePdf } from '@/lib/certificate-generator';
+
+
+const saveExamResult = async (result: Omit<ExamResult, 'id' | 'submittedAt'>): Promise<string> => {
+    const resultWithTimestamp = {
+        ...result,
+        submittedAt: serverTimestamp(),
+    };
+    const docRef = await addDoc(collection(db, 'examResults'), resultWithTimestamp);
+    return docRef.id;
+};
 
 
 export const useMockTest = (testId: string) => {

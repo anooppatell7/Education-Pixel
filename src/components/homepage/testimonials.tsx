@@ -1,7 +1,7 @@
 
 "use client";
 
-import { db } from "@/lib/firebase";
+import { db } from "@/firebase";
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 import type { Review } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";

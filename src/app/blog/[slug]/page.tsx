@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Calendar, User, Tag } from "lucide-react";
 import AdPlaceholder from "@/components/ad-placeholder";
 import { Badge } from "@/components/ui/badge";
-import { db } from "@/lib/firebase";
+import { db } from "@/firebase";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import type { BlogPost, InternalLink } from "@/lib/types";
 import type { Metadata } from 'next';

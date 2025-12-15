@@ -5,10 +5,9 @@ import Link from "next/link";
 import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, UserCircle, ChevronDown, BookOpen, GraduationCap, FileText, ListTodo, Edit } from "lucide-react";
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useUser, useAuth } from "@/firebase";
+import { useUser, useAuth, db } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 
 import { cn } from "@/lib/utils";
 import Logo from "@/components/logo";

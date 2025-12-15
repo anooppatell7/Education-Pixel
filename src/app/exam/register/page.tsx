@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { db } from '@/lib/firebase';
+import { db } from '@/firebase';
 import { collection, addDoc, doc, runTransaction, serverTimestamp, getDocs, query, orderBy, getDoc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { Course, ExamRegistration } from '@/lib/types';

@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { ArrowRight, FileText, Search, X } from "lucide-react";
 import type { TestCategory } from "@/lib/types";
 import { collection, query, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db } from "@/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 import SectionDivider from "@/components/section-divider";
 import { Input } from "@/components/ui/input";

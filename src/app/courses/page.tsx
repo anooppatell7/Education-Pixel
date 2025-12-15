@@ -1,6 +1,6 @@
 
 import React from "react";
-import { db } from "@/lib/firebase";
+import { db } from "@/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import type { Course } from "@/lib/types";
 import type { Metadata } from "next";

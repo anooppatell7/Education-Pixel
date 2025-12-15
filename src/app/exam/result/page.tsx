@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from "@/components/ui/input";
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { db } from '@/lib/firebase';
+import { db } from '@/firebase';
 import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
 import SectionDivider from '@/components/section-divider';
 

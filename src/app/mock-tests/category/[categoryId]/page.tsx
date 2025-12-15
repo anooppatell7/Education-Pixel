@@ -11,7 +11,7 @@ import type { MockTest, TestResult, TestCategory, ExamResult } from "@/lib/types
 import { useUser, useFirestore } from "@/firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
-import { db } from "@/lib/firebase";
+import { db } from "@/firebase";
 import SectionDivider from "@/components/section-divider";
 
 function TestsLoadingSkeleton() {
