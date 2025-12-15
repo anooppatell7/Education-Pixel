@@ -3,7 +3,7 @@
 "use server";
 
 import { z } from "zod";
-import { db } from "@/firebase";
+import { initializeFirebase } from "@/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const contactFormSchema = z.object({
@@ -22,6 +22,7 @@ export async function submitContactForm(
   prevState: ContactFormState,
   data: FormData
 ): Promise<ContactFormState> {
+  const { db } = initializeFirebase();
   const formData = Object.fromEntries(data);
   const parsed = contactFormSchema.safeParse(formData);
 
@@ -66,6 +67,7 @@ export async function submitEnrollmentForm(
   prevState: EnrollmentFormState,
   data: FormData
 ): Promise<EnrollmentFormState> {
+  const { db } = initializeFirebase();
   const formData = Object.fromEntries(data);
   const parsed = enrollmentFormSchema.safeParse(formData);
 
@@ -123,6 +125,7 @@ export async function submitReviewForm(
   prevState: ReviewFormState,
   data: FormData
 ): Promise<ReviewFormState> {
+  const { db } = initializeFirebase();
   const formData = Object.fromEntries(data);
   const parsed = reviewFormSchema.safeParse(formData);
 

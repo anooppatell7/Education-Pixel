@@ -1,5 +1,5 @@
 
-import { db } from '@/firebase';
+import { initializeFirebase } from '@/firebase';
 import { collection, doc, getDoc, getDocs, query, orderBy } from 'firebase/firestore';
 import type { LearningCourse, LearningModule, Lesson } from './types';
 
@@ -8,6 +8,7 @@ const courseCache = new Map<string, LearningCourse>();
 
 // Function to fetch all courses and their subcollections from Firestore
 export async function getAllCourses(): Promise<LearningCourse[]> {
+    const { db } = initializeFirebase();
     if (courseCache.size > 0) {
         // This is a simple cache, for production you might want a more sophisticated strategy
         // return Array.from(courseCache.values());
