@@ -1,6 +1,8 @@
 
 
-import { initializeFirebase } from '@/firebase';
+"use client";
+
+import { db } from '@/firebase';
 import { collection, doc, getDoc, getDocs, query, orderBy } from 'firebase/firestore';
 import type { LearningCourse, LearningModule, Lesson } from './types';
 
@@ -9,17 +11,15 @@ const courseCache = new Map<string, LearningCourse>();
 
 // Function to fetch all courses and their subcollections from Firestore
 export async function getAllCourses(): Promise<LearningCourse[]> {
-    const { db } = initializeFirebase();
-    if (courseCache.size > 0) {
-        // This is a simple cache, for production you might want a more sophisticated strategy
-        // return Array.from(courseCache.values());
-    }
-    
     if (!db) {
         console.error("Firestore not initialized in getAllCourses");
         return [];
     }
-
+    
+    if (courseCache.size > 0) {
+        return Array.from(courseCache.values());
+    }
+    
     const coursesQuery = query(collection(db, "learningCourses"), orderBy("order"));
     const coursesSnapshot = await getDocs(coursesQuery);
     
@@ -53,7 +53,6 @@ export async function getCourseData(slug: string): Promise<LearningCourse | null
         return courseCache.get(slug)!;
     }
     
-    // If not in cache, fetch all courses to populate cache
     await getAllCourses();
     
     if (courseCache.has(slug)) {
@@ -110,3 +109,5 @@ export async function getNextPrevLessons(courseSlug: string, moduleSlug: string,
 
     return { prevLesson, nextLesson };
 }
+
+    

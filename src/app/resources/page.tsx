@@ -1,4 +1,6 @@
 
+"use client";
+
 import { db } from "@/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import type { Resource } from "@/lib/types";
@@ -6,10 +8,11 @@ import AdPlaceholder from "@/components/ad-placeholder";
 import type { Metadata } from 'next';
 import ResourcesClient from "@/components/resources-client";
 import SectionDivider from "@/components/section-divider";
+import { useEffect, useState } from "react";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
-export const metadata: Metadata = {
+const metadata: Metadata = {
   title: "Free Student Resources (PDF, Notes) - MTech IT Institute",
   description: "Access and download free student resources from MTech IT Institute, including PDF notes, worksheets, and quizzes for computer courses in Patti.",
   keywords: ["free student resources", "computer course notes pdf", "it course study material", "mtech it institute resources"],
@@ -23,21 +26,29 @@ export const metadata: Metadata = {
   },
 };
 
-// This forces the page to be dynamically rendered, ensuring data is always fresh
-export const revalidate = 0;
 
-async function getResources(): Promise<Resource[]> {
-  const resourcesCollection = collection(db, "resources");
-  const resourceSnapshot = await getDocs(resourcesCollection);
-  const resourceList = resourceSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Resource));
-  return resourceList;
-}
+export default function ResourcesPage() {
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function ResourcesPage() {
-  const resources = await getResources();
+  useEffect(() => {
+    async function getResources() {
+        if (!db) return;
+        const resourcesCollection = collection(db, "resources");
+        const resourceSnapshot = await getDocs(resourcesCollection);
+        const resourceList = resourceSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Resource));
+        setResources(resourceList);
+        setLoading(false);
+    }
+    getResources();
+  }, []);
 
   return (
     <>
+      <head>
+          <title>{metadata.title as string}</title>
+          <meta name="description" content={metadata.description as string} />
+      </head>
       <div className="bg-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400 text-white">
         <div className="container py-16 sm:py-24 text-center">
           <h1 className="font-headline text-4xl font-bold sm:text-5xl">Free Resources<span className="text-green-300">.</span></h1>
@@ -52,7 +63,7 @@ export default async function ResourcesPage() {
         <div className="container py-16 sm:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
               <main className="lg:col-span-3">
-                  <ResourcesClient resources={resources} />
+                  {loading ? <div>Loading resources...</div> : <ResourcesClient resources={resources} />}
               </main>
               <aside className="lg:col-span-1 space-y-8">
                   <AdPlaceholder />
@@ -63,3 +74,5 @@ export default async function ResourcesPage() {
     </>
   );
 }
+
+    

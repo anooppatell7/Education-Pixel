@@ -1,4 +1,6 @@
 
+"use client";
+
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,6 +15,7 @@ import { JsonLd } from "@/components/json-ld";
 import { generatePostSchema, breadcrumbSchema } from "@/lib/schema-generator";
 import ShareButtons from "@/components/share-buttons";
 import SectionDivider from "@/components/section-divider";
+import { useEffect, useState } from "react";
 
 type BlogPostPageProps = {
   params: {
@@ -22,20 +25,8 @@ type BlogPostPageProps = {
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
-async function getPost(slug: string): Promise<BlogPost | null> {
-    const docRef = doc(db, "blog", slug);
-    const docSnap = await getDoc(docRef);
-
-    if (!docSnap.exists()) {
-        return null;
-    }
-    return { slug: docSnap.id, ...docSnap.data() } as BlogPost;
-}
-
-
-export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const post = await getPost(params.slug);
-
+// This function can no longer be async since we use "use client"
+function getPostMetadata(post: BlogPost | null, slug: string): Metadata {
   if (!post) {
     return {
       title: "Post Not Found",
@@ -50,12 +41,12 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     description: postDescription,
     keywords: post.tags,
     alternates: {
-      canonical: `${siteUrl}/blog/${params.slug}`,
+      canonical: `${siteUrl}/blog/${slug}`,
     },
     openGraph: {
       title: post.title,
       description: postDescription,
-      url: `${siteUrl}/blog/${params.slug}`,
+      url: `${siteUrl}/blog/${slug}`,
       type: 'article',
       article: {
         publishedTime: new Date(post.date).toISOString(),
@@ -81,6 +72,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   };
 }
 
+
 // Function to apply internal links to content
 function applyInternalLinks(content: string, links: InternalLink[] = []): string {
   let linkedContent = content;
@@ -96,8 +88,30 @@ function applyInternalLinks(content: string, links: InternalLink[] = []): string
   return linkedContent;
 }
 
-export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const post = await getPost(params.slug);
+export default function BlogPostPage({ params }: BlogPostPageProps) {
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function getPost(slug: string) {
+      if (!db) return;
+      const docRef = doc(db, "blog", slug);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+          notFound();
+      } else {
+          setPost({ slug: docSnap.id, ...docSnap.data() } as BlogPost);
+      }
+      setLoading(false);
+    }
+    getPost(params.slug);
+  }, [params.slug]);
+
+  if (loading) {
+      // You can return a skeleton loader here
+      return <div>Loading...</div>;
+  }
 
   if (!post) {
     notFound();
@@ -111,9 +125,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   
   const finalContent = applyInternalLinks(post.content, post.internalLinks);
   const postSchema = generatePostSchema(post);
+  const metadata = getPostMetadata(post, params.slug);
+
 
   return (
     <>
+      <head>
+        <title>{metadata.title as string}</title>
+        {metadata.description && <meta name="description" content={metadata.description} />}
+        {metadata.keywords && <meta name="keywords" content={(metadata.keywords as string[]).join(', ')} />}
+      </head>
       <JsonLd data={postSchema} />
       <JsonLd data={breadcrumbSchema(breadcrumbs)} />
       <div className="bg-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400 relative">
@@ -156,3 +177,5 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     </>
   );
 }
+
+    

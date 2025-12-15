@@ -1,4 +1,5 @@
 
+
 import type { Metadata } from "next";
 import { PT_Sans, Space_Grotesk, Great_Vibes, Playfair_Display } from "next/font/google";
 import "./globals.css";
@@ -108,7 +109,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const announcement = await getSiteSettings();
+  // We can't fetch data in a root layout that needs to support client components deeply.
+  // The announcement bar will now fetch its own data on the client.
+  // const announcement = await getSiteSettings();
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -130,9 +133,7 @@ export default async function RootLayout({
         <JsonLd data={websiteSchema} />
         <FirebaseClientProvider>
           <div className="relative flex min-h-dvh flex-col bg-background">
-            {announcement && announcement.isVisible && (
-              <AnnouncementBar text={announcement.text} link={announcement.link} />
-            )}
+            <AnnouncementBar />
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />
@@ -144,3 +145,5 @@ export default async function RootLayout({
     </html>
   );
 }
+
+    

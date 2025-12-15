@@ -1,4 +1,5 @@
 
+"use client";
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -7,37 +8,60 @@ import { db } from "@/firebase";
 import { collection, getDocs, limit, query, where } from "firebase/firestore";
 import type { Course } from "@/lib/types";
 import marketingCourses from '@/lib/data/marketing-courses.json';
+import { useEffect, useState } from "react";
 
 
-// This forces the component to be dynamically rendered
-export const revalidate = 0;
+export default function FeaturedCourses() {
+  const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
 
-async function getFeaturedCourses(): Promise<Course[]> {
-    try {
-        const coursesQuery = query(
-            collection(db, "courses"), 
-            where("isFeatured", "==", true), 
-            limit(3)
-        );
-        const courseSnapshot = await getDocs(coursesQuery);
-        
-        if (courseSnapshot.empty) {
-            console.log('No featured courses found in Firestore, falling back to local data.');
-            // Fallback to local data if no featured courses are set
-            return marketingCourses.slice(0, 3) as Course[];
+  useEffect(() => {
+    async function getFeaturedCourses() {
+        try {
+            if (!db) {
+                console.log('DB not ready, using fallback');
+                setFeaturedCourses(marketingCourses.slice(0, 3) as Course[]);
+                setLoading(false);
+                return;
+            }
+            const coursesQuery = query(
+                collection(db, "courses"), 
+                where("isFeatured", "==", true), 
+                limit(3)
+            );
+            const courseSnapshot = await getDocs(coursesQuery);
+            
+            if (courseSnapshot.empty) {
+                console.log('No featured courses found in Firestore, falling back to local data.');
+                setFeaturedCourses(marketingCourses.slice(0, 3) as Course[]);
+            } else {
+                const courseList = courseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
+                setFeaturedCourses(courseList);
+            }
+        } catch (error) {
+            console.error("Error fetching featured courses:", error);
+            setFeaturedCourses(marketingCourses.slice(0, 3) as Course[]);
+        } finally {
+            setLoading(false);
         }
-
-        const courseList = courseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
-        return courseList;
-    } catch (error) {
-        console.error("Error fetching featured courses:", error);
-        // Fallback to local data on error
-        return marketingCourses.slice(0, 3) as Course[];
     }
-}
+    getFeaturedCourses();
+  }, []);
 
-export default async function FeaturedCourses() {
-  const featuredCourses = await getFeaturedCourses();
+  if (loading) {
+      return (
+          <section className="py-16 sm:py-24 bg-secondary/50">
+            <div className="container">
+                <div className="text-center mb-12">
+                    <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Our Popular Courses</h2>
+                    <p className="mt-4 max-w-2xl mx-auto text-lg text-foreground/80">
+                        Loading our most sought-after courses...
+                    </p>
+                </div>
+            </div>
+          </section>
+      )
+  }
 
   return (
     <section className="py-16 sm:py-24 bg-secondary/50">
@@ -62,6 +86,5 @@ export default async function FeaturedCourses() {
     </section>
   );
 }
-
 
     

@@ -4,7 +4,6 @@
 
 import Link from "next/link";
 import React, { useState, useEffect, use } from "react";
-import { useAuthState } from 'react-firebase-hooks/auth';
 import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,7 +76,7 @@ import { cn } from "@/lib/utils";
 import coursesData from "@/lib/data/courses.json";
 import marketingCoursesData from "@/lib/data/marketing-courses.json";
 import type { Metadata } from 'next';
-import { useAuth, useFirestore } from "@/firebase";
+import { useAuth, useFirestore, useUser } from "@/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, setDoc, Timestamp, where, arrayUnion, arrayRemove, getDoc, writeBatch } from "firebase/firestore";
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -89,7 +88,7 @@ type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'en
 export default function AdminDashboardPage() {
     const auth = useAuth();
     const firestore = useFirestore();
-    const [user, authLoading, authError] = useAuthState(auth!);
+    const { user } = useUser();
     const router = useRouter();
     const [courses, setCourses] = useState<Course[]>([]);
     const [learningCourses, setLearningCourses] = useState<LearningCourse[]>([]);
@@ -120,13 +119,12 @@ export default function AdminDashboardPage() {
     const [isLinkSaving, setIsLinkSaving] = useState(false);
 
     useEffect(() => {
-        if (authLoading) return; // Wait until auth state is loaded
         if (!user) {
-            router.push('/login'); // Redirect if not logged in
-        } else if (firestore) { // Ensure firestore is available
+            router.push('/login');
+        } else if (firestore) {
             fetchData();
         }
-    }, [user, authLoading, router, firestore]);
+    }, [user, router, firestore]);
 
     const fetchData = async () => {
         if (!firestore) return;
@@ -2254,5 +2252,7 @@ export default function AdminDashboardPage() {
         </>
     );
 }
+
+    
 
     
