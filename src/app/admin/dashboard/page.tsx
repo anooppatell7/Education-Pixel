@@ -571,8 +571,8 @@ export default function AdminDashboardPage() {
              if (!docId) { // For new categories, generate from title
                  docId = createSlug(dataToSave.title);
                  if (!docId) { toast({title: "Error", description: "Category must have a title.", variant: "destructive"}); return; }
-                 dataToSave.id = docId; // Ensure the ID is saved with the document
              }
+             dataToSave.id = docId; // Make sure the ID is saved within the document
         } else if (activeTab === 'mock-tests') {
             if(formParentIds?.testId) { // It's a question
                 const testRef = doc(firestore, "mockTests", formParentIds.testId);
