@@ -11,7 +11,7 @@ export default function ContactPreview() {
         <div className="text-center mb-12">
           <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Get In Touch</h2>
           <p className="mt-4 max-w-2xl mx-auto text-lg text-primary/80">
-            We're here to help you on your learning journey. Contact us for any queries about our computer courses.
+            We're here to help you on your learning journey. Contact us for any queries about our tech courses.
           </p>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
@@ -40,7 +40,7 @@ export default function ContactPreview() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-primary">Email Us</h3>
-                <p className="text-primary/80">mtechitinstitute@gmail.com</p>
+                <p className="text-primary/80">contact@codesphere.academy</p>
               </div>
             </div>
             <div className="pt-4">
@@ -58,7 +58,7 @@ export default function ContactPreview() {
                 allowFullScreen={true}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="MTech IT Institute Location Map"
+                title="CodeSphere Academy Location Map"
             ></iframe>
           </div>
         </div>

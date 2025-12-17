@@ -7,42 +7,42 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import SectionDivider from "@/components/section-divider";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://codesphere.academy";
 
 export const metadata: Metadata = {
-  title: "Contact MTech IT Institute - Computer Center in Patti",
-  description: "Contact MTech IT Institute for admissions, course details, or any inquiry. We're the leading computer training center in Patti, Pratapgarh. Call 7800413348.",
-  keywords: ["computer training institute contact patti", "MTech IT Institute address", "MTech IT Institute phone number", "join MTech IT Institute patti", "computer center in patti pratapgarh"],
+  title: "Contact CodeSphere Academy - Premier Tech Institute",
+  description: "Contact CodeSphere Academy for admissions, course details, or any inquiry. We're a leading tech training institute. Call 7800413348.",
+  keywords: ["tech institute contact", "CodeSphere Academy address", "CodeSphere Academy phone number", "join CodeSphere Academy", "coding bootcamp contact"],
    alternates: {
     canonical: `${siteUrl}/contact`,
   },
   openGraph: {
-    title: "Contact MTech IT Institute - Computer Center in Patti",
-    description: "Contact MTech IT Institute for admissions, course details, or any inquiry. We're the leading computer training center in Patti, Pratapgarh.",
+    title: "Contact CodeSphere Academy - Premier Tech Institute",
+    description: "Contact CodeSphere Academy for admissions, course details, or any inquiry. We're a leading tech training institute.",
     url: `${siteUrl}/contact`,
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Contact MTech IT Institute - Computer Center in Patti",
-    description: "Contact MTech IT Institute for admissions, course details, or any inquiry. We're the leading computer training center in Patti, Pratapgarh.",
+    title: "Contact CodeSphere Academy - Premier Tech Institute",
+    description: "Contact CodeSphere Academy for admissions, course details, or any inquiry. We're a leading tech training institute.",
   },
 };
 
 export default function ContactPage() {
   return (
     <>
-      <div className="bg-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400 text-white">
+      <div className="bg-gradient-to-br from-blue-900 via-gray-900 to-black text-white">
         <div className="container py-16 sm:py-24 text-center">
-          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Contact Us<span className="text-green-300">.</span></h1>
-          <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-50">
-            Have questions about our computer courses in Patti? We'd love to hear from you.
+          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Contact Us<span className="text-teal-400">.</span></h1>
+          <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-300">
+            Have questions about our tech courses? We'd love to hear from you.
           </p>
         </div>
       </div>
       
       <div className="bg-secondary relative">
-        <SectionDivider style="wave" className="text-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400" position="top"/>
+        <SectionDivider style="wave" className="text-blue-900/10" position="top"/>
         <div className="container py-16 sm:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
             <div className="lg:col-span-3">
@@ -73,7 +73,7 @@ export default function ContactPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-accent" />
-                    <span>mtechitinstitute@gmail.com</span>
+                    <span>contact@codesphere.academy</span>
                   </div>
                 </CardContent>
               </Card>
@@ -87,10 +87,10 @@ export default function ContactPage() {
                           <Link href="https://wa.me/918299809562" aria-label="WhatsApp" className="p-3 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
                               <Send className="w-6 h-6" />
                           </Link>
-                          <Link href="https://www.facebook.com/people/Mtech-it-institute/61562000094984/?mibextid=ZbWKwL" aria-label="Facebook" className="p-3 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
+                          <Link href="#" aria-label="Facebook" className="p-3 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
                               <Facebook className="w-6 h-6" />
                           </Link>
-                          <Link href="https://www.instagram.com/mtechitinstitute" aria-label="Instagram" className="p-3 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
+                          <Link href="#" aria-label="Instagram" className="p-3 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
                               <Instagram className="w-6 h-6" />
                           </Link>
                       </div>
@@ -109,7 +109,7 @@ export default function ContactPage() {
                     allowFullScreen={true}
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    title="MTech IT Institute Location Map"
+                    title="CodeSphere Academy Location Map"
                 ></iframe>
             </div>
           </div>

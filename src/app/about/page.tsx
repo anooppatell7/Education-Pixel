@@ -7,24 +7,24 @@ import type { Metadata } from "next";
 import SectionDivider from "@/components/section-divider";
 import { Button } from "@/components/ui/button";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://codesphere.academy";
 
 export const metadata: Metadata = {
-  title: "About MTech IT Institute - Best Computer Center in Patti",
-  description: "Learn about MTech IT Institute, Patti's leading computer training center. Our mission is to provide top-quality, job-oriented IT education and empower students for the digital world.",
-  keywords: ["about mtech it institute", "computer institute patti", "our mission", "why choose us", "computer training pratapgarh", "IT education"],
+  title: "About CodeSphere Academy - Premier Tech Institute",
+  description: "Learn about CodeSphere Academy, a leading tech institute. Our mission is to provide top-quality, job-oriented IT education and empower students for the digital world.",
+  keywords: ["about codesphere academy", "tech institute", "our mission", "why choose us", "coding bootcamp", "IT education"],
   alternates: {
     canonical: `${siteUrl}/about`,
   },
   openGraph: {
-    title: "About MTech IT Institute - Best Computer Center in Patti",
-    description: "Learn about MTech IT Institute, Patti's leading computer training center. Our mission is to provide top-quality IT education and job-oriented courses.",
+    title: "About CodeSphere Academy - Premier Tech Institute",
+    description: "Learn about CodeSphere Academy, a leading tech institute. Our mission is to provide top-quality IT education and job-oriented courses.",
     url: `${siteUrl}/about`,
     images: [{
-        url: "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757136324/ChatGPT_Image_Sep_5_2025_10_25_03_PM_w0e2ry.png",
+        url: "https://picsum.photos/seed/codesphere-classroom/1200/630",
         width: 1200,
         height: 630,
-        alt: "MTech IT Institute Classroom"
+        alt: "CodeSphere Academy Classroom"
     }]
   },
 };
@@ -66,19 +66,19 @@ export default function AboutPage() {
   return (
     <>
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400 relative text-white">
+      <div className="bg-gradient-to-br from-blue-900 via-gray-900 to-black relative text-white">
          <SectionDivider style="wave" className="text-background" position="top"/>
         <div className="container py-16 sm:py-24 text-center">
-          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Welcome to MTech IT Institute</h1>
-          <p className="mt-4 max-w-3xl mx-auto text-lg text-blue-50">
-            One of Patti’s most trusted and fastest-growing computer training institutes, empowering students for a successful career in today’s digital world.
+          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Welcome to CodeSphere Academy</h1>
+          <p className="mt-4 max-w-3xl mx-auto text-lg text-gray-300">
+            One of the most trusted and fastest-growing tech training institutes, empowering students for a successful career in today’s digital world.
           </p>
         </div>
       </div>
       
       {/* Mission & Vision */}
       <div className="bg-background relative">
-         <SectionDivider style="wave" className="text-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400" position="top"/>
+         <SectionDivider style="wave" className="text-blue-900/10" position="top"/>
          <div className="container py-16 sm:py-24">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div className="space-y-8">
@@ -88,7 +88,7 @@ export default function AboutPage() {
                             <h2 className="font-headline text-3xl font-bold text-primary">Our Mission</h2>
                         </div>
                         <p className="text-foreground/80">
-                           Our mission is to make quality computer education accessible to everyone. We focus on job-oriented training, practical learning through real-world projects, and building confidence by strengthening core computer skills to bridge the gap between academia and industry.
+                           Our mission is to make quality tech education accessible to everyone. We focus on job-oriented training, practical learning through real-world projects, and building confidence by strengthening core skills to bridge the gap between academia and industry.
                         </p>
                      </div>
                      <div>
@@ -97,7 +97,7 @@ export default function AboutPage() {
                             <h2 className="font-headline text-3xl font-bold text-primary">Our Vision</h2>
                         </div>
                         <p className="text-foreground/80">
-                            To become the most trusted computer training center in the region by offering advanced IT education that prepares students for a bright and successful future in technology.
+                            To become the most trusted tech training center by offering advanced IT education that prepares students for a bright and successful future in technology.
                         </p>
                      </div>
                 </div>
@@ -105,8 +105,8 @@ export default function AboutPage() {
                     <Card className="overflow-hidden shadow-xl rounded-lg border-t-4 border-t-accent">
                         <CardContent className="p-0">
                         <Image
-                            src="https://res.cloudinary.com/dzr4xjizf/image/upload/v1757136324/ChatGPT_Image_Sep_5_2025_10_25_03_PM_w0e2ry.png"
-                            alt="MTech IT Institute classroom with students"
+                            src="https://picsum.photos/seed/codesphere-classroom/800/600"
+                            alt="CodeSphere Academy classroom with students"
                             data-ai-hint="classroom students"
                             width={800}
                             height={600}
@@ -125,9 +125,9 @@ export default function AboutPage() {
         <div className="container py-16 sm:py-24">
             <div className="text-center mb-12 max-w-3xl mx-auto">
                  <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Our Story</h2>
-                 <p className="mt-4 text-lg font-semibold text-primary/80 italic">"To provide high-quality, affordable computer education in Patti, Pratapgarh."</p>
+                 <p className="mt-4 text-lg font-semibold text-primary/80 italic">"To provide high-quality, affordable tech education."</p>
                  <p className="mt-2 text-foreground/80">
-                    MTech IT Institute was started with this simple goal. We noticed many talented students lacked proper training and guidance, so we created a space where learning is practical, easy to understand, and updated with the latest technology — all at a price that's affordable for everyone.
+                    CodeSphere Academy was started with this simple goal. We noticed many talented students lacked proper training and guidance, so we created a space where learning is practical, easy to understand, and updated with the latest technology — all at a price that's affordable for everyone.
                  </p>
             </div>
         </div>
@@ -139,7 +139,7 @@ export default function AboutPage() {
         <SectionDivider style="wave" className="text-secondary" position="top"/>
         <div className="container py-16 sm:py-24">
           <div className="text-center mb-12">
-            <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Why Choose MTech IT Institute?</h2>
+            <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Why Choose CodeSphere Academy?</h2>
             <p className="mt-4 max-w-2xl mx-auto text-lg text-primary/80">
               We provide a learning environment that is not just educational, but also transformative.
             </p>
@@ -191,7 +191,7 @@ export default function AboutPage() {
                 <HeartHandshake className="h-16 w-16 text-accent mx-auto mb-6" />
                 <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Our Commitment to You</h2>
                 <p className="mt-4 max-w-3xl mx-auto text-lg text-primary/80 italic">
-                    At MTech IT Institute, we don’t just teach — we mentor, guide, and support you until you are ready for the real world. Your success is our biggest achievement.
+                    At CodeSphere Academy, we don’t just teach — we mentor, guide, and support you until you are ready for the real world. Your success is our biggest achievement.
                 </p>
                 <div className="mt-8">
                     <Button size="lg" asChild>

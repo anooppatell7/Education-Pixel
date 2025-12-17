@@ -1,7 +1,7 @@
 
 
 import type { Metadata } from "next";
-import { PT_Sans, Space_Grotesk, Great_Vibes, Playfair_Display } from "next/font/google";
+import { Poppins, Volkhov } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import Header from "@/components/header";
@@ -14,26 +14,20 @@ import AnnouncementBar from "@/components/announcement-bar";
 import { FirebaseClientProvider } from "@/firebase/client-provider";
 import FloatingWhatsApp from "@/components/floating-whatsapp";
 
-const ptSans = PT_Sans({
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
+});
+
+const volkhov = Volkhov({
   subsets: ["latin"],
   weight: ["400", "700"],
-  variable: "--font-pt-sans",
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-space-grotesk",
-});
-
-const greatVibes = Great_Vibes({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-great-vibes",
+  variable: "--font-volkhov",
 });
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://codesphere.academy";
 
 const faviconUrl = "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png";
 
@@ -44,29 +38,21 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default:
-      "MTech IT Institute - Best Computer Institute in Patti, Pratapgarh",
-    template: "%s | MTech IT Institute",
+      "CodeSphere Academy - Premier Tech Institute for Modern Skills",
+    template: "%s | CodeSphere Academy",
   },
   description:
-    "Join MTech IT Institute, the best computer training center in Patti, Pratapgarh. We offer expert-led IT courses in Web Development, Digital Marketing, Tally, O-Level, CCC, PGDCA, and more to kickstart your tech career.",
+    "Join CodeSphere Academy to master in-demand tech skills. We offer expert-led courses in Web Development, AI/ML, Data Science, DevOps, and more to launch your tech career.",
   keywords: [
-    "best computer institute in patti",
-    "computer center in patti pratapgarh",
-    "IT training institute patti",
-    "computer courses patti",
-    "after 12th career courses",
-    "MTech IT Institute",
-    "learn coding",
-    "digital marketing courses",
+    "tech institute",
+    "coding bootcamp",
+    "IT training",
+    "learn to code",
     "web development course",
-    "Tally course",
-    "CCC course",
-    "O-Level course",
-    "PGDCA",
-    "BCA",
-    "Excel course",
-    "Patti",
-    "Pratapgarh",
+    "data science course",
+    "AI/ML courses",
+    "DevOps training",
+    "CodeSphere Academy",
   ],
   icons: {
     icon: faviconUrl,
@@ -77,24 +63,24 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: siteUrl,
-    title: "MTech IT Institute - Best Computer Institute in Patti, Pratapgarh",
+    title: "CodeSphere Academy - Premier Tech Institute for Modern Skills",
     description:
-      "Join MTech IT Institute, the best computer training center in Patti. Offering expert-led IT courses to kickstart your tech career.",
+      "Join CodeSphere Academy to master in-demand tech skills and launch your career.",
     images: [
       {
         url: "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757136324/ChatGPT_Image_Sep_5_2025_10_25_03_PM_w0e2ry.png",
         width: 1200,
         height: 630,
-        alt: "MTech IT Institute Classroom in Patti",
+        alt: "CodeSphere Academy Campus",
       },
     ],
-    siteName: "MTech IT Institute",
+    siteName: "CodeSphere Academy",
   },
   twitter: {
     card: "summary_large_image",
-    title: "MTech IT Institute - Best Computer Institute in Patti, Pratapgarh",
+    title: "CodeSphere Academy - Premier Tech Institute for Modern Skills",
     description:
-      "Join MTech IT Institute, the best computer training center in Patti. Offering expert-led IT courses to kickstart your tech career.",
+      "Join CodeSphere Academy to master in-demand tech skills and launch your career.",
     images: [
       "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757136324/ChatGPT_Image_Sep_5_2025_10_25_03_PM_w0e2ry.png",
     ],
@@ -109,24 +95,17 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // We can't fetch data in a root layout that needs to support client components deeply.
-  // The announcement bar will now fetch its own data on the client.
-  // const announcement = await getSiteSettings();
 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@700&family=UnifrakturMaguntia&display=swap" rel="stylesheet" />
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2296905809539851" crossOrigin="anonymous"></script>
       </head>
       <body
         className={cn(
           "min-h-screen bg-background font-body antialiased",
-          ptSans.variable,
-          spaceGrotesk.variable,
-          greatVibes.variable
+          poppins.variable,
+          volkhov.variable
         )}
       >
         <JsonLd data={organizationSchema} />
@@ -145,5 +124,3 @@ export default async function RootLayout({
     </html>
   );
 }
-
-    

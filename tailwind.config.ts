@@ -17,9 +17,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['var(--font-pt-sans)', 'sans-serif'],
-        headline: ['var(--font-space-grotesk)', 'sans-serif'],
-        script: ['var(--font-great-vibes)', 'cursive'],
+        body: ['var(--font-poppins)', 'sans-serif'],
+        headline: ['var(--font-volkhov)', 'serif'],
       },
       colors: {
         background: 'hsl(var(--background))',

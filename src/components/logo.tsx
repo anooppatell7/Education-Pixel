@@ -2,6 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { CodeXml } from "lucide-react";
 
 type LogoProps = {
   className?: string;
@@ -17,20 +18,16 @@ export default function Logo({ className, textClassName }: LogoProps) {
         className
       )}
     >
-      <Image
-        src="https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png"
-        alt="MTech IT Institute Logo"
-        width={40}
-        height={40}
-        className="h-10 w-10 object-contain"
-      />
+      <div className="p-2 bg-primary rounded-lg text-primary-foreground">
+        <CodeXml className="h-6 w-6" />
+      </div>
       <span
         className={cn(
           "font-headline text-xl font-bold tracking-tight",
           textClassName
         )}
       >
-        MTech IT Institute
+        CodeSphere Academy
       </span>
     </Link>
   );

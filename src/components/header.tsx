@@ -41,7 +41,7 @@ import type { NavItem } from "@/lib/types";
 import React from "react";
 
 
-const ADMIN_EMAILS = ["mtechitinstitute@gmail.com", "anooppbh8@gmail.com"];
+const ADMIN_EMAILS = ["admin@codesphere.academy", "mtechitinstitute@gmail.com", "anooppbh8@gmail.com"];
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -163,37 +163,33 @@ export default function Header() {
 
   if (!isMounted) {
     return (
-      <header className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-[#0d1a3a] to-blue-900/80 text-white">
+      <header className="sticky top-0 z-50 w-full border-b bg-background text-foreground">
         <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
-          <Logo textClassName="text-white" />
+          <Logo />
         </div>
       </header>
     );
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-blue-800/20 bg-gradient-to-r from-[#0d1a3a] to-blue-900/80 text-white backdrop-blur-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
-        <Logo textClassName="text-white" />
+        <Logo />
 
         <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
                 <NavigationMenuItem>
                     <Link href="/" legacyBehavior passHref>
-                      <NavigationMenuLink asChild>
-                        <a className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-white/10")}>Home</a>
-                      </NavigationMenuLink>
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>Home</NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                      <Link href="/about" legacyBehavior passHref>
-                        <NavigationMenuLink asChild>
-                            <a className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-white/10")}>About</a>
-                        </NavigationMenuLink>
+                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>About</NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                  <NavigationMenuItem>
-                    <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/10 data-[state=open]:bg-white/10">Academics</NavigationMenuTrigger>
+                    <NavigationMenuTrigger>Academics</NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] bg-background text-foreground">
                         {academicsComponents.map((component) => (
@@ -207,7 +203,7 @@ export default function Header() {
                     </NavigationMenuContent>
                 </NavigationMenuItem>
                  <NavigationMenuItem>
-                    <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/10 data-[state=open]:bg-white/10">Exams</NavigationMenuTrigger>
+                    <NavigationMenuTrigger>Exams</NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] bg-background text-foreground">
                         {examsComponents.map((component) => {
@@ -227,23 +223,17 @@ export default function Header() {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                     <Link href="/blog" legacyBehavior passHref>
-                      <NavigationMenuLink asChild>
-                        <a className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-white/10")}>Blog</a>
-                      </NavigationMenuLink>
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>Blog</NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                     <Link href="/verify-certificate" legacyBehavior passHref>
-                         <NavigationMenuLink asChild>
-                            <a className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-white/10")}>Verify Certificate<span className="text-green-300">.</span></a>
-                          </NavigationMenuLink>
+                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>Verify Certificate</NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                     <Link href="/contact" legacyBehavior passHref>
-                      <NavigationMenuLink asChild>
-                        <a className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-white/10")}>Contact</a>
-                      </NavigationMenuLink>
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>Contact</NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
             </NavigationMenuList>
@@ -254,7 +244,7 @@ export default function Header() {
               user ? (
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-white/10">
+                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                            <Avatar className="h-8 w-8">
                                 <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || 'User'} />
                                 <AvatarFallback>{user.displayName?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
@@ -264,8 +254,8 @@ export default function Header() {
                     <DropdownMenuContent className="w-56" align="end" forceMount>
                         <DropdownMenuLabel className="font-normal">
                             <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-medium leading-none">{user.displayName}</p>
-                                <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                                <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
+                                <p className="text-xs leading-none text-muted-foreground">{user.email || user.phoneNumber}</p>
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
@@ -295,11 +285,11 @@ export default function Header() {
                  </DropdownMenu>
               ) : (
                 <div className='hidden md:flex'>
-                  <Button variant="ghost" asChild className="text-white hover:bg-white/10 hover:text-white">
+                  <Button variant="ghost" asChild>
                      <Link href="/login">Log In</Link>
                   </Button>
-                  <Button asChild className="bg-white text-primary hover:bg-white/90">
-                     <Link href="/signup">Sign Up</Link>
+                  <Button asChild>
+                     <Link href="/login">Sign Up</Link>
                   </Button>
                 </div>
               )
@@ -308,7 +298,7 @@ export default function Header() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden text-white hover:bg-white/10"
+            className="md:hidden"
             onClick={() => setIsOpen(!isOpen)}
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -353,7 +343,7 @@ export default function Header() {
                 {!user && (
                   <div className="flex flex-col gap-2">
                       <Button className="w-full" asChild onClick={() => setIsOpen(false)}><Link href="/login">Log In</Link></Button>
-                      <Button className="w-full" variant="outline" asChild onClick={() => setIsOpen(false)}><Link href="/signup">Sign Up</Link></Button>
+                      <Button className="w-full" variant="outline" asChild onClick={() => setIsOpen(false)}><Link href="/login">Sign Up</Link></Button>
                   </div>
                 )}
             </div>

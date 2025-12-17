@@ -24,7 +24,7 @@ type BlogPostPageProps = {
   };
 };
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://codesphere.academy";
 
 // This function can no longer be async since we use "use client"
 function getPostMetadata(post: BlogPost | null, slug: string): Metadata {
@@ -138,7 +138,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       </Head>
       <JsonLd data={postSchema} />
       <JsonLd data={breadcrumbSchema(breadcrumbs)} />
-      <div className="bg-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400 relative">
+      <div className="bg-gradient-to-br from-blue-900 via-gray-900 to-black relative">
         <SectionDivider style="wave" className="text-background" position="top"/>
         <div className="container py-16 sm:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">

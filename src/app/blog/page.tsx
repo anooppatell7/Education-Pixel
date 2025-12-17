@@ -17,7 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import SectionDivider from "@/components/section-divider";
 import Head from "next/head";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://codesphere.academy";
 
 
 export default function BlogPage() {
@@ -75,25 +75,25 @@ export default function BlogPage() {
   return (
     <>
       <Head>
-        <title>Tech Blog - Tutorials and Career Advice | MTech IT Institute</title>
-        <meta name="description" content="Explore insights, tutorials, and career advice from IT experts at MTech IT Institute. Stay updated with the latest trends in technology, programming, and digital marketing." />
-        <meta name="keywords" content="tech blog, it tutorials, career advice, programming help, mtech it institute blog" />
+        <title>Tech Blog - Tutorials and Career Advice | CodeSphere Academy</title>
+        <meta name="description" content="Explore insights, tutorials, and career advice from IT experts at CodeSphere Academy. Stay updated with the latest trends in technology, programming, and digital marketing." />
+        <meta name="keywords" content="tech blog, it tutorials, career advice, programming help, codesphere academy blog" />
         <link rel="canonical" href={`${siteUrl}/blog`} />
-        <meta property="og:title" content="Tech Blog - Tutorials and Career Advice | MTech IT Institute" />
-        <meta property="og:description" content="Explore insights, tutorials, and career advice from IT experts at MTech IT Institute." />
+        <meta property="og:title" content="Tech Blog - Tutorials and Career Advice | CodeSphere Academy" />
+        <meta property="og:description" content="Explore insights, tutorials, and career advice from IT experts at CodeSphere Academy." />
         <meta property="og:url" content={`${siteUrl}/blog`} />
       </Head>
-      <div className="bg-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400 text-white">
+      <div className="bg-gradient-to-br from-blue-900 via-gray-900 to-black text-white">
         <div className="container py-16 sm:py-24 text-center">
-          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Our Tech Blog<span className="text-green-300">.</span></h1>
-          <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-50">
+          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Our Tech Sphere<span className="text-teal-400">.</span></h1>
+          <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-300">
             Find insights, tutorials, and career advice from our IT experts. Stay updated with the latest trends in technology.
           </p>
         </div>
       </div>
 
       <div className="bg-secondary relative">
-        <SectionDivider style="wave" className="text-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400" position="top"/>
+        <SectionDivider style="wave" className="text-blue-900/10" position="top"/>
         <div className="container py-16 sm:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
               <main className="lg:col-span-3">

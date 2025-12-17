@@ -4,25 +4,25 @@ import type { Metadata } from "next";
 import CoursesClient from "@/components/courses-client";
 import SectionDivider from "@/components/section-divider";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://codesphere.academy";
 
 export const metadata: Metadata = {
-  title: "IT & Computer Courses in Patti, Pratapgarh - MTech IT Institute",
-  description: "Explore top IT & computer courses like Web Development, Digital Marketing, Tally, CCC, O-Level in Patti. Get expert training at MTech IT Institute.",
-  keywords: ["computer courses patti", "IT courses pratapgarh", "web development course", "digital marketing course", "Tally course", "CCC course", "O-Level course", "job oriented courses after 12th"],
+  title: "IT & Tech Courses | CodeSphere Academy",
+  description: "Explore top IT & tech courses like Web Development, Data Science, AI/ML, and DevOps. Get expert training at CodeSphere Academy.",
+  keywords: ["tech courses", "IT courses", "web development course", "data science course", "AI/ML course", "DevOps course", "job oriented courses"],
   alternates: {
     canonical: `${siteUrl}/courses`,
   },
   openGraph: {
-    title: "IT & Computer Courses in Patti, Pratapgarh - MTech IT Institute",
-    description: "Explore top IT & computer courses like Web Development, Digital Marketing, Tally, CCC, O-Level in Patti. Get expert training at MTech IT Institute.",
+    title: "IT & Tech Courses | CodeSphere Academy",
+    description: "Explore top IT & tech courses like Web Development, Data Science, and AI/ML. Get expert training at CodeSphere Academy.",
     url: `${siteUrl}/courses`,
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: "IT & Computer Courses in Patti, Pratapgarh - MTech IT Institute",
-    description: "Explore top IT & computer courses like Web Development, Digital Marketing, Tally, CCC, O-Level in Patti. Get expert training at MTech IT Institute.",
+    title: "IT & Tech Courses | CodeSphere Academy",
+    description: "Explore top IT & tech courses like Web Development, Data Science, and AI/ML. Get expert training at CodeSphere Academy.",
   },
 };
 
@@ -31,17 +31,17 @@ export default function CoursesPage() {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400 text-white">
+      <div className="bg-gradient-to-br from-blue-900 via-gray-900 to-black text-white">
         <div className="container py-16 sm:py-24 text-center">
-          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Our Professional IT Courses<span className="text-green-300">.</span></h1>
-          <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-50">
-            Find the perfect job-oriented computer course in Patti to advance your skills and launch your career in the tech industry.
+          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Our Professional Tech Courses<span className="text-teal-400">.</span></h1>
+          <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-300">
+            Find the perfect job-oriented course to advance your skills and launch your career in the tech industry.
           </p>
         </div>
       </div>
       
       <div className="bg-secondary relative">
-        <SectionDivider style="wave" className="text-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400" position="top"/>
+        <SectionDivider style="wave" className="text-blue-900/10" position="top"/>
         <div className="container py-16 sm:py-24">
           <CoursesClient />
         </div>

@@ -1,21 +1,22 @@
+
 import { GraduationCap, Users, IndianRupee } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 const highlights = [
   {
     icon: <GraduationCap className="h-10 w-10 text-accent" />,
-    title: "Experienced Teachers",
-    description: "Learn from industry experts with years of practical experience and a passion for teaching.",
+    title: "Expert Instructors",
+    description: "Learn from industry veterans with years of real-world experience and a passion for mentorship.",
   },
   {
     icon: <Users className="h-10 w-10 text-accent" />,
-    title: "1000+ Trained Students",
-    description: "Join a growing community of successful professionals who started their journey with us.",
+    title: "Thriving Community",
+    description: "Join a growing network of successful alumni who started their tech careers with CodeSphere.",
   },
   {
     icon: <IndianRupee className="h-10 w-10 text-accent" />,
-    title: "Affordable Fees",
-    description: "We believe in accessible education, offering high-quality courses at competitive prices.",
+    title: "Value-Driven Pricing",
+    description: "We believe in accessible education, offering high-quality, in-demand courses at fair prices.",
   },
 ];
 
@@ -24,7 +25,7 @@ export default function Highlights() {
     <section className="py-16 sm:py-24 bg-background">
       <div className="container">
         <div className="text-center mb-12">
-          <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Why Choose MTech IT Institute?</h2>
+          <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Why Choose CodeSphere Academy?</h2>
           <p className="mt-4 max-w-2xl mx-auto text-lg text-primary/80">
             We provide a learning environment that is not just educational, but also transformative.
           </p>

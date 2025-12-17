@@ -2,12 +2,12 @@
 import type { Course, BlogPost } from './types';
 import { WithContext, Organization, WebSite, Course as CourseSchema, BlogPosting, BreadcrumbList, ListItem } from 'schema-dts';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mtechitinstitute.in';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://codesphere.academy';
 
 export const organizationSchema: WithContext<Organization> = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'MTech IT Institute',
+  name: 'CodeSphere Academy',
   url: siteUrl,
   logo: 'https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png',
   contactPoint: {
@@ -17,10 +17,7 @@ export const organizationSchema: WithContext<Organization> = {
     areaServed: 'IN',
     availableLanguage: ['en', 'hi'],
   },
-  sameAs: [
-    'https://www.facebook.com/people/Mtech-it-institute/61562000094984/?mibextid=ZbWKwL',
-    'https://www.instagram.com/mtechitinstitute',
-  ],
+  sameAs: [],
   address: {
     '@type': 'PostalAddress',
     streetAddress: 'Patti',
@@ -35,10 +32,10 @@ export const websiteSchema: WithContext<WebSite> = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     url: siteUrl,
-    name: 'MTech IT Institute',
+    name: 'CodeSphere Academy',
     publisher: {
         '@type': 'Organization',
-        name: 'MTech IT Institute',
+        name: 'CodeSphere Academy',
         logo: {
             '@type': 'ImageObject',
             url: 'https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png',
@@ -53,7 +50,7 @@ export const courseSchema = (course: Course): WithContext<CourseSchema> => ({
   description: course.description,
   provider: {
     '@type': 'Organization',
-    name: 'MTech IT Institute',
+    name: 'CodeSphere Academy',
     url: siteUrl,
   },
   image: course.image,
