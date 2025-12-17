@@ -5,6 +5,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // == HELPER FUNCTIONS ==
+
     // Checks if a user is authenticated.
     function isAuth() {
       return request.auth != null;
@@ -14,35 +15,108 @@ service cloud.firestore {
     function isOwner(userId) {
       return isAuth() && request.auth.uid == userId;
     }
-    
-    // == USER PROFILES ==
-    // Users can read and write to their own profile document.
-    // No one else can read or write to it.
-    match /users/{userId} {
-      allow read, write: if isOwner(userId);
-    }
-    
-    // == PUBLIC CONTENT ==
-    // Any documents in a "public" collection are readable by everyone.
-    // Only authenticated users can write/create/delete content.
-    match /public/{document=**} {
-      allow read: if true;
-      allow write: if isAuth();
-    }
-    
-    // == SUBMISSIONS ==
-    // Anyone can create (submit) a document to this collection (e.g., contact form).
-    // Only authenticated users (admins) can read or delete them.
-    match /submissions/{submissionId} {
-      allow create: if true;
-      allow read, delete: if isAuth();
+
+    // Checks if the authenticated user is an admin based on their email.
+    function isAdmin() {
+      return isAuth() && request.auth.token.email in ["admin@educationpixel.com", "anooppbh8@gmail.com"];
     }
 
-    // == DEFAULT DENY ==
-    // By default, deny all reads and writes to all documents.
-    // This is a security best practice.
-    match /{document=**} {
-      allow read, write: if false;
+    // == USER DATA ==
+
+    // Users can read and write to their own profile document.
+    // Admins can read any user profile but cannot write to them.
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      allow get: if isAdmin();
+    }
+    
+    // Users can read and write to their own progress document.
+    match /userProgress/{userId} {
+       allow read, write: if isOwner(userId);
+    }
+    
+    // == PUBLIC & SEMI-PUBLIC COLLECTIONS ==
+
+    // Course and blog content is readable by anyone, but only writable by admins.
+    match /courses/{courseId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /blog/{postId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+     match /resources/{resourceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Interactive learning content (courses, modules, lessons)
+    match /learningCourses/{courseId}/{document=**} {
+      allow read: if isAuth(); // Only logged-in users can access learning materials
+      allow write: if isAdmin();
+    }
+
+    // Test categories and mock tests are readable by anyone, writable by admin.
+    match /testCategories/{categoryId} {
+        allow read: if true;
+        allow write: if isAdmin();
+    }
+     match /mockTests/{testId} {
+        allow read: if true;
+        allow write: if isAdmin();
+    }
+    
+    // Reviews can be created by anyone, but only read publicly if approved.
+    // Admins can manage all reviews.
+    match /reviews/{reviewId} {
+        allow create: if true;
+        allow read: if resource.data.isApproved == true || isAdmin();
+        allow update, delete: if isAdmin();
+    }
+
+    // == ADMIN-ONLY COLLECTIONS ==
+
+    // Submissions from contact/enrollment forms
+    // Only admins can read/delete. Anyone can create.
+    match /contacts/{contactId} {
+        allow create: if true;
+        allow read, delete: if isAdmin();
+    }
+    match /enrollments/{enrollmentId} {
+        allow create: if true;
+        allow read, delete, update: if isAdmin(); // Admin can mark as read
+    }
+
+    // Exam registrations and results
+    // Users can create their own registration. Admins can manage all.
+    match /examRegistrations/{userId} {
+        allow create: if isOwner(userId);
+        allow read, update, delete: if isAdmin() || isOwner(userId);
+    }
+    
+    // Users can view their own results. Admins can manage all.
+    match /examResults/{resultId} {
+        allow create: if isAuth(); // Test submission logic creates this
+        allow read: if isAdmin() || (isAuth() && resource.data.registrationNumber == request.auth.uid) || (isAuth() && get(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)).data.registrationNumber == resource.data.registrationNumber);
+        allow delete: if isAdmin();
+    }
+    
+    // Certificates can only be managed by admins. Anyone can read.
+    match /certificates/{certId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Internal site settings
+    match /site_settings/{settingId} {
+        allow read: if true;
+        allow write: if isAdmin();
+    }
+    
+    // Counters for registration numbers
+    match /counters/{counterId} {
+        allow read, write: if isAuth(); // Allow transaction access for authenticated users
     }
   }
 }
