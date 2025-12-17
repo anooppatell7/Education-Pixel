@@ -1,11 +1,11 @@
 
 import type { Metadata } from 'next';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - MTech IT Institute",
-  description: "Read the Privacy Policy for MTech IT Institute. We are committed to protecting your personal information and your right to privacy.",
+  title: "Privacy Policy - Education Pixel",
+  description: "Read the Privacy Policy for Education Pixel. We are committed to protecting your personal information and your right to privacy.",
   alternates: {
     canonical: `${siteUrl}/privacy-policy`,
   },
@@ -24,7 +24,7 @@ export default function PrivacyPolicyPage() {
           <p>Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
 
           <p>
-            MTech IT Institute ("we," "our," or "us") is committed to protecting your personal information and your right to privacy. If you have any questions or concerns about this privacy notice, or our practices with regards to your personal information, please contact us at mtechitinstitute@gmail.com.
+            Education Pixel ("we," "our," or "us") is committed to protecting your personal information and your right to privacy. If you have any questions or concerns about this privacy notice, or our practices with regards to your personal information, please contact us at admin@educationpixel.com.
           </p>
 
           <p>
@@ -98,10 +98,10 @@ export default function PrivacyPolicyPage() {
           
           <h2>11. HOW CAN YOU CONTACT US ABOUT THIS NOTICE?</h2>
           <p>
-            If you have questions or comments about this notice, you may email us at mtechitinstitute@gmail.com or by post to:
+            If you have questions or comments about this notice, you may email us at admin@educationpixel.com or by post to:
           </p>
           <p>
-            MTech IT Institute<br/>
+            Education Pixel<br/>
             Patti Pratapgarh, 230135, Uttar Pradesh.
           </p>
         </div>

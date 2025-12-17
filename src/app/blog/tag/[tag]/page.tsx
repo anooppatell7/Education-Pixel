@@ -16,7 +16,7 @@ type TagPageProps = {
   };
 };
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
 
 export default function TagPage({ params }: TagPageProps) {
@@ -54,8 +54,8 @@ export default function TagPage({ params }: TagPageProps) {
   }
 
   const metadata: Metadata = {
-    title: `Posts tagged with "${tagName}" - MTech IT Institute`,
-    description: `Browse blog posts and articles tagged with "${tagName}" on the MTech IT Institute blog.`,
+    title: `Posts tagged with "${tagName}" - Education Pixel`,
+    description: `Browse blog posts and articles tagged with "${tagName}" on the Education Pixel blog.`,
     alternates: {
       canonical: `${siteUrl}/blog/tag/${params.tag}`,
     },
@@ -88,5 +88,3 @@ export default function TagPage({ params }: TagPageProps) {
     </>
   );
 }
-
-    

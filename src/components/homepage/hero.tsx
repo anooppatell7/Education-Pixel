@@ -12,7 +12,7 @@ export default function Hero() {
           Build Your Future in Tech<span className="text-teal-400">.</span> Master the Skills<span className="text-teal-400">.</span>
         </h1>
         <p className="mt-6 max-w-[700px] text-lg text-gray-300 sm:text-xl">
-          From Foundational Logic to Advanced IT. Learn, Build, and Innovate with MTech IT Institute.
+          From Foundational Logic to Advanced IT. Learn, Build, and Innovate with Education Pixel.
         </p>
 
         <div className="mt-10 flex flex-wrap justify-center gap-4">

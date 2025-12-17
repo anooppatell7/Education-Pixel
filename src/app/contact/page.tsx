@@ -7,25 +7,25 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import SectionDivider from "@/components/section-divider";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
 export const metadata: Metadata = {
-  title: "Contact MTech IT Institute - Premier Tech Institute",
-  description: "Contact MTech IT Institute for admissions, course details, or any inquiry. We're a leading tech training institute. Call 7800413348.",
-  keywords: ["tech institute contact", "MTech IT Institute address", "MTech IT Institute phone number", "join MTech IT Institute", "coding bootcamp contact"],
+  title: "Contact Education Pixel - Premier Tech Institute",
+  description: "Contact Education Pixel for admissions, course details, or any inquiry. We're a leading tech training institute. Call 7800413348.",
+  keywords: ["tech institute contact", "Education Pixel address", "Education Pixel phone number", "join Education Pixel", "coding bootcamp contact"],
    alternates: {
     canonical: `${siteUrl}/contact`,
   },
   openGraph: {
-    title: "Contact MTech IT Institute - Premier Tech Institute",
-    description: "Contact MTech IT Institute for admissions, course details, or any inquiry. We're a leading tech training institute.",
+    title: "Contact Education Pixel - Premier Tech Institute",
+    description: "Contact Education Pixel for admissions, course details, or any inquiry. We're a leading tech training institute.",
     url: `${siteUrl}/contact`,
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Contact MTech IT Institute - Premier Tech Institute",
-    description: "Contact MTech IT Institute for admissions, course details, or any inquiry. We're a leading tech training institute.",
+    title: "Contact Education Pixel - Premier Tech Institute",
+    description: "Contact Education Pixel for admissions, course details, or any inquiry. We're a leading tech training institute.",
   },
 };
 
@@ -73,7 +73,7 @@ export default function ContactPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-accent" />
-                    <span>mtechitinstitute@gmail.com</span>
+                    <span>admin@educationpixel.com</span>
                   </div>
                 </CardContent>
               </Card>
@@ -109,7 +109,7 @@ export default function ContactPage() {
                     allowFullScreen={true}
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    title="MTech IT Institute Location Map"
+                    title="Education Pixel Location Map"
                 ></iframe>
             </div>
           </div>

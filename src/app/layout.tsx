@@ -26,7 +26,7 @@ const volkhov = Volkhov({
 });
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
 const faviconUrl = "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png";
 
@@ -37,11 +37,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default:
-      "MTech IT Institute - Premier Tech Institute for Modern Skills",
-    template: "%s | MTech IT Institute",
+      "Education Pixel - Premier Tech Institute for Modern Skills",
+    template: "%s | Education Pixel",
   },
   description:
-    "Join MTech IT Institute to master in-demand tech skills. We offer expert-led courses in Web Development, AI/ML, Data Science, DevOps, and more to launch your tech career.",
+    "Join Education Pixel to master in-demand tech skills. We offer expert-led courses in Web Development, AI/ML, Data Science, DevOps, and more to launch your tech career.",
   keywords: [
     "tech institute",
     "coding bootcamp",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     "data science course",
     "AI/ML courses",
     "DevOps training",
-    "MTech IT Institute",
+    "Education Pixel",
   ],
   icons: {
     icon: faviconUrl,
@@ -62,24 +62,24 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: siteUrl,
-    title: "MTech IT Institute - Premier Tech Institute for Modern Skills",
+    title: "Education Pixel - Premier Tech Institute for Modern Skills",
     description:
-      "Join MTech IT Institute to master in-demand tech skills and launch your career.",
+      "Join Education Pixel to master in-demand tech skills and launch your career.",
     images: [
       {
         url: "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757136324/ChatGPT_Image_Sep_5_2025_10_25_03_PM_w0e2ry.png",
         width: 1200,
         height: 630,
-        alt: "MTech IT Institute Campus",
+        alt: "Education Pixel Campus",
       },
     ],
-    siteName: "MTech IT Institute",
+    siteName: "Education Pixel",
   },
   twitter: {
     card: "summary_large_image",
-    title: "MTech IT Institute - Premier Tech Institute for Modern Skills",
+    title: "Education Pixel - Premier Tech Institute for Modern Skills",
     description:
-      "Join MTech IT Institute to master in-demand tech skills and launch your career.",
+      "Join Education Pixel to master in-demand tech skills and launch your career.",
     images: [
       "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757136324/ChatGPT_Image_Sep_5_2025_10_25_03_PM_w0e2ry.png",
     ],

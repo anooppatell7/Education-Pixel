@@ -92,8 +92,8 @@ export default function SignupPage() {
   return (
     <>
       <Head>
-        <title>Sign Up - MTech IT Institute</title>
-        <meta name="description" content="Create an account with MTech IT Institute to start your learning journey with our interactive courses." />
+        <title>Sign Up - Education Pixel</title>
+        <meta name="description" content="Create an account with Education Pixel to start your learning journey with our interactive courses." />
          <meta name="robots" content="noindex, follow" />
       </Head>
       <div className="flex items-center justify-center min-h-[80vh] bg-secondary">
@@ -155,5 +155,3 @@ export default function SignupPage() {
     </>
   );
 }
-
-    

@@ -3,17 +3,17 @@ import type { Metadata } from 'next';
 import ReviewPageClient from "@/components/reviews-page-client";
 import SectionDivider from "@/components/section-divider";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
 export const metadata: Metadata = {
-  title: "Student Reviews - MTech IT Institute",
+  title: "Student Reviews - Education Pixel",
   description: "See what our students are saying! Read reviews and testimonials about our computer courses and training in Patti, Pratapgarh.",
-  keywords: ["student reviews mtech it institute", "mtech it institute testimonials", "computer course reviews patti"],
+  keywords: ["student reviews education pixel", "education pixel testimonials", "computer course reviews patti"],
    alternates: {
     canonical: `${siteUrl}/reviews`,
   },
    openGraph: {
-    title: "Student Reviews - MTech IT Institute",
+    title: "Student Reviews - Education Pixel",
     description: "See what our students are saying! Read reviews and testimonials about our computer courses and training.",
     url: `${siteUrl}/reviews`,
   },

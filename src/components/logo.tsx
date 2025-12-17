@@ -27,7 +27,7 @@ export default function Logo({ className, textClassName }: LogoProps) {
           textClassName
         )}
       >
-        MTech IT Institute
+        Education Pixel
       </span>
     </Link>
   );

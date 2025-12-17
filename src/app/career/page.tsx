@@ -9,11 +9,11 @@ import type { Metadata } from "next";
 import SectionDivider from "@/components/section-divider";
 import CareerPageClient from "@/components/career-page-client";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
 export const metadata: Metadata = {
   title: "Career Guidance After 12th & For IT Professionals",
-  description: "Get expert career guidance after 12th. Explore top IT jobs, necessary skills, and career growth strategies in the technology sector with MTech IT Institute.",
+  description: "Get expert career guidance after 12th. Explore top IT jobs, necessary skills, and career growth strategies in the technology sector with Education Pixel.",
   keywords: ["career guidance after 12th", "IT jobs", "career in IT", "skill development", "freelancing jobs"],
   alternates: {
     canonical: `${siteUrl}/career`,

@@ -30,7 +30,7 @@ export default function CourseCard({ course }: CourseCardProps) {
         <div className="relative h-48 w-full overflow-hidden">
             <Image
                 src={course.image}
-                alt={`${course.title} course at MTech IT Institute`}
+                alt={`${course.title} course at Education Pixel`}
                 data-ai-hint={course.title.split(' ').slice(0,2).join(' ').toLowerCase()}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -47,7 +47,7 @@ export default function CourseCard({ course }: CourseCardProps) {
                 <Clock className="h-4 w-4" />
                 <span>{course.duration}</span>
             </div>
-            <div className="flex items-center gap-2 font-semibold text-primary">
+            <div className="flex items-center gap-2 font-semibold text-lg text-primary">
                  {course.actualPrice && (
                     <span className="text-muted-foreground line-through flex items-center">
                         <IndianRupee className="h-4 w-4" />{course.actualPrice}

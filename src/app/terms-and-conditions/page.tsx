@@ -1,11 +1,11 @@
 
 import type { Metadata } from 'next';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
 export const metadata: Metadata = {
-  title: "Terms and Conditions - MTech IT Institute",
-  description: "Read the Terms and Conditions for using the MTech IT Institute website and its services. By accessing our website, you agree to these terms.",
+  title: "Terms and Conditions - Education Pixel",
+  description: "Read the Terms and Conditions for using the Education Pixel website and its services. By accessing our website, you agree to these terms.",
   alternates: {
     canonical: `${siteUrl}/terms-and-conditions`,
   },
@@ -30,7 +30,7 @@ export default function TermsAndConditionsPage() {
 
           <h2>2. Intellectual Property</h2>
           <p>
-            The Service and its original content, features, and functionality are and will remain the exclusive property of MTech IT Institute and its licensors. The content, including text, graphics, logos, and course materials, is protected by copyright and other laws. Our trademarks may not be used in connection with any product or service without the prior written consent of MTech IT Institute.
+            The Service and its original content, features, and functionality are and will remain the exclusive property of Education Pixel and its licensors. The content, including text, graphics, logos, and course materials, is protected by copyright and other laws. Our trademarks may not be used in connection with any product or service without the prior written consent of Education Pixel.
           </p>
 
           <h2>3. User Accounts</h2>
@@ -48,7 +48,7 @@ export default function TermsAndConditionsPage() {
 
           <h2>5. Limitation of Liability</h2>
           <p>
-            In no event shall MTech IT Institute, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.
+            In no event shall Education Pixel, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.
           </p>
           
           <h2>6. Disclaimer</h2>
@@ -68,7 +68,7 @@ export default function TermsAndConditionsPage() {
           
           <h2>9. Contact Us</h2>
           <p>
-            If you have any questions about these Terms, please contact us at mtechitinstitute@gmail.com.
+            If you have any questions about these Terms, please contact us at admin@educationpixel.com.
           </p>
         </div>
       </div>

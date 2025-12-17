@@ -84,7 +84,7 @@ export default function ExamResultPage() {
 
             // Authorization Check
             if (user) {
-                const isAdmin = user.email && ["mtechitinstitute@gmail.com", "anooppbh8@gmail.com"].includes(user.email);
+                const isAdmin = user.email && ["admin@educationpixel.com", "anooppbh8@gmail.com"].includes(user.email);
                 let isOwner = false;
                 
                 // For practice tests, the registrationNumber is the user's UID.
@@ -113,7 +113,7 @@ export default function ExamResultPage() {
             }
 
             setResult(resultData);
-            document.title = `Result: ${resultData.testName} - MTech IT Institute`;
+            document.title = `Result: ${resultData.testName} - Education Pixel`;
 
             const testRef = doc(db, 'mockTests', resultData.testId);
             const testSnap = await getDoc(testRef);

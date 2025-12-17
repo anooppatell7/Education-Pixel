@@ -7,7 +7,7 @@ type Props = {
   params: { slug: string }
 }
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const course = await getCourseData(params.slug)
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: `${siteUrl}/learn/${params.slug}`,
     },
     openGraph: {
-      title: `Learn ${course.title} | MTech IT Institute`,
+      title: `Learn ${course.title} | Education Pixel`,
       description: course.description,
       url: `${siteUrl}/learn/${params.slug}`,
     },

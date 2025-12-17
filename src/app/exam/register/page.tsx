@@ -1,6 +1,5 @@
 
 
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -65,7 +64,7 @@ export default function ExamRegistrationPage() {
     const { toast } = useToast();
     
     useEffect(() => {
-        document.title = "Exam Registration - MTech IT Institute";
+        document.title = "Exam Registration - Education Pixel";
     }, []);
 
     useEffect(() => {
@@ -424,4 +423,3 @@ export default function ExamRegistrationPage() {
     
 
     
-

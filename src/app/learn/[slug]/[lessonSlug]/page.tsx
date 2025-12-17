@@ -196,7 +196,7 @@ export default function LessonPage({ params }: { params: { slug: string; lessonS
         if(lessonData) {
             updateLastVisitedLesson(slug, lessonSlug);
             // Dynamically set page title
-            document.title = `${lessonData.lesson.title} | ${lessonData.course.title} - MTech IT Institute`;
+            document.title = `${lessonData.lesson.title} | ${lessonData.course.title} - Education Pixel`;
         }
     }, [lessonData, slug, lessonSlug, updateLastVisitedLesson]);
     

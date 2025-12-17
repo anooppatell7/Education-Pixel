@@ -13,7 +13,7 @@ import { useAuth, useUser } from "@/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import Head from "next/head";
 
-const ADMIN_EMAILS = ["mtechitinstitute@gmail.com", "anooppbh8@gmail.com"];
+const ADMIN_EMAILS = ["admin@educationpixel.com", "anooppbh8@gmail.com"];
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -92,8 +92,8 @@ export default function LoginPage() {
   return (
     <>
       <Head>
-        <title>Login - MTech IT Institute</title>
-        <meta name="description" content="Login to your MTech IT Institute account to access your courses and learning materials." />
+        <title>Login - Education Pixel</title>
+        <meta name="description" content="Login to your Education Pixel account to access your courses and learning materials." />
         <meta name="robots" content="noindex, follow" />
       </Head>
       <div className="flex items-center justify-center min-h-[80vh] bg-secondary">

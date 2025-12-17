@@ -61,7 +61,7 @@ export default function MockTestsByCategoryPage() {
                 if (categorySnap.exists()) {
                     const categoryData = { id: categorySnap.id, ...categorySnap.data() } as TestCategory
                     setCategory(categoryData);
-                    document.title = `${categoryData.title} Tests - MTech IT Institute`;
+                    document.title = `${categoryData.title} Tests - Education Pixel`;
                 } else {
                     notFound();
                     return;

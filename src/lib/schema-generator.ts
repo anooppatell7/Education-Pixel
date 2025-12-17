@@ -2,7 +2,7 @@
 import type { BlogPost, HowToSchema, FAQPageSchema } from './types';
 import { WithContext, BlogPosting, BreadcrumbList } from 'schema-dts';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mtechitinstitute.in';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://education-pixel.com';
 
 // Helper function to remove HTML tags
 const stripHtml = (html: string): string => {
@@ -24,7 +24,7 @@ const getBaseSchema = (post: BlogPost) => ({
     },
     publisher: {
         '@type': 'Organization',
-        name: 'MTech IT Institute',
+        name: 'Education Pixel',
         logo: {
             '@type': 'ImageObject',
             url: 'https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png',
