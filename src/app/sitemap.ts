@@ -8,8 +8,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '',
     '/about',
     '/courses',
-    '/blog',
-    '/career',
     '/resources',
     '/contact',
     '/privacy-policy',

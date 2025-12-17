@@ -41,7 +41,7 @@ import type { NavItem } from "@/lib/types";
 import React from "react";
 
 
-const ADMIN_EMAILS = ["mtechitinstitute@gmail.com", "anooppbh8@gmail.com"];
+const ADMIN_EMAILS = ["admin@educationpixel.com", "anooppbh8@gmail.com"];
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -125,11 +125,6 @@ export default function Header() {
       title: "Free Resources",
       href: "/resources",
       description: "Access free PDF notes, worksheets, and study materials to aid your learning.",
-    },
-     {
-      title: "Career Guidance",
-      href: "/career",
-      description: "Get expert advice on navigating your career path in the tech industry.",
     },
   ];
 
@@ -220,11 +215,6 @@ export default function Header() {
                         })}
                       </ul>
                     </NavigationMenuContent>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                    <Link href="/blog" legacyBehavior passHref>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>Blog</NavigationMenuLink>
-                    </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                     <Link href="/verify-certificate" legacyBehavior passHref>
@@ -336,7 +326,6 @@ export default function Header() {
                              </AccordionContent>
                         </AccordionItem>
                     </Accordion>
-                     <Link href="/blog" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>Blog</Link>
                      <Link href="/verify-certificate" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>Verify Certificate</Link>
                      <Link href="/contact" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>Contact</Link>
                 </nav>

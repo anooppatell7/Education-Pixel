@@ -10,11 +10,9 @@ export default function Footer() {
     { title: "About", href: "/about" },
     { title: "Courses", href: "/courses" },
     { title: "Learn", href: "/learn" },
-    { title: "Blog", href: "/blog" },
   ];
 
   const secondaryLinks = [
-    { title: "Career Guidance", href: "/career" },
     { title: "Resources", href: "/resources" },
     { title: "Reviews", href: "/reviews" },
     { title: "Verify Certificate", href: "/verify-certificate" },

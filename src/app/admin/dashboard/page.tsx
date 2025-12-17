@@ -91,8 +91,6 @@ export default function AdminDashboardPage() {
     const router = useRouter();
     const [courses, setCourses] = useState<Course[]>([]);
     const [learningCourses, setLearningCourses] = useState<LearningCourse[]>([]);
-    const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-    const [guidanceArticles, setGuidanceArticles] = useState<BlogPost[]>([]);
     const [resources, setResources] = useState<Resource[]>([]);
     const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
     const [contacts, setContacts] = useState<ContactSubmission[]>([]);
@@ -109,13 +107,6 @@ export default function AdminDashboardPage() {
     const [siteSettings, setSiteSettings] = useState<SiteSettings>({ id: 'announcement', text: '', link: '', isVisible: false });
     const [popupSettings, setPopupSettings] = useState<PopupSettings>({ id: 'salesPopup', isVisible: false, title: '', description: '', imageUrl: '', ctaText: '', ctaLink: '' });
 
-
-    // Internal linking state
-    const [allBlogPostsForLinks, setAllBlogPostsForLinks] = useState<BlogPost[]>([]);
-    const [selectedSourcePost, setSelectedSourcePost] = useState<string>("");
-    const [selectedTargetPost, setSelectedTargetPost] = useState<string>("");
-    const [linkKeyword, setLinkKeyword] = useState<string>("");
-    const [isLinkSaving, setIsLinkSaving] = useState(false);
 
     useEffect(() => {
         // Wait until user loading is finished
@@ -162,15 +153,6 @@ export default function AdminDashboardPage() {
                 return courseData;
             }));
             setLearningCourses(learningCoursesList);
-
-            // Blog Posts
-            const blogQuery = query(collection(firestore, "blog"), orderBy("date", "desc"));
-            const blogSnapshot = await getDocs(blogQuery);
-            const allPosts = blogSnapshot.docs.map(doc => ({ ...doc.data(), slug: doc.id } as BlogPost));
-            
-            setAllBlogPostsForLinks(allPosts); // For internal linking dropdowns
-            setBlogPosts(allPosts.filter(post => post.category !== "Career Guidance"));
-            setGuidanceArticles(allPosts.filter(post => post.category === "Career Guidance"));
 
             // Resources
             const resourcesCollection = collection(firestore, "resources");
@@ -403,9 +385,6 @@ export default function AdminDashboardPage() {
     const handleAddNew = (parentIds: { courseId?: string, moduleId?: string, testId?: string } | null = null) => {
         setEditingItem(null);
         let initialData: any = {};
-        if (activeTab === 'guidance') {
-            initialData = { category: "Career Guidance" };
-        }
         if (activeTab === 'learn-content' && parentIds?.courseId) {
             setFormParentIds(parentIds);
         } else if (activeTab === 'mock-tests' && parentIds?.testId) {
@@ -476,55 +455,6 @@ export default function AdminDashboardPage() {
         return url; // Return original URL if it doesn't match
     };
 
-    const handleInternalLinkSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!firestore) return;
-        if (!selectedSourcePost || !selectedTargetPost || !linkKeyword) {
-            toast({ title: "Error", description: "Please fill all fields for internal linking.", variant: "destructive" });
-            return;
-        }
-        if (selectedSourcePost === selectedTargetPost) {
-            toast({ title: "Error", description: "Source and Target post cannot be the same.", variant: "destructive" });
-            return;
-        }
-
-        setIsLinkSaving(true);
-        const targetPost = allBlogPostsForLinks.find(p => p.slug === selectedTargetPost);
-        if (!targetPost) {
-            toast({ title: "Error", description: "Target post not found", variant: "destructive" });
-            setIsLinkSaving(false);
-            return;
-        }
-        
-        const newLink: InternalLink = {
-            keyword: linkKeyword,
-            url: `/blog/${targetPost.slug}`,
-            title: targetPost.title,
-        };
-        
-        const sourcePostRef = doc(firestore, "blog", selectedSourcePost);
-        updateDoc(sourcePostRef, { internalLinks: arrayUnion(newLink) })
-            .then(() => {
-                toast({ title: "Success", description: "Internal link added successfully." });
-                fetchData();
-                setSelectedSourcePost("");
-                setSelectedTargetPost("");
-                setLinkKeyword("");
-            })
-            .catch(async (serverError) => {
-                const permissionError = new FirestorePermissionError({
-                    path: sourcePostRef.path,
-                    operation: 'update',
-                    requestResourceData: { internalLinks: arrayUnion(newLink) }
-                  } satisfies SecurityRuleContext);
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
-                setIsLinkSaving(false);
-            });
-    };
-
-
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!firestore) return;
@@ -544,15 +474,6 @@ export default function AdminDashboardPage() {
             dataToSave.actualPrice = String(dataToSave.actualPrice || '');
             dataToSave.discountPrice = String(dataToSave.discountPrice || '');
             dataToSave.isFeatured = !!dataToSave.isFeatured;
-        } else if (activeTab === 'blog' || activeTab === 'guidance') {
-            collectionRef = collection(firestore, "blog");
-            docId = (editingItem as BlogPost)?.slug;
-            if (!docId) { // For new posts
-                docId = createSlug(dataToSave.title);
-                if (!docId) { toast({title: "Error", description: "Blog post must have a title.", variant: "destructive"}); return; }
-                dataToSave.internalLinks = []; // Initialize for new posts
-            }
-            dataToSave.image = dataToSave.image || `https://picsum.photos/seed/${dataToSave.title || 'blog'}/800/450`;
         } else if (activeTab === 'resources') {
             collectionRef = collection(firestore, "resources");
             if (dataToSave.fileUrl) {
@@ -618,7 +539,7 @@ export default function AdminDashboardPage() {
         let docRef: any;
 
         if (operation === 'create') {
-            if (['blog', 'guidance', 'learn-content', 'test-categories'].includes(activeTab) && docId) {
+            if (['learn-content', 'test-categories'].includes(activeTab) && docId) {
                 docRef = doc(collectionRef, docId);
                 if (activeTab === 'test-categories' || activeTab === 'learn-content') {
                     dataToSave.id = docId;
@@ -645,7 +566,7 @@ export default function AdminDashboardPage() {
             }
         } else if (operation === 'update' && docId) {
             docRef = doc(collectionRef, docId);
-            if (['blog', 'guidance', 'test-categories'].includes(activeTab)) {
+            if (['test-categories'].includes(activeTab)) {
                 setDoc(docRef, dataToSave).then(() => {
                     toast({ title: "Success", description: "Data saved successfully." });
                     fetchData(); handleCloseForm();
@@ -873,8 +794,6 @@ export default function AdminDashboardPage() {
     const getFormTitle = () => {
         const isEditing = !!editingItem;
         if (activeTab === 'courses') return isEditing ? 'Edit Course' : 'Add New Course';
-        if (activeTab === 'blog') return isEditing ? 'Edit Blog Post' : 'Add New Blog Post';
-        if (activeTab === 'guidance') return isEditing ? 'Edit Guidance Article' : 'Add New Guidance Article';
         if (activeTab === 'resources') return isEditing ? 'Edit Resource' : 'Add New Resource';
         if (activeTab === 'test-categories') return isEditing ? 'Edit Test Category' : 'Add New Test Category';
         if (activeTab === 'mock-tests') {
@@ -955,41 +874,6 @@ export default function AdminDashboardPage() {
                     <div className="flex items-center space-x-2">
                         <Switch id="isFeatured" name="isFeatured" checked={formData.isFeatured || false} onCheckedChange={(checked) => setFormData({...formData, isFeatured: checked})} />
                         <Label htmlFor="isFeatured">Feature on Homepage</Label>
-                    </div>
-                </>
-            );
-            case 'blog':
-            case 'guidance':
-                const isGuidance = activeTab === 'guidance';
-                return (
-                <>
-                    <div className="grid gap-2">
-                        <Label htmlFor="title">Title</Label>
-                        <Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="author">Author</Label>
-                        <Input id="author" name="author" value={formData.author || ''} onChange={handleFormChange} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="date">Date</Label>
-                        <Input id="date" name="date" type="date" value={formData.date || ''} onChange={handleFormChange} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="category">Category</Label>
-                        <Input id="category" name="category" value={formData.category || ''} onChange={handleFormChange} disabled={isGuidance} />
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="image">Image URL</Label>
-                        <Input id="image" name="image" value={formData.image || ''} onChange={handleFormChange} placeholder="https://example.com/image.jpg"/>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="content">Content (HTML)</Label>
-                        <Textarea id="content" name="content" value={formData.content || ''} onChange={handleFormChange} rows={10} />
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="tags">Tags (comma-separated)</Label>
-                        <Input id="tags" name="tags" value={Array.isArray(formData.tags) ? formData.tags.join(', ') : ''} onChange={handleFormChange} />
                     </div>
                 </>
             );
@@ -1232,8 +1116,6 @@ export default function AdminDashboardPage() {
                             <ScrollArea className="w-full whitespace-nowrap">
                                 <TabsList className="inline-flex">
                                     <TabsTrigger value="courses">Courses</TabsTrigger>
-                                    <TabsTrigger value="blog">Blog Posts</TabsTrigger>
-                                    <TabsTrigger value="guidance"><Briefcase className="mr-2 h-4 w-4"/>Career Guidance</TabsTrigger>
                                     <TabsTrigger value="resources">Resources</TabsTrigger>
                                     <TabsTrigger value="learn-content">Learn Content</TabsTrigger>
                                     <TabsTrigger value="test-categories"><BookCopy className="mr-2 h-4 w-4"/>Test Categories</TabsTrigger>
@@ -1245,7 +1127,6 @@ export default function AdminDashboardPage() {
                                     </TabsTrigger>
                                     <TabsTrigger value="exam-results"><FileText className="mr-2 h-4 w-4"/>Exam Results</TabsTrigger>
                                     <TabsTrigger value="certificates"><Award className="mr-2 h-4 w-4" />Certificates</TabsTrigger>
-                                    <TabsTrigger value="internal-links"><Link2 className="mr-2 h-4 w-4"/>Internal Links</TabsTrigger>
                                     <TabsTrigger value="enrollments" className="relative">
                                         <FileText className="mr-2 h-4 w-4"/>Enrollments
                                         {unreadEnrollments > 0 && <Badge className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{unreadEnrollments}</Badge>}
@@ -1259,7 +1140,7 @@ export default function AdminDashboardPage() {
                                 <ScrollBar orientation="horizontal" />
                             </ScrollArea>
                              <div className="ml-auto flex items-center gap-2 pl-4">
-                                {activeTab !== 'settings' && activeTab !== 'site-settings' && activeTab !== 'popup-settings' && activeTab !== 'enrollments' && activeTab !== 'contacts' && activeTab !== 'internal-links' && activeTab !== 'reviews' && activeTab !== 'exam-registrations' && activeTab !== 'exam-results' && activeTab !== 'certificates' && activeTab !== 'data-management' && (
+                                {activeTab !== 'settings' && activeTab !== 'site-settings' && activeTab !== 'popup-settings' && activeTab !== 'enrollments' && activeTab !== 'contacts' && activeTab !== 'reviews' && activeTab !== 'exam-registrations' && activeTab !== 'exam-results' && activeTab !== 'certificates' && activeTab !== 'data-management' && (
                                 <Button size="sm" className="h-8 gap-1" onClick={() => handleAddNew()}>
                                     <PlusCircle className="h-3.5 w-3.5" />
                                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -1332,118 +1213,6 @@ export default function AdminDashboardPage() {
                                         </Table>
                                         <ScrollBar orientation="horizontal" />
                                     </ScrollArea>
-                                    }
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                        <TabsContent value="blog">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Blog Posts</CardTitle>
-                                    <CardDescription>
-                                        Manage your blog articles.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                     {loading ? <p>Loading blog posts...</p> :
-                                     <ScrollArea className="w-full whitespace-nowrap">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>Title</TableHead>
-                                                    <TableHead className="hidden sm:table-cell">Author</TableHead>
-                                                    <TableHead className="hidden md:table-cell">Date</TableHead>
-                                                    <TableHead>
-                                                        <span className="sr-only">Actions</span>
-                                                    </TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {blogPosts.map(post => (
-                                                    <TableRow key={post.slug}>
-                                                        <TableCell className="font-medium">{post.title}</TableCell>
-                                                        <TableCell className="hidden sm:table-cell">{post.author}</TableCell>
-                                                        <TableCell className="hidden md:table-cell">{post.date}</TableCell>
-                                                        <TableCell className="text-right">
-                                                            <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild>
-                                                                    <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                                        <MoreHorizontal className="h-4 w-4" />
-                                                                        <span className="sr-only">Toggle menu</span>
-                                                                    </Button>
-                                                                </DropdownMenuTrigger>
-                                                                <DropdownMenuContent align="end">
-                                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                                     <DropdownMenuSeparator />
-                                                                    <DropdownMenuItem onClick={() => handleEdit(post)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                                                    <DropdownMenuItem className="text-destructive" onClick={() => openConfirmationDialog('blog', post.slug)}>
-                                                                        <Trash className="mr-2 h-4 w-4" />Delete
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuContent>
-                                                            </DropdownMenu>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                        <ScrollBar orientation="horizontal" />
-                                     </ScrollArea>
-                                    }
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                        <TabsContent value="guidance">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Career Guidance Articles</CardTitle>
-                                    <CardDescription>
-                                        Manage your career guidance content.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                     {loading ? <p>Loading articles...</p> :
-                                     <ScrollArea className="w-full whitespace-nowrap">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>Title</TableHead>
-                                                    <TableHead className="hidden sm:table-cell">Author</TableHead>
-                                                    <TableHead className="hidden md:table-cell">Date</TableHead>
-                                                    <TableHead>
-                                                        <span className="sr-only">Actions</span>
-                                                    </TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {guidanceArticles.map(post => (
-                                                    <TableRow key={post.slug}>
-                                                        <TableCell className="font-medium">{post.title}</TableCell>
-                                                        <TableCell className="hidden sm:table-cell">{post.author}</TableCell>
-                                                        <TableCell className="hidden md:table-cell">{post.date}</TableCell>
-                                                        <TableCell className="text-right">
-                                                            <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild>
-                                                                    <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                                        <MoreHorizontal className="h-4 w-4" />
-                                                                        <span className="sr-only">Toggle menu</span>
-                                                                    </Button>
-                                                                </DropdownMenuTrigger>
-                                                                <DropdownMenuContent align="end">
-                                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                                     <DropdownMenuSeparator />
-                                                                    <DropdownMenuItem onClick={() => handleEdit(post)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                                                    <DropdownMenuItem className="text-destructive" onClick={() => openConfirmationDialog('guidance', post.slug)}>
-                                                                        <Trash className="mr-2 h-4 w-4" />Delete
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuContent>
-                                                            </DropdownMenu>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                         <ScrollBar orientation="horizontal" />
-                                     </ScrollArea>
                                     }
                                 </CardContent>
                             </Card>
@@ -1903,79 +1672,6 @@ export default function AdminDashboardPage() {
                                 </CardContent>
                             </Card>
                         </TabsContent>
-                         <TabsContent value="internal-links">
-                             <Card>
-                                <CardHeader>
-                                    <CardTitle>Manage Internal Links</CardTitle>
-                                    <CardDescription>Create internal links between your blog posts to improve SEO and user navigation.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <form onSubmit={handleInternalLinkSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="sourcePost">Source Post (Where to add the link)</Label>
-                                            <Select value={selectedSourcePost} onValueChange={setSelectedSourcePost}>
-                                                <SelectTrigger id="sourcePost"><SelectValue placeholder="Select a post" /></SelectTrigger>
-                                                <SelectContent>
-                                                    {allBlogPostsForLinks.map(post => <SelectItem key={post.slug} value={post.slug}>{post.title}</SelectItem>)}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="targetPost">Target Post (Which post to link to)</Label>
-                                            <Select value={selectedTargetPost} onValueChange={setSelectedTargetPost}>
-                                                <SelectTrigger id="targetPost"><SelectValue placeholder="Select a post" /></SelectTrigger>
-                                                <SelectContent>
-                                                    {allBlogPostsForLinks.map(post => <SelectItem key={post.slug} value={post.slug}>{post.title}</SelectItem>)}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                         <div className="grid gap-2">
-                                            <Label htmlFor="linkKeyword">Keyword to Link</Label>
-                                            <Input id="linkKeyword" value={linkKeyword} onChange={e => setLinkKeyword(e.target.value)} placeholder="e.g., typing practice" />
-                                        </div>
-                                        <div className="md:col-span-3">
-                                            <Button type="submit" disabled={isLinkSaving}>{isLinkSaving ? 'Saving...' : 'Add Internal Link'}</Button>
-                                        </div>
-                                    </form>
-
-                                    <div className="mt-8">
-                                        <h3 className="text-lg font-semibold mb-4">Existing Internal Links</h3>
-                                        <ScrollArea className="w-full whitespace-nowrap">
-                                        <div className="space-y-4">
-                                            {allBlogPostsForLinks.filter(p => p.internalLinks && p.internalLinks.length > 0).map(post => (
-                                                <div key={post.slug}>
-                                                    <h4 className="font-semibold">{post.title}</h4>
-                                                    <Table>
-                                                        <TableHeader>
-                                                           <TableRow>
-                                                                <TableHead>Keyword</TableHead>
-                                                                <TableHead>Links To</TableHead>
-                                                                <TableHead className="text-right">Action</TableHead>
-                                                            </TableRow>
-                                                        </TableHeader>
-                                                        <TableBody>
-                                                            {post.internalLinks?.map(link => (
-                                                                <TableRow key={`${post.slug}-${link.keyword}`}>
-                                                                    <TableCell>"{link.keyword}"</TableCell>
-                                                                    <TableCell>{link.title}</TableCell>
-                                                                    <TableCell className="text-right">
-                                                                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => openLinkDeleteDialog(post.slug, link)}>
-                                                                            <Trash className="h-4 w-4" />
-                                                                        </Button>
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            ))}
-                                                        </TableBody>
-                                                    </Table>
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <ScrollBar orientation="horizontal" />
-                                        </ScrollArea>
-                                    </div>
-                                </CardContent>
-                             </Card>
-                         </TabsContent>
                          <TabsContent value="enrollments">
                             <Card>
                                 <CardHeader>
