@@ -4,13 +4,15 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: "mtech-it-institute.appspot.com",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyBV93D7BjDtsJHqVWEPmBVxMQkfvHS8MPM",
+  authDomain: "education-pixel.firebaseapp.com",
+  projectId: "education-pixel",
+  storageBucket: "education-pixel.appspot.com",
+  messagingSenderId: "389938895404",
+  appId: "1:389938895404:web:87468900a9e9f360d88f89",
+  measurementId: "G-XXCS05XYVS"
 };
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
@@ -23,5 +25,3 @@ export const storage = getStorage(app);
 // but direct imports from here are also possible now.
 export * from './provider';
 export * from './auth/use-user';
-
-    

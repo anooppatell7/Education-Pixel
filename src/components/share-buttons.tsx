@@ -11,7 +11,7 @@ type ShareButtonsProps = {
   title: string;
 };
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://codesphere.academy';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mtechitinstitute.in';
 
 export default function ShareButtons({ title }: ShareButtonsProps) {
   const { toast } = useToast();

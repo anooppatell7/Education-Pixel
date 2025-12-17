@@ -2,12 +2,12 @@
 import type { Course, BlogPost } from './types';
 import { WithContext, Organization, WebSite, Course as CourseSchema, BlogPosting, BreadcrumbList, ListItem } from 'schema-dts';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://codesphere.academy';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mtechitinstitute.in';
 
 export const organizationSchema: WithContext<Organization> = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'CodeSphere Academy',
+  name: 'MTech IT Institute',
   url: siteUrl,
   logo: 'https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png',
   contactPoint: {
@@ -32,10 +32,10 @@ export const websiteSchema: WithContext<WebSite> = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     url: siteUrl,
-    name: 'CodeSphere Academy',
+    name: 'MTech IT Institute',
     publisher: {
         '@type': 'Organization',
-        name: 'CodeSphere Academy',
+        name: 'MTech IT Institute',
         logo: {
             '@type': 'ImageObject',
             url: 'https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png',
@@ -50,7 +50,7 @@ export const courseSchema = (course: Course): WithContext<CourseSchema> => ({
   description: course.description,
   provider: {
     '@type': 'Organization',
-    name: 'CodeSphere Academy',
+    name: 'MTech IT Institute',
     url: siteUrl,
   },
   image: course.image,

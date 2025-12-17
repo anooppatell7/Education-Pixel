@@ -17,7 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import SectionDivider from "@/components/section-divider";
 import Head from "next/head";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://codesphere.academy";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
 
 export default function BlogPage() {
@@ -75,12 +75,12 @@ export default function BlogPage() {
   return (
     <>
       <Head>
-        <title>Tech Blog - Tutorials and Career Advice | CodeSphere Academy</title>
-        <meta name="description" content="Explore insights, tutorials, and career advice from IT experts at CodeSphere Academy. Stay updated with the latest trends in technology, programming, and digital marketing." />
-        <meta name="keywords" content="tech blog, it tutorials, career advice, programming help, codesphere academy blog" />
+        <title>Tech Blog - Tutorials and Career Advice | MTech IT Institute</title>
+        <meta name="description" content="Explore insights, tutorials, and career advice from IT experts at MTech IT Institute. Stay updated with the latest trends in technology, programming, and digital marketing." />
+        <meta name="keywords" content="tech blog, it tutorials, career advice, programming help, mtech it institute blog" />
         <link rel="canonical" href={`${siteUrl}/blog`} />
-        <meta property="og:title" content="Tech Blog - Tutorials and Career Advice | CodeSphere Academy" />
-        <meta property="og:description" content="Explore insights, tutorials, and career advice from IT experts at CodeSphere Academy." />
+        <meta property="og:title" content="Tech Blog - Tutorials and Career Advice | MTech IT Institute" />
+        <meta property="og:description" content="Explore insights, tutorials, and career advice from IT experts at MTech IT Institute." />
         <meta property="og:url" content={`${siteUrl}/blog`} />
       </Head>
       <div className="bg-gradient-to-br from-blue-900 via-gray-900 to-black text-white">

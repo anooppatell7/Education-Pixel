@@ -7,25 +7,25 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import SectionDivider from "@/components/section-divider";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://codesphere.academy";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
 export const metadata: Metadata = {
-  title: "Contact CodeSphere Academy - Premier Tech Institute",
-  description: "Contact CodeSphere Academy for admissions, course details, or any inquiry. We're a leading tech training institute. Call 7800413348.",
-  keywords: ["tech institute contact", "CodeSphere Academy address", "CodeSphere Academy phone number", "join CodeSphere Academy", "coding bootcamp contact"],
+  title: "Contact MTech IT Institute - Premier Tech Institute",
+  description: "Contact MTech IT Institute for admissions, course details, or any inquiry. We're a leading tech training institute. Call 7800413348.",
+  keywords: ["tech institute contact", "MTech IT Institute address", "MTech IT Institute phone number", "join MTech IT Institute", "coding bootcamp contact"],
    alternates: {
     canonical: `${siteUrl}/contact`,
   },
   openGraph: {
-    title: "Contact CodeSphere Academy - Premier Tech Institute",
-    description: "Contact CodeSphere Academy for admissions, course details, or any inquiry. We're a leading tech training institute.",
+    title: "Contact MTech IT Institute - Premier Tech Institute",
+    description: "Contact MTech IT Institute for admissions, course details, or any inquiry. We're a leading tech training institute.",
     url: `${siteUrl}/contact`,
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Contact CodeSphere Academy - Premier Tech Institute",
-    description: "Contact CodeSphere Academy for admissions, course details, or any inquiry. We're a leading tech training institute.",
+    title: "Contact MTech IT Institute - Premier Tech Institute",
+    description: "Contact MTech IT Institute for admissions, course details, or any inquiry. We're a leading tech training institute.",
   },
 };
 
@@ -73,7 +73,7 @@ export default function ContactPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-accent" />
-                    <span>contact@codesphere.academy</span>
+                    <span>mtechitinstitute@gmail.com</span>
                   </div>
                 </CardContent>
               </Card>
@@ -109,7 +109,7 @@ export default function ContactPage() {
                     allowFullScreen={true}
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    title="CodeSphere Academy Location Map"
+                    title="MTech IT Institute Location Map"
                 ></iframe>
             </div>
           </div>

@@ -26,7 +26,7 @@ export default function About() {
               From Foundational Skills to Career Success
             </h2>
             <p className="mt-4 text-lg text-foreground/80">
-              At CodeSphere Academy, our mission is simple: to bridge the gap between academic knowledge and real-world industry demands. We are dedicated to providing practical, job-oriented computer training that empowers you to achieve your career goals.
+              At MTech IT Institute, our mission is simple: to bridge the gap between academic knowledge and real-world industry demands. We are dedicated to providing practical, job-oriented computer training that empowers you to achieve your career goals.
             </p>
             
             <div className="mt-8 space-y-6">
@@ -69,8 +69,8 @@ export default function About() {
             <Card className="overflow-hidden shadow-2xl rounded-xl border-t-4 border-t-accent">
               <CardContent className="p-0">
                 <Image
-                  src="https://picsum.photos/seed/codesphere-about/800/600"
-                  alt="Students collaborating at CodeSphere Academy"
+                  src="https://picsum.photos/seed/mtech-about/800/600"
+                  alt="Students collaborating at MTech IT Institute"
                   data-ai-hint="collaboration students"
                   width={800}
                   height={600}

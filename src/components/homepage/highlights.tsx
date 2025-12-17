@@ -11,7 +11,7 @@ const highlights = [
   {
     icon: <Users className="h-10 w-10 text-accent" />,
     title: "Thriving Community",
-    description: "Join a growing network of successful alumni who started their tech careers with CodeSphere.",
+    description: "Join a growing network of successful alumni who started their tech careers with MTech IT Institute.",
   },
   {
     icon: <IndianRupee className="h-10 w-10 text-accent" />,
@@ -25,7 +25,7 @@ export default function Highlights() {
     <section className="py-16 sm:py-24 bg-background">
       <div className="container">
         <div className="text-center mb-12">
-          <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Why Choose CodeSphere Academy?</h2>
+          <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Why Choose MTech IT Institute?</h2>
           <p className="mt-4 max-w-2xl mx-auto text-lg text-primary/80">
             We provide a learning environment that is not just educational, but also transformative.
           </p>

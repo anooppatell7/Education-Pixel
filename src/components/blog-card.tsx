@@ -24,7 +24,7 @@ export default function BlogCard({ post }: BlogCardProps) {
         <Link href={`/blog/${post.slug}`} className="block relative h-56 w-full">
             <Image
               src={post.image}
-              alt={`${post.title} - CodeSphere Academy Blog`}
+              alt={`${post.title} - MTech IT Institute Blog`}
               data-ai-hint={post.tags.slice(0, 2).join(' ')}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"

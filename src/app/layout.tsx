@@ -1,5 +1,4 @@
 
-
 import type { Metadata } from "next";
 import { Poppins, Volkhov } from "next/font/google";
 import "./globals.css";
@@ -27,7 +26,7 @@ const volkhov = Volkhov({
 });
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://codesphere.academy";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
 const faviconUrl = "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png";
 
@@ -38,11 +37,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default:
-      "CodeSphere Academy - Premier Tech Institute for Modern Skills",
-    template: "%s | CodeSphere Academy",
+      "MTech IT Institute - Premier Tech Institute for Modern Skills",
+    template: "%s | MTech IT Institute",
   },
   description:
-    "Join CodeSphere Academy to master in-demand tech skills. We offer expert-led courses in Web Development, AI/ML, Data Science, DevOps, and more to launch your tech career.",
+    "Join MTech IT Institute to master in-demand tech skills. We offer expert-led courses in Web Development, AI/ML, Data Science, DevOps, and more to launch your tech career.",
   keywords: [
     "tech institute",
     "coding bootcamp",
@@ -52,7 +51,7 @@ export const metadata: Metadata = {
     "data science course",
     "AI/ML courses",
     "DevOps training",
-    "CodeSphere Academy",
+    "MTech IT Institute",
   ],
   icons: {
     icon: faviconUrl,
@@ -63,24 +62,24 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: siteUrl,
-    title: "CodeSphere Academy - Premier Tech Institute for Modern Skills",
+    title: "MTech IT Institute - Premier Tech Institute for Modern Skills",
     description:
-      "Join CodeSphere Academy to master in-demand tech skills and launch your career.",
+      "Join MTech IT Institute to master in-demand tech skills and launch your career.",
     images: [
       {
         url: "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757136324/ChatGPT_Image_Sep_5_2025_10_25_03_PM_w0e2ry.png",
         width: 1200,
         height: 630,
-        alt: "CodeSphere Academy Campus",
+        alt: "MTech IT Institute Campus",
       },
     ],
-    siteName: "CodeSphere Academy",
+    siteName: "MTech IT Institute",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CodeSphere Academy - Premier Tech Institute for Modern Skills",
+    title: "MTech IT Institute - Premier Tech Institute for Modern Skills",
     description:
-      "Join CodeSphere Academy to master in-demand tech skills and launch your career.",
+      "Join MTech IT Institute to master in-demand tech skills and launch your career.",
     images: [
       "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757136324/ChatGPT_Image_Sep_5_2025_10_25_03_PM_w0e2ry.png",
     ],

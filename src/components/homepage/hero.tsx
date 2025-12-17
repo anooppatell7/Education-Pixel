@@ -9,10 +9,10 @@ export default function Hero() {
     <section className="relative w-full bg-gradient-to-br from-blue-900 via-gray-900 to-black">
       <div className="container relative z-10 flex min-h-[90vh] flex-col items-center justify-center py-20 text-center">
         <h1 className="font-headline text-5xl font-bold text-white drop-shadow-md sm:text-6xl lg:text-7xl">
-          Enter the Sphere of Code<span className="text-teal-400">.</span> Master the Future<span className="text-teal-400">.</span>
+          Build Your Future in Tech<span className="text-teal-400">.</span> Master the Skills<span className="text-teal-400">.</span>
         </h1>
         <p className="mt-6 max-w-[700px] text-lg text-gray-300 sm:text-xl">
-          From Foundational Logic to Advanced AI. Learn, Build, and Innovate with CodeSphere Academy.
+          From Foundational Logic to Advanced IT. Learn, Build, and Innovate with MTech IT Institute.
         </p>
 
         <div className="mt-10 flex flex-wrap justify-center gap-4">

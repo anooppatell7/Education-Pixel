@@ -27,7 +27,7 @@ export default function Logo({ className, textClassName }: LogoProps) {
           textClassName
         )}
       >
-        CodeSphere Academy
+        MTech IT Institute
       </span>
     </Link>
   );

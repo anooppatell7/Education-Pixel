@@ -24,7 +24,7 @@ type BlogPostPageProps = {
   };
 };
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://codesphere.academy";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
 // This function can no longer be async since we use "use client"
 function getPostMetadata(post: BlogPost | null, slug: string): Metadata {

@@ -7,24 +7,24 @@ import type { Metadata } from "next";
 import SectionDivider from "@/components/section-divider";
 import { Button } from "@/components/ui/button";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://codesphere.academy";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
 export const metadata: Metadata = {
-  title: "About CodeSphere Academy - Premier Tech Institute",
-  description: "Learn about CodeSphere Academy, a leading tech institute. Our mission is to provide top-quality, job-oriented IT education and empower students for the digital world.",
-  keywords: ["about codesphere academy", "tech institute", "our mission", "why choose us", "coding bootcamp", "IT education"],
+  title: "About MTech IT Institute - Premier Tech Institute",
+  description: "Learn about MTech IT Institute, a leading tech institute. Our mission is to provide top-quality, job-oriented IT education and empower students for the digital world.",
+  keywords: ["about mtech it institute", "tech institute", "our mission", "why choose us", "coding bootcamp", "IT education"],
   alternates: {
     canonical: `${siteUrl}/about`,
   },
   openGraph: {
-    title: "About CodeSphere Academy - Premier Tech Institute",
-    description: "Learn about CodeSphere Academy, a leading tech institute. Our mission is to provide top-quality IT education and job-oriented courses.",
+    title: "About MTech IT Institute - Premier Tech Institute",
+    description: "Learn about MTech IT Institute, a leading tech institute. Our mission is to provide top-quality IT education and job-oriented courses.",
     url: `${siteUrl}/about`,
     images: [{
-        url: "https://picsum.photos/seed/codesphere-classroom/1200/630",
+        url: "https://picsum.photos/seed/mtech-classroom/1200/630",
         width: 1200,
         height: 630,
-        alt: "CodeSphere Academy Classroom"
+        alt: "MTech IT Institute Classroom"
     }]
   },
 };
@@ -69,7 +69,7 @@ export default function AboutPage() {
       <div className="bg-gradient-to-br from-blue-900 via-gray-900 to-black relative text-white">
          <SectionDivider style="wave" className="text-background" position="top"/>
         <div className="container py-16 sm:py-24 text-center">
-          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Welcome to CodeSphere Academy</h1>
+          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Welcome to MTech IT Institute</h1>
           <p className="mt-4 max-w-3xl mx-auto text-lg text-gray-300">
             One of the most trusted and fastest-growing tech training institutes, empowering students for a successful career in today’s digital world.
           </p>
@@ -105,8 +105,8 @@ export default function AboutPage() {
                     <Card className="overflow-hidden shadow-xl rounded-lg border-t-4 border-t-accent">
                         <CardContent className="p-0">
                         <Image
-                            src="https://picsum.photos/seed/codesphere-classroom/800/600"
-                            alt="CodeSphere Academy classroom with students"
+                            src="https://picsum.photos/seed/mtech-classroom/800/600"
+                            alt="MTech IT Institute classroom with students"
                             data-ai-hint="classroom students"
                             width={800}
                             height={600}
@@ -127,7 +127,7 @@ export default function AboutPage() {
                  <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Our Story</h2>
                  <p className="mt-4 text-lg font-semibold text-primary/80 italic">"To provide high-quality, affordable tech education."</p>
                  <p className="mt-2 text-foreground/80">
-                    CodeSphere Academy was started with this simple goal. We noticed many talented students lacked proper training and guidance, so we created a space where learning is practical, easy to understand, and updated with the latest technology — all at a price that's affordable for everyone.
+                    MTech IT Institute was started with this simple goal. We noticed many talented students lacked proper training and guidance, so we created a space where learning is practical, easy to understand, and updated with the latest technology — all at a price that's affordable for everyone.
                  </p>
             </div>
         </div>
@@ -139,7 +139,7 @@ export default function AboutPage() {
         <SectionDivider style="wave" className="text-secondary" position="top"/>
         <div className="container py-16 sm:py-24">
           <div className="text-center mb-12">
-            <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Why Choose CodeSphere Academy?</h2>
+            <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Why Choose MTech IT Institute?</h2>
             <p className="mt-4 max-w-2xl mx-auto text-lg text-primary/80">
               We provide a learning environment that is not just educational, but also transformative.
             </p>
@@ -191,7 +191,7 @@ export default function AboutPage() {
                 <HeartHandshake className="h-16 w-16 text-accent mx-auto mb-6" />
                 <h2 className="font-headline text-3xl font-bold text-primary sm:text-4xl">Our Commitment to You</h2>
                 <p className="mt-4 max-w-3xl mx-auto text-lg text-primary/80 italic">
-                    At CodeSphere Academy, we don’t just teach — we mentor, guide, and support you until you are ready for the real world. Your success is our biggest achievement.
+                    At MTech IT Institute, we don’t just teach — we mentor, guide, and support you until you are ready for the real world. Your success is our biggest achievement.
                 </p>
                 <div className="mt-8">
                     <Button size="lg" asChild>

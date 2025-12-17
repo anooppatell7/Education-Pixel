@@ -41,7 +41,7 @@ import type { NavItem } from "@/lib/types";
 import React from "react";
 
 
-const ADMIN_EMAILS = ["admin@codesphere.academy", "mtechitinstitute@gmail.com", "anooppbh8@gmail.com"];
+const ADMIN_EMAILS = ["mtechitinstitute@gmail.com", "anooppbh8@gmail.com"];
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,

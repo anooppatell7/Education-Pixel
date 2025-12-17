@@ -4,25 +4,25 @@ import type { Metadata } from "next";
 import CoursesClient from "@/components/courses-client";
 import SectionDivider from "@/components/section-divider";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://codesphere.academy";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
 
 export const metadata: Metadata = {
-  title: "IT & Tech Courses | CodeSphere Academy",
-  description: "Explore top IT & tech courses like Web Development, Data Science, AI/ML, and DevOps. Get expert training at CodeSphere Academy.",
+  title: "IT & Tech Courses | MTech IT Institute",
+  description: "Explore top IT & tech courses like Web Development, Data Science, AI/ML, and DevOps. Get expert training at MTech IT Institute.",
   keywords: ["tech courses", "IT courses", "web development course", "data science course", "AI/ML course", "DevOps course", "job oriented courses"],
   alternates: {
     canonical: `${siteUrl}/courses`,
   },
   openGraph: {
-    title: "IT & Tech Courses | CodeSphere Academy",
-    description: "Explore top IT & tech courses like Web Development, Data Science, and AI/ML. Get expert training at CodeSphere Academy.",
+    title: "IT & Tech Courses | MTech IT Institute",
+    description: "Explore top IT & tech courses like Web Development, Data Science, and AI/ML. Get expert training at MTech IT Institute.",
     url: `${siteUrl}/courses`,
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: "IT & Tech Courses | CodeSphere Academy",
-    description: "Explore top IT & tech courses like Web Development, Data Science, and AI/ML. Get expert training at CodeSphere Academy.",
+    title: "IT & Tech Courses | MTech IT Institute",
+    description: "Explore top IT & tech courses like Web Development, Data Science, and AI/ML. Get expert training at MTech IT Institute.",
   },
 };
 
