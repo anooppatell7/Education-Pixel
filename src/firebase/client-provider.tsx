@@ -3,10 +3,10 @@
 
 import React from 'react';
 import { FirebaseProvider } from '@/firebase/provider';
-import { auth, db, storage, app } from '@/firebase';
+import { auth, db, app } from '@/firebase';
 
 export const FirebaseClientProvider = ({ children }: { children: React.ReactNode }) => {
-  const firebaseServices = { app, auth, db, storage };
+  const firebaseServices = { app, auth, db };
 
   return <FirebaseProvider value={firebaseServices}>{children}</FirebaseProvider>;
 };
