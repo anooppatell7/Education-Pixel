@@ -4,86 +4,43 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // == HELPER FUNCTIONS ==
+    // Checks if a user is authenticated.
     function isAuth() {
       return request.auth != null;
     }
 
+    // Checks if the requesting user is the owner of the document.
     function isOwner(userId) {
       return isAuth() && request.auth.uid == userId;
     }
-
-    // PUBLIC COLLECTIONS (read-only for everyone)
-    match /blog/{postId} {
-      allow read: if true;
-      allow write: if isAuth(); 
+    
+    // == USER PROFILES ==
+    // Users can read and write to their own profile document.
+    // No one else can read or write to it.
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
     }
-    match /resources/{resourceId} {
-      allow read: if true;
-      allow write: if isAuth(); 
-    }
-    match /reviews/{reviewId} {
-        allow read: if true;
-        allow create: if true; 
-        allow update: if isAuth();
-        allow delete: if isAuth();
-    }
-    match /testCategories/{categoryId} {
-        allow read: if true;
-        allow write: if isAuth(); 
-    }
-    match /mockTests/{testId} {
-        allow read: if true;
-        allow write: if isAuth(); 
-    }
-     match /courses/{courseId} {
-      allow read: if true;
-      allow write: if isAuth();
-    }
-    match /learningCourses/{courseId}/{document=**} {
-        allow read: if true;
-        allow write: if isAuth();
-    }
-    match /site_settings/{settingId} {
-       allow read: if true;
-       allow write: if isAuth();
-    }
-
-
-    // USER-SPECIFIC COLLECTIONS
-    match /userProgress/{userId} {
-        allow read, write: if isOwner(userId);
-    }
-    match /examRegistrations/{userId} {
-        allow read, write: if isOwner(userId) || isAuth(); // Allow admin read
-    }
-     match /certificates/{certId} {
+    
+    // == PUBLIC CONTENT ==
+    // Any documents in a "public" collection are readable by everyone.
+    // Only authenticated users can write/create/delete content.
+    match /public/{document=**} {
       allow read: if true;
       allow write: if isAuth();
     }
     
-    // CONTACT & ENROLLMENT (write-only for users)
-    match /contacts/{contactId} {
-        allow read: if isAuth();
-        allow create: if true;
-        allow delete: if isAuth();
+    // == SUBMISSIONS ==
+    // Anyone can create (submit) a document to this collection (e.g., contact form).
+    // Only authenticated users (admins) can read or delete them.
+    match /submissions/{submissionId} {
+      allow create: if true;
+      allow read, delete: if isAuth();
     }
-    match /enrollments/{enrollmentId} {
-        allow read: if isAuth();
-        allow create: if true;
-        allow update: if isAuth();
-        allow delete: if isAuth();
-    }
-    match /examResults/{resultId} {
-        allow read: if true; // Results can be public if link is known
-        allow create: if true; 
-        allow delete: if isAuth();
-    }
-     match /counters/{counterId} {
-        allow read, write: if isAuth();
-    }
-    
-    // Default deny
+
+    // == DEFAULT DENY ==
+    // By default, deny all reads and writes to all documents.
+    // This is a security best practice.
     match /{document=**} {
       allow read, write: if false;
     }
