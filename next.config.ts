@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'https',
+        protocol: 'https,
         hostname: 'images.jdmagicbox.com',
         port: '',
         pathname: '/**',
@@ -44,6 +44,12 @@ const nextConfig: NextConfig = {
        {
         protocol: 'https',
         hostname: 'education-pixel.appspot.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'education-pixel.firebasestorage.app',
         port: '',
         pathname: '/**',
       },
