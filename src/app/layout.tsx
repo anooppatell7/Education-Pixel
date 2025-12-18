@@ -28,7 +28,7 @@ const volkhov = Volkhov({
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
-const faviconUrl = "https://res.cloudinary.com/dqycipmr0/image/upload/v1766031613/educationpixel_logo_j5nuwg.jpg";
+const faviconUrl = "https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png";
 
 // This forces the layout to be dynamically rendered, ensuring data is always fresh
 export const revalidate = 0;

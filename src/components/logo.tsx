@@ -18,7 +18,7 @@ export default function Logo({ className, textClassName }: LogoProps) {
       )}
     >
       <Image 
-        src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766031613/educationpixel_logo_j5nuwg.jpg"
+        src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"
         alt="Education Pixel Logo"
         width={40}
         height={40}

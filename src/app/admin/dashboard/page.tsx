@@ -470,7 +470,7 @@ export default function AdminDashboardPage() {
         
         if (activeTab === 'courses') {
             collectionRef = collection(firestore, "courses");
-            dataToSave.image = dataToSave.image || "https://res.cloudinary.com/dqycipmr0/image/upload/v1766031613/educationpixel_logo_j5nuwg.jpg";
+            dataToSave.image = dataToSave.image || "https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png";
             dataToSave.actualPrice = String(dataToSave.actualPrice || '');
             dataToSave.discountPrice = String(dataToSave.discountPrice || '');
             dataToSave.isFeatured = !!dataToSave.isFeatured;

@@ -27,7 +27,7 @@ const getBaseSchema = (post: BlogPost) => ({
         name: 'Education Pixel',
         logo: {
             '@type': 'ImageObject',
-            url: 'https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png',
+            url: 'https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png',
         },
     },
     datePublished: new Date(post.date).toISOString(),
