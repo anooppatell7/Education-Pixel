@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
@@ -12,16 +13,10 @@ import playlists from '@/lib/data/playlistData.json';
 const YOUTUBE_API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
 
 // Since we are using Mode A (No API), we'll construct the URLs manually.
-// For a more robust solution, especially with many videos, Mode B (API) is recommended.
 // This is a simplified fetch function for demonstration without an API key.
 const fetchPlaylistItems = async (playlistId: string) => {
     // This is a placeholder. For Mode A, we can't dynamically fetch video lists without an API.
     // We are assuming a structure for demonstration. The real power comes with Mode B.
-    // In a real Mode A, you might hardcode the first few video IDs or use a different embed method.
-    // For this implementation, we will use a workaround to show a concept.
-    // Let's assume we can get a basic playlist embed link.
-    // The individual videos will be manually defined in playlistData.json for now.
-    
     const playlist = playlists.find(p => p.id === playlistId);
     if (!playlist) return { items: [] };
 
