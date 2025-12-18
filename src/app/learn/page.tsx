@@ -4,37 +4,47 @@
 import { useState, useEffect, Suspense } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlayCircle, Loader2 } from 'lucide-react';
+import { PlayCircle, Loader2, AlertTriangle, ListVideo } from 'lucide-react';
 import SectionDivider from '@/components/section-divider';
 import VideoPlayer from '@/components/videos/VideoPlayer';
 import VideoCard from '@/components/videos/VideoCard';
-import playlists from '@/lib/data/playlistData.json';
 
 const YOUTUBE_API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
+const CHANNEL_NAME = process.env.NEXT_PUBLIC_YOUTUBE_CHANNEL_NAME;
 
-// Since we are using Mode A (No API), we'll construct the URLs manually.
-// This is a simplified fetch function for demonstration without an API key.
-const fetchPlaylistItems = async (playlistId: string) => {
-    // This is a placeholder. For Mode A, we can't dynamically fetch video lists without an API.
-    // We are assuming a structure for demonstration. The real power comes with Mode B.
-    const playlist = playlists.find(p => p.id === playlistId);
-    if (!playlist) return { items: [] };
+async function fetchPlaylistsFromChannel(channelName: string) {
+    if (!YOUTUBE_API_KEY) {
+        throw new Error("YouTube API key is missing. Please set NEXT_PUBLIC_YOUTUBE_API_KEY in your .env file.");
+    }
 
-    // Simulate fetching video details (in reality, this data is in playlistData.json)
-    const items = playlist.videos.map(video => ({
-        id: video.videoId,
-        snippet: {
-            title: video.title,
-            thumbnails: {
-                medium: {
-                    url: `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`
-                }
-            }
-        }
-    }));
+    // 1. Get Channel ID from custom username
+    const channelSearchUrl = `https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${channelName}&key=${YOUTUBE_API_KEY}`;
+    const channelResponse = await fetch(channelSearchUrl);
+    const channelData = await channelResponse.json();
+
+    if (!channelData.items || channelData.items.length === 0) {
+        throw new Error(`YouTube channel with handle '${channelName}' not found.`);
+    }
+    const channelId = channelData.items[0].id;
+
+    // 2. Get Playlists for that Channel ID
+    const playlistsUrl = `https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&channelId=${channelId}&maxResults=25&key=${YOUTUBE_API_KEY}`;
+    const playlistsResponse = await fetch(playlistsUrl);
+    const playlistsData = await playlistsResponse.json();
     
-    return { items };
-};
+    return playlistsData.items || [];
+}
+
+async function fetchVideosFromPlaylist(playlistId: string) {
+     if (!YOUTUBE_API_KEY) {
+        throw new Error("YouTube API key is missing.");
+    }
+    const videosUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=50&key=${YOUTUBE_API_KEY}`;
+    const videosResponse = await fetch(videosUrl);
+    const videosData = await videosResponse.json();
+    return videosData.items || [];
+}
+
 
 function VideoLibrarySkeleton() {
     return (
@@ -63,23 +73,56 @@ function VideoLibrarySkeleton() {
 }
 
 export default function LearnPage() {
-    const [selectedPlaylist, setSelectedPlaylist] = useState(playlists[0]?.id || '');
+    const [playlists, setPlaylists] = useState<any[]>([]);
+    const [selectedPlaylist, setSelectedPlaylist] = useState('');
     const [videos, setVideos] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loadingPlaylists, setLoadingPlaylists] = useState(true);
+    const [loadingVideos, setLoadingVideos] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const loadPlaylists = async () => {
+            setLoadingPlaylists(true);
+            setError(null);
+            if (!CHANNEL_NAME) {
+                 setError("YouTube channel name is not configured.");
+                 setLoadingPlaylists(false);
+                 return;
+            }
+            try {
+                const data = await fetchPlaylistsFromChannel(CHANNEL_NAME);
+                setPlaylists(data);
+                if (data.length > 0) {
+                    setSelectedPlaylist(data[0].id);
+                }
+            } catch (err: any) {
+                console.error(err);
+                setError(err.message || "Could not fetch playlists. Check API key and channel name.");
+            } finally {
+                setLoadingPlaylists(false);
+            }
+        };
+        loadPlaylists();
+    }, []);
 
     useEffect(() => {
         const loadVideos = async () => {
             if (!selectedPlaylist) return;
-            setLoading(true);
+            setLoadingVideos(true);
             try {
-                // In a real API-based scenario, this would be an actual API call
-                const data = await fetchPlaylistItems(selectedPlaylist);
-                setVideos(data.items);
+                const data = await fetchVideosFromPlaylist(selectedPlaylist);
+                // The API returns video data nested under `snippet.resourceId.videoId`
+                const videoItems = data.map((item: any) => ({
+                    id: item.snippet.resourceId.videoId,
+                    snippet: item.snippet
+                }));
+                setVideos(videoItems);
             } catch (error) {
                 console.error("Failed to fetch videos", error);
+                setError("Could not load videos for this playlist.");
             } finally {
-                setLoading(false);
+                setLoadingVideos(false);
             }
         };
         loadVideos();
@@ -89,7 +132,7 @@ export default function LearnPage() {
         setSelectedVideo(videoId);
     };
 
-    const currentPlaylistTitle = playlists.find(p => p.id === selectedPlaylist)?.title || "Videos";
+    const currentPlaylistTitle = playlists.find(p => p.id === selectedPlaylist)?.snippet.title || "Videos";
 
     return (
         <>
@@ -105,35 +148,68 @@ export default function LearnPage() {
             <div className="bg-secondary relative">
                 <SectionDivider style="wave" className="text-gradient-to-br from-blue-900 via-indigo-900 to-black" position="top"/>
                 <div className="container py-16 sm:py-24">
-                    <div className="flex items-center justify-center flex-wrap gap-3 sm:gap-4 mb-12">
-                        {playlists.map(playlist => (
-                            <Button
-                                key={playlist.id}
-                                variant={selectedPlaylist === playlist.id ? 'default' : 'outline'}
-                                onClick={() => setSelectedPlaylist(playlist.id)}
-                                className="transition-all"
-                            >
-                                {playlist.title}
-                            </Button>
-                        ))}
-                    </div>
-
-                    {loading ? (
+                   {loadingPlaylists ? (
                         <VideoLibrarySkeleton />
-                    ) : (
-                        <div>
-                             <h2 className="font-headline text-3xl font-bold text-primary mb-6">{currentPlaylistTitle}</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                {videos.map(video => (
-                                    <VideoCard key={video.id} video={video} onVideoSelect={handleVideoSelect} />
-                                ))}
-                            </div>
+                   ) : error ? (
+                        <Card className="text-center p-8 bg-destructive/10 border-destructive">
+                           <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+                           <CardContent>
+                               <h3 className="text-xl font-semibold text-destructive-foreground">An Error Occurred</h3>
+                               <p className="text-muted-foreground mt-2">{error}</p>
+                           </CardContent>
+                        </Card>
+                   ) : playlists.length > 0 ? (
+                    <>
+                        <div className="flex items-center justify-center flex-wrap gap-3 sm:gap-4 mb-12">
+                            {playlists.map(playlist => (
+                                <Button
+                                    key={playlist.id}
+                                    variant={selectedPlaylist === playlist.id ? 'default' : 'outline'}
+                                    onClick={() => setSelectedPlaylist(playlist.id)}
+                                    className="transition-all"
+                                >
+                                    {playlist.snippet.title}
+                                </Button>
+                            ))}
                         </div>
-                    )}
+
+                        <div>
+                            <h2 className="font-headline text-3xl font-bold text-primary mb-6">{currentPlaylistTitle}</h2>
+                            {loadingVideos ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                     {[...Array(4)].map((_, i) => (
+                                        <Card key={i} className="animate-pulse">
+                                            <div className="aspect-video w-full bg-muted rounded-t-lg" />
+                                            <CardContent className="p-4 space-y-2">
+                                                <div className="h-5 w-3/4 bg-muted rounded-md" />
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            ) : videos.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                    {videos.map(video => (
+                                        <VideoCard key={video.id} video={video} onVideoSelect={handleVideoSelect} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <Card><CardContent className="p-8 text-center text-muted-foreground">This playlist has no videos yet.</CardContent></Card>
+                            )}
+                        </div>
+                    </>
+                   ) : (
+                        <Card className="text-center p-8">
+                            <ListVideo className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                           <CardContent>
+                               <h3 className="text-xl font-semibold">No Playlists Found</h3>
+                               <p className="text-muted-foreground mt-2">This channel doesn't have any public playlists yet.</p>
+                           </CardContent>
+                        </Card>
+                   )}
                 </div>
             </div>
 
-            {selectedVideo && (
+            {selectedVideo && selectedPlaylist && (
                 <Suspense fallback={<div>Loading player...</div>}>
                     <VideoPlayer
                         videoId={selectedVideo}
