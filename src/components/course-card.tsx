@@ -12,10 +12,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, IndianRupee, Tag, Briefcase } from "lucide-react";
+import { Clock, IndianRupee, Tag } from "lucide-react";
 import { EnrollModal } from "./enroll-modal";
+import { useState } from "react";
 
 const LOGO_URL = "https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png";
+
+type CourseCardProps = {
+  course: Course;
+};
 
 
 export default function CourseCard({ course }: CourseCardProps) {
@@ -23,6 +28,8 @@ export default function CourseCard({ course }: CourseCardProps) {
     ? `${course.description.substring(0, 100)}...` 
     : course.description;
     
+  const [imgSrc, setImgSrc] = useState(course.image || LOGO_URL);
+
   const showGenericImage = !course.image;
 
   return (
@@ -39,11 +46,12 @@ export default function CourseCard({ course }: CourseCardProps) {
                 />
             ) : (
                 <Image
-                    src={course.image}
+                    src={imgSrc}
                     alt={`${course.title} course at Education Pixel`}
                     data-ai-hint={course.title.split(' ').slice(0,2).join(' ').toLowerCase()}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={() => setImgSrc(LOGO_URL)}
                 />
             )}
         </div>
