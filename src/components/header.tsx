@@ -121,6 +121,11 @@ export default function Header() {
       href: "/resources",
       description: "Access free PDF notes, worksheets, and study materials to aid your learning.",
     },
+     {
+      title: "Video Learning Hub",
+      href: "/learn",
+      description: "Explore our curated video playlists to master new skills at your own pace.",
+    },
   ];
 
   const examsComponents: { title: string; href: string; description: string, auth: boolean, registeredOnly: boolean, hideWhenRegistered: boolean }[] = [
@@ -147,6 +152,14 @@ export default function Header() {
       auth: true,
       registeredOnly: false,
       hideWhenRegistered: true,
+    },
+     {
+      title: "Check Result",
+      href: "/exam/result",
+      description: "Enter your registration number to view your exam performance report.",
+      auth: false,
+      registeredOnly: false,
+      hideWhenRegistered: false,
     },
   ];
 
@@ -178,15 +191,41 @@ export default function Header() {
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>About</NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
-                 <NavigationMenuItem>
-                     <Link href="/courses" legacyBehavior passHref>
-                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>Courses</NavigationMenuLink>
-                    </Link>
-                </NavigationMenuItem>
                 <NavigationMenuItem>
-                     <Link href="/resources" legacyBehavior passHref>
-                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>Resources</NavigationMenuLink>
-                    </Link>
+                    <NavigationMenuTrigger>Academics</NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                        {academicsComponents.map((component) => (
+                          <ListItem
+                            key={component.title}
+                            title={component.title}
+                            href={component.href}
+                          >
+                            {component.description}
+                          </ListItem>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                </NavigationMenuItem>
+                 <NavigationMenuItem>
+                    <NavigationMenuTrigger>Examinations</NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                         {examsComponents.map((component) => {
+                            if (component.hideWhenRegistered && isRegistered && !isAdmin) return null;
+                            if (component.registeredOnly && !isRegistered) return null;
+                            return (
+                              <ListItem
+                                key={component.title}
+                                title={component.title}
+                                href={(component.auth && !user) ? `/login?redirect=${component.href}` : component.href}
+                              >
+                                {component.description}
+                              </ListItem>
+                            )
+                        })}
+                      </ul>
+                    </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                     <Link href="/verify-certificate" legacyBehavior passHref>
@@ -232,6 +271,10 @@ export default function Header() {
                                <UserCircle className="mr-2 h-4 w-4" />
                                <span>My Profile</span>
                             </DropdownMenuItem>
+                             <DropdownMenuItem onClick={() => router.push('/learn')}>
+                               <BookOpen className="mr-2 h-4 w-4" />
+                               <span>My Learning</span>
+                            </DropdownMenuItem>
                           </>
                         )}
                         <DropdownMenuSeparator />
@@ -272,8 +315,28 @@ export default function Header() {
                 <nav className="grid grid-flow-row auto-rows-max text-sm">
                     <Link href="/" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>Home</Link>
                     <Link href="/about" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>About</Link>
-                    <Link href="/courses" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>Courses</Link>
-                    <Link href="/resources" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>Resources</Link>
+                    <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value="academics">
+                            <AccordionTrigger className="text-sm font-medium">Academics</AccordionTrigger>
+                            <AccordionContent>
+                                <div className="flex flex-col space-y-2 pl-4">
+                                     {academicsComponents.map(c => <Link key={c.title} href={c.href} className="text-muted-foreground hover:underline" onClick={() => setIsOpen(false)}>{c.title}</Link>)}
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="exams">
+                            <AccordionTrigger className="text-sm font-medium">Examinations</AccordionTrigger>
+                            <AccordionContent>
+                                <div className="flex flex-col space-y-2 pl-4">
+                                    {examsComponents.map((c) => {
+                                        if (c.hideWhenRegistered && isRegistered && !isAdmin) return null;
+                                        if (c.registeredOnly && !isRegistered) return null;
+                                        return <Link key={c.title} href={(c.auth && !user) ? `/login?redirect=${c.href}` : c.href} className="text-muted-foreground hover:underline" onClick={() => setIsOpen(false)}>{c.title}</Link>
+                                    })}
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
                      <Link href="/verify-certificate" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>Verify Certificate</Link>
                      <Link href="/contact" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>Contact</Link>
                 </nav>
