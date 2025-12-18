@@ -2,7 +2,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { CodeXml } from "lucide-react";
 
 type LogoProps = {
   className?: string;
@@ -14,13 +13,17 @@ export default function Logo({ className, textClassName }: LogoProps) {
     <Link
       href="/"
       className={cn(
-        "flex items-center gap-2 text-primary hover:text-primary/80 transition-colors",
+        "flex items-center gap-3 text-primary hover:text-primary/80 transition-colors",
         className
       )}
     >
-      <div className="p-2 bg-primary rounded-lg text-primary-foreground">
-        <CodeXml className="h-6 w-6" />
-      </div>
+      <Image 
+        src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766031613/educationpixel_logo_j5nuwg.jpg"
+        alt="Education Pixel Logo"
+        width={40}
+        height={40}
+        className="rounded-md"
+      />
       <span
         className={cn(
           "font-headline text-xl font-bold tracking-tight",

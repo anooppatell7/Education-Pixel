@@ -28,7 +28,7 @@ const volkhov = Volkhov({
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
-const faviconUrl = "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png";
+const faviconUrl = "https://res.cloudinary.com/dqycipmr0/image/upload/v1766031613/educationpixel_logo_j5nuwg.jpg";
 
 // This forces the layout to be dynamically rendered, ensuring data is always fresh
 export const revalidate = 0;
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
       "Join Education Pixel to master in-demand tech skills and launch your career.",
     images: [
       {
-        url: "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757136324/ChatGPT_Image_Sep_5_2025_10_25_03_PM_w0e2ry.png",
+        url: faviconUrl,
         width: 1200,
         height: 630,
         alt: "Education Pixel Campus",
@@ -81,7 +81,7 @@ export const metadata: Metadata = {
     description:
       "Join Education Pixel to master in-demand tech skills and launch your career.",
     images: [
-      "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757136324/ChatGPT_Image_Sep_5_2025_10_25_03_PM_w0e2ry.png",
+      faviconUrl,
     ],
   },
   alternates: {

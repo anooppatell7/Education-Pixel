@@ -9,7 +9,7 @@ export const organizationSchema: WithContext<Organization> = {
   '@type': 'Organization',
   name: 'Education Pixel',
   url: siteUrl,
-  logo: 'https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png',
+  logo: 'https://res.cloudinary.com/dqycipmr0/image/upload/v1766031613/educationpixel_logo_j5nuwg.jpg',
   contactPoint: {
     '@type': 'ContactPoint',
     telephone: '+91-7355379619',
@@ -38,7 +38,7 @@ export const websiteSchema: WithContext<WebSite> = {
         name: 'Education Pixel',
         logo: {
             '@type': 'ImageObject',
-            url: 'https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png',
+            url: 'https://res.cloudinary.com/dqycipmr0/image/upload/v1766031613/educationpixel_logo_j5nuwg.jpg',
         },
     },
 };
