@@ -40,7 +40,7 @@ export default function ContactPreview() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-primary">Email Us</h3>
-                <p className="text-primary/80">mtechitinstitute@gmail.com</p>
+                <p className="text-primary/80">admin@educationpixel.com</p>
               </div>
             </div>
             <div className="pt-4">
@@ -58,7 +58,7 @@ export default function ContactPreview() {
                 allowFullScreen={true}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="MTech IT Institute Location Map"
+                title="Education Pixel Location Map"
             ></iframe>
           </div>
         </div>
