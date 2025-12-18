@@ -41,15 +41,15 @@ export default function Footer() {
                  <h3 className="font-headline text-lg font-semibold">Contact Us</h3>
                  <div className="flex items-center justify-center md:justify-start gap-3 text-sm">
                     <MapPin className="w-4 h-4 text-accent flex-shrink-0 mt-1"/>
-                    <span>Patti Pratapgarh, 230135, Uttar Pradesh.</span>
+                    <span>bhavdaspur kota bhawaniganj kunda pratapgarh up (230143)</span>
                 </div>
                  <div className="flex items-center justify-center md:justify-start gap-3 text-sm">
                     <Phone className="w-4 h-4 text-accent flex-shrink-0"/>
-                    <span>7800413348, 8299809562</span>
+                    <span>7355379619</span>
                 </div>
                  <div className="flex items-center justify-center md:justify-start gap-3 text-sm">
                     <Mail className="w-4 h-4 text-accent flex-shrink-0"/>
-                    <span>admin@educationpixel.com</span>
+                    <span>ashishkumargiri51@gmail.com</span>
                 </div>
             </div>
 
@@ -82,7 +82,7 @@ export default function Footer() {
         {/* Bottom Section: Socials and Copyright */}
         <div className="pt-8 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex space-x-4">
-              <Link href="https://wa.me/918299809562" aria-label="WhatsApp" className="p-2 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
+              <Link href="https://wa.me/917355379619" aria-label="WhatsApp" className="p-2 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
                 <Send className="w-5 h-5" />
               </Link>
               <Link href="#" aria-label="Facebook" className="p-2 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">

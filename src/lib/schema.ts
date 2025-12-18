@@ -12,7 +12,7 @@ export const organizationSchema: WithContext<Organization> = {
   logo: 'https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png',
   contactPoint: {
     '@type': 'ContactPoint',
-    telephone: '+91-7800413348',
+    telephone: '+91-7355379619',
     contactType: 'Customer Service',
     areaServed: 'IN',
     availableLanguage: ['en', 'hi'],
@@ -20,10 +20,10 @@ export const organizationSchema: WithContext<Organization> = {
   sameAs: [],
   address: {
     '@type': 'PostalAddress',
-    streetAddress: 'Patti',
-    addressLocality: 'Pratapgarh',
+    streetAddress: 'bhavdaspur kota bhawaniganj',
+    addressLocality: 'kunda pratapgarh',
     addressRegion: 'UP',
-    postalCode: '230135',
+    postalCode: '230143',
     addressCountry: 'IN',
   },
 };

@@ -22,7 +22,7 @@ export default function ContactPreview() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-primary">Our Address</h3>
-                <p className="text-primary/80">Patti Pratapgarh, 230135, Uttar Pradesh.</p>
+                <p className="text-primary/80">bhavdaspur kota bhawaniganj kunda pratapgarh up (230143)</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -31,7 +31,7 @@ export default function ContactPreview() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-primary">Call Us</h3>
-                <p className="text-primary/80">7800413348, 8299809562</p>
+                <p className="text-primary/80">7355379619</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -40,7 +40,7 @@ export default function ContactPreview() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-primary">Email Us</h3>
-                <p className="text-primary/80">admin@educationpixel.com</p>
+                <p className="text-primary/80">ashishkumargiri51@gmail.com</p>
               </div>
             </div>
             <div className="pt-4">

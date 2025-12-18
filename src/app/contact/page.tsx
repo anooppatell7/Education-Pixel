@@ -11,7 +11,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com
 
 export const metadata: Metadata = {
   title: "Contact Education Pixel - Premier Tech Institute",
-  description: "Contact Education Pixel for admissions, course details, or any inquiry. We're a leading tech training institute. Call 7800413348.",
+  description: "Contact Education Pixel for admissions, course details, or any inquiry. We're a leading tech training institute. Call 7355379619.",
   keywords: ["tech institute contact", "Education Pixel address", "Education Pixel phone number", "join Education Pixel", "coding bootcamp contact"],
    alternates: {
     canonical: `${siteUrl}/contact`,
@@ -65,15 +65,15 @@ export default function ContactPage() {
                 <CardContent className="space-y-4 text-sm">
                   <div className="flex items-center gap-3">
                     <MapPin className="h-5 w-5 text-accent" />
-                    <span>Patti Pratapgarh, 230135, Uttar Pradesh.</span>
+                    <span>bhavdaspur kota bhawaniganj kunda pratapgarh up (230143)</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="h-5 w-5 text-accent" />
-                    <span>7800413348, 8299809562</span>
+                    <span>7355379619</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-accent" />
-                    <span>admin@educationpixel.com</span>
+                    <span>ashishkumargiri51@gmail.com</span>
                   </div>
                 </CardContent>
               </Card>
@@ -84,7 +84,7 @@ export default function ContactPage() {
                   </CardHeader>
                   <CardContent>
                        <div className="flex space-x-4">
-                          <Link href="https://wa.me/918299809562" aria-label="WhatsApp" className="p-3 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
+                          <Link href="https://wa.me/917355379619" aria-label="WhatsApp" className="p-3 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
                               <Send className="w-6 h-6" />
                           </Link>
                           <Link href="#" aria-label="Facebook" className="p-3 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">

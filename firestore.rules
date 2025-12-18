@@ -18,7 +18,7 @@ service cloud.firestore {
 
     // Checks if the authenticated user is an admin based on their email.
     function isAdmin() {
-      return isAuth() && request.auth.token.email in ["admin@educationpixel.com", "anooppbh8@gmail.com"];
+      return isAuth() && request.auth.token.email in ["admin@educationpixel.com", "anooppbh8@gmail.com", "ashishkumargiri51@gmail.com"];
     }
 
     // == USER DATA ==
@@ -39,10 +39,6 @@ service cloud.firestore {
 
     // Course and blog content is readable by anyone, but only writable by admins.
     match /courses/{courseId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    match /blog/{postId} {
       allow read: if true;
       allow write: if isAdmin();
     }
