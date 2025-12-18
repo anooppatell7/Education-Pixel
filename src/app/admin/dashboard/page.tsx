@@ -1122,7 +1122,7 @@ export default function AdminDashboardPage() {
                                     <TabsTrigger value="mock-tests"><ListTodo className="mr-2 h-4 w-4" />Mock Tests</TabsTrigger>
                                     <TabsTrigger value="reviews"><Star className="mr-2 h-4 w-4" />Reviews</TabsTrigger>
                                     <TabsTrigger value="exam-registrations" className="relative">
-                                        <UserCheck className="mr-2 h-4 w-4"/>Exam Registrations
+                                        <UserCheck className="mr-2 h-4 w-4"/>Student Registrations
                                         {unreadRegistrations > 0 && <Badge className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{unreadRegistrations}</Badge>}
                                     </TabsTrigger>
                                     <TabsTrigger value="exam-results"><FileText className="mr-2 h-4 w-4"/>Exam Results</TabsTrigger>
@@ -1516,7 +1516,7 @@ export default function AdminDashboardPage() {
                          <TabsContent value="exam-registrations">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Exam Registrations</CardTitle>
+                                    <CardTitle>Student Registrations</CardTitle>
                                     <CardDescription>View and manage student registrations for official exams.</CardDescription>
                                 </CardHeader>
                                 <CardContent>

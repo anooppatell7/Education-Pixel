@@ -63,7 +63,7 @@ export default function ExamRegistrationPage() {
     const { toast } = useToast();
     
     useEffect(() => {
-        document.title = "Exam Registration - Education Pixel";
+        document.title = "Student Registration - Education Pixel";
     }, []);
 
     useEffect(() => {
@@ -219,9 +219,9 @@ export default function ExamRegistrationPage() {
         <>
             <div className="bg-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400 text-white">
                 <div className="container py-16 sm:py-24 text-center">
-                    <h1 className="font-headline text-4xl font-bold sm:text-5xl">Exam Registration</h1>
+                    <h1 className="font-headline text-4xl font-bold sm:text-5xl">Student Registration</h1>
                     <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-50">
-                        Fill out the form below to register for the upcoming examination.
+                        Fill out the form below to register as a student and access exams.
                     </p>
                 </div>
             </div>

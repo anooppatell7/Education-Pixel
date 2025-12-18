@@ -239,7 +239,7 @@ export default function ProfilePage() {
                         You have not completed your student registration yet. Please register to view your profile and access exams.
                     </p>
                      <div className="mt-8">
-                        <Button asChild size="lg"><Link href="/exam/register">Register for Exam</Link></Button>
+                        <Button asChild size="lg"><Link href="/exam/register">Register as a Student</Link></Button>
                     </div>
                 </div>
             </div>

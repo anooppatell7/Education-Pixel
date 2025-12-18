@@ -41,7 +41,7 @@ import type { NavItem } from "@/lib/types";
 import React from "react";
 
 
-const ADMIN_EMAILS = ["admin@educationpixel.com", "anooppbh8@gmail.com"];
+const ADMIN_EMAILS = ["admin@educationpixel.com", "anooppbh8@gmail.com", "ashishkumargiri51@gmail.com"];
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -146,7 +146,7 @@ export default function Header() {
       hideWhenRegistered: false,
     },
     {
-      title: "Exam Registration",
+      title: "Student Registration",
       href: "/exam/register",
       description: "Register here to become an official student and take certification exams.",
       auth: true,
