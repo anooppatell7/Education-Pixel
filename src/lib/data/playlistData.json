@@ -1,0 +1,44 @@
+[
+  {
+    "id": "PLjVLYmrlmjGfAUd_aw9v4Iq_M10n_12lg",
+    "title": "HTML Course",
+    "videos": [
+      {
+        "videoId": "kUMe1FH4CHE",
+        "title": "HTML Course For Beginners"
+      },
+      {
+        "videoId": "MDLn5-zSQQI",
+        "title": "HTML Crash Course"
+      }
+    ]
+  },
+  {
+    "id": "PLjVLYmrlmjGfjqARd5VLWflnchj4p2u-p",
+    "title": "CSS Course",
+    "videos": [
+      {
+        "videoId": "ESnrn1kAD4E",
+        "title": "CSS Tutorial - Zero to Hero (Complete Course)"
+      },
+      {
+        "videoId": "1_n_aQvleWI",
+        "title": "CSS Full Course 2024"
+      }
+    ]
+  },
+  {
+    "id": "PLjVLYmrlmjGfgM0sN4q0ehRCFs75d1H0H",
+    "title": "JavaScript Course",
+    "videos": [
+      {
+        "videoId": "VlPiVmYuoqw",
+        "title": "JavaScript for Beginners"
+      },
+      {
+        "videoId": "EhmkZtUa9ls",
+        "title": "JavaScript Full Course"
+      }
+    ]
+  }
+]
