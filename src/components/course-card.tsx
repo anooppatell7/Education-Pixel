@@ -15,10 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Clock, IndianRupee, Tag, Briefcase } from "lucide-react";
 import { EnrollModal } from "./enroll-modal";
 
-type CourseCardProps = {
-  course: Course;
-};
-
 const LOGO_URL = "https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png";
 
 
@@ -27,14 +23,20 @@ export default function CourseCard({ course }: CourseCardProps) {
     ? `${course.description.substring(0, 100)}...` 
     : course.description;
     
-  const showGenericImage = !course.image || course.image === LOGO_URL;
+  const showGenericImage = !course.image;
 
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-xl group border-t-4 border-t-accent">
       <CardHeader className="p-0">
         <div className="relative h-48 w-full overflow-hidden bg-primary/10 flex items-center justify-center">
             {showGenericImage ? (
-                <Briefcase className="h-20 w-20 text-primary/50" />
+                <Image
+                    src={LOGO_URL}
+                    alt="Education Pixel Logo"
+                    width={80}
+                    height={80}
+                    className="object-contain"
+                />
             ) : (
                 <Image
                     src={course.image}
@@ -75,4 +77,3 @@ export default function CourseCard({ course }: CourseCardProps) {
     </Card>
   );
 }
-
