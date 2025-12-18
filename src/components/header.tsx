@@ -117,11 +117,6 @@ export default function Header() {
       description: "Explore job-oriented courses in web development, marketing, and more.",
     },
     {
-      title: "Interactive Learning",
-      href: "/learn",
-      description: "Learn at your own pace with hands-on, interactive lessons and quizzes.",
-    },
-    {
       title: "Free Resources",
       href: "/resources",
       description: "Access free PDF notes, worksheets, and study materials to aid your learning.",
@@ -184,37 +179,14 @@ export default function Header() {
                     </Link>
                 </NavigationMenuItem>
                  <NavigationMenuItem>
-                    <NavigationMenuTrigger>Academics</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] bg-background text-foreground">
-                        {academicsComponents.map((component) => (
-                          <Link href={component.href} key={component.title} className="group">
-                            <ListItem title={component.title}>
-                                {component.description}
-                            </ListItem>
-                           </Link>
-                        ))}
-                      </ul>
-                    </NavigationMenuContent>
+                     <Link href="/courses" legacyBehavior passHref>
+                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>Courses</NavigationMenuLink>
+                    </Link>
                 </NavigationMenuItem>
-                 <NavigationMenuItem>
-                    <NavigationMenuTrigger>Exams</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] bg-background text-foreground">
-                        {examsComponents.map((component) => {
-                           if (component.auth && !user) return null;
-                           if (component.registeredOnly && !isRegistered) return null;
-                           if (component.hideWhenRegistered && isRegistered && !isAdmin) return null;
-                           return (
-                              <Link href={component.href} key={component.title} className="group">
-                                <ListItem title={component.title}>
-                                    {component.description}
-                                </ListItem>
-                               </Link>
-                           )
-                        })}
-                      </ul>
-                    </NavigationMenuContent>
+                <NavigationMenuItem>
+                     <Link href="/resources" legacyBehavior passHref>
+                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>Resources</NavigationMenuLink>
+                    </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                     <Link href="/verify-certificate" legacyBehavior passHref>
@@ -260,10 +232,6 @@ export default function Header() {
                                <UserCircle className="mr-2 h-4 w-4" />
                                <span>My Profile</span>
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => router.push('/learn')}>
-                               <LayoutDashboard className="mr-2 h-4 w-4" />
-                               <span>My Learning</span>
-                            </DropdownMenuItem>
                           </>
                         )}
                         <DropdownMenuSeparator />
@@ -279,7 +247,7 @@ export default function Header() {
                      <Link href="/login">Log In</Link>
                   </Button>
                   <Button asChild>
-                     <Link href="/login">Sign Up</Link>
+                     <Link href="/signup">Sign Up</Link>
                   </Button>
                 </div>
               )
@@ -304,35 +272,15 @@ export default function Header() {
                 <nav className="grid grid-flow-row auto-rows-max text-sm">
                     <Link href="/" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>Home</Link>
                     <Link href="/about" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>About</Link>
-                    
-                    <Accordion type="multiple" className="w-full">
-                        <AccordionItem value="academics">
-                             <AccordionTrigger className="p-2 text-sm font-medium hover:underline">Academics</AccordionTrigger>
-                             <AccordionContent className="pl-4">
-                                {academicsComponents.map(item => (
-                                    <Link key={item.href} href={item.href} className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>{item.title}</Link>
-                                ))}
-                             </AccordionContent>
-                        </AccordionItem>
-                         <AccordionItem value="exams">
-                             <AccordionTrigger className="p-2 text-sm font-medium hover:underline">Exams</AccordionTrigger>
-                             <AccordionContent className="pl-4">
-                                {examsComponents.map(item => {
-                                    if (item.auth && !user) return null;
-                                    if (item.registeredOnly && !isRegistered) return null;
-                                    if (item.hideWhenRegistered && isRegistered && !isAdmin) return null;
-                                    return (<Link key={item.href} href={item.href} className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>{item.title}</Link>)
-                                })}
-                             </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
+                    <Link href="/courses" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>Courses</Link>
+                    <Link href="/resources" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>Resources</Link>
                      <Link href="/verify-certificate" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>Verify Certificate</Link>
                      <Link href="/contact" className="flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline" onClick={() => setIsOpen(false)}>Contact</Link>
                 </nav>
                 {!user && (
                   <div className="flex flex-col gap-2">
                       <Button className="w-full" asChild onClick={() => setIsOpen(false)}><Link href="/login">Log In</Link></Button>
-                      <Button className="w-full" variant="outline" asChild onClick={() => setIsOpen(false)}><Link href="/login">Sign Up</Link></Button>
+                      <Button className="w-full" variant="outline" asChild onClick={() => setIsOpen(false)}><Link href="/signup">Sign Up</Link></Button>
                   </div>
                 )}
             </div>
