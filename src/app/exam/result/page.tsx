@@ -93,7 +93,7 @@ export default function CheckResultPage() {
                       <FormItem>
                         <FormLabel>Registration Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., MTECH-2025-0001" {...field} />
+                          <Input placeholder="e.g., EP-2024-0001" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -112,3 +112,5 @@ export default function CheckResultPage() {
     </>
   );
 }
+
+    

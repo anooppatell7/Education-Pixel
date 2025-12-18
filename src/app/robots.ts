@@ -1,7 +1,7 @@
 
 import { MetadataRoute } from 'next';
  
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mtechitinstitute.in';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://education-pixel.com';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -13,3 +13,5 @@ export default function robots(): MetadataRoute.Robots {
     sitemap: `${siteUrl}/sitemap.xml`,
   };
 }
+
+    

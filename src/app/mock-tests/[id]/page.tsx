@@ -100,7 +100,7 @@ function MockTestClientComponent({ testId }: { testId: string }) {
                 const data = { id: testSnap.id, ...testSnap.data() } as MockTest;
                 if(data.isPublished) {
                     setTestData(data);
-                    document.title = `${data.title} - MTech IT Institute`;
+                    document.title = `${data.title} - Education Pixel`;
                 } else {
                     notFound();
                 }
@@ -285,3 +285,5 @@ export default function MockTestPage({ params }: { params: { id: string } }) {
     const { id } = params;
     return <MockTestClientComponent testId={id} />;
 }
+
+    

@@ -77,14 +77,14 @@ export default function ExamResultPage() {
             const resultData = { id: resultSnap.id, ...resultSnap.data() } as ExamResultType;
             
             // Check if it's an official exam or a practice test.
-            // Official exams have a registration number like 'MTECH-YYYY-NNNN'.
+            // Official exams have a registration number like 'EP-YYYY-NNNN'.
             // Practice tests use the user's UID as the registrationNumber.
-            const officialExam = resultData.registrationNumber.startsWith('MTECH-');
+            const officialExam = resultData.registrationNumber.startsWith('EP-');
             setIsOfficialExam(officialExam);
 
             // Authorization Check
             if (user) {
-                const isAdmin = user.email && ["admin@educationpixel.com", "anooppbh8@gmail.com"].includes(user.email);
+                const isAdmin = user.email && ["admin@educationpixel.com", "anooppbh8@gmail.com", "ashishkumargiri51@gmail.com"].includes(user.email);
                 let isOwner = false;
                 
                 // For practice tests, the registrationNumber is the user's UID.
@@ -347,3 +347,5 @@ export default function ExamResultPage() {
         </div>
     );
 }
+
+    

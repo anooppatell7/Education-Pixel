@@ -125,7 +125,7 @@ export default function StartExamPage() {
                                     <Label htmlFor="registrationNumber">Registration Number</Label>
                                     <Input
                                         id="registrationNumber"
-                                        placeholder="e.g., MTECH-2025-0001"
+                                        placeholder="e.g., EP-2024-0001"
                                         {...register("registrationNumber")}
                                     />
                                     {errors.registrationNumber && (
@@ -184,3 +184,5 @@ export default function StartExamPage() {
     </>
   );
 }
+
+    

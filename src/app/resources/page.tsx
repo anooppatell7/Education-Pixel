@@ -10,18 +10,18 @@ import ResourcesClient from "@/components/resources-client";
 import SectionDivider from "@/components/section-divider";
 import { useEffect, useState } from "react";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mtechitinstitute.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
 const metadata: Metadata = {
-  title: "Free Student Resources (PDF, Notes) - MTech IT Institute",
-  description: "Access and download free student resources from MTech IT Institute, including PDF notes, worksheets, and quizzes for computer courses in Patti.",
-  keywords: ["free student resources", "computer course notes pdf", "it course study material", "mtech it institute resources"],
+  title: "Free Student Resources (PDF, Notes) - Education Pixel",
+  description: "Access and download free student resources from Education Pixel, including PDF notes, worksheets, and quizzes for computer courses.",
+  keywords: ["free student resources", "computer course notes pdf", "it course study material", "education pixel resources"],
   alternates: {
     canonical: `${siteUrl}/resources`,
   },
   openGraph: {
-    title: "Free Student Resources (PDF, Notes) - MTech IT Institute",
-    description: "Access and download free student resources from MTech IT Institute, including PDF notes, worksheets, and quizzes.",
+    title: "Free Student Resources (PDF, Notes) - Education Pixel",
+    description: "Access and download free student resources from Education Pixel, including PDF notes, worksheets, and quizzes.",
     url: `${siteUrl}/resources`,
   },
 };

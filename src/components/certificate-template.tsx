@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { ExamResult } from '@/lib/types';
 
@@ -186,8 +187,8 @@ export default function CertificateTemplate(data: CertificateData) {
                     <span style={styles.registrationNumber}>Registration No: {data.registrationNumber}</span>
                     <img src={data.watermarkUrl} style={styles.watermark} alt="Watermark" />
                     <div style={styles.content}>
-                        <img src={data.logoUrl} style={styles.logo} alt="MTech IT Institute Logo" />
-                        <h1 style={styles.instituteName}>MTech IT Institute</h1>
+                        <img src={data.logoUrl} style={styles.logo} alt="Education Pixel Logo" />
+                        <h1 style={styles.instituteName}>Education Pixel</h1>
                         <h2 style={styles.mainTitle}>Certificate of Completion</h2>
                         <p style={styles.presentedTo}>PROUDLY PRESENTED TO</p>
 
@@ -225,3 +226,5 @@ export default function CertificateTemplate(data: CertificateData) {
         </div>
     );
 }
+
+    

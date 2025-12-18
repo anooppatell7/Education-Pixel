@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -146,7 +145,7 @@ export default function ExamRegistrationPage() {
                     transaction.update(counterRef, { count: newCount });
                 }
                 
-                return `MTECH-${currentYear}-${String(newCount).padStart(4, '0')}`;
+                return `EP-${currentYear}-${String(newCount).padStart(4, '0')}`;
             });
             
             setRegistrationNumber(newRegNumber);
@@ -419,7 +418,5 @@ export default function ExamRegistrationPage() {
         </>
     );
 }
-
-    
 
     

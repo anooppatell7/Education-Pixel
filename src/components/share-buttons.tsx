@@ -11,7 +11,7 @@ type ShareButtonsProps = {
   title: string;
 };
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mtechitinstitute.in';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://education-pixel.com';
 
 export default function ShareButtons({ title }: ShareButtonsProps) {
   const { toast } = useToast();
@@ -84,3 +84,5 @@ export default function ShareButtons({ title }: ShareButtonsProps) {
     </div>
   );
 }
+
+    

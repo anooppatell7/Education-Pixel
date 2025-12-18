@@ -94,7 +94,7 @@ export default function VerifyCertificatePage() {
                         <FormControl>
                           <div className="relative">
                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                             <Input placeholder="e.g., CERT-2025-123456" {...field} className="pl-10" />
+                             <Input placeholder="e.g., CERT-2024-123456" {...field} className="pl-10" />
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -114,7 +114,7 @@ export default function VerifyCertificatePage() {
                         <CheckCircle className="h-10 w-10 text-green-600" />
                         <div>
                             <CardTitle className="text-green-800">Certificate Verified</CardTitle>
-                            <CardDescription className="text-green-700">This is a valid certificate issued by MTech IT Institute.</CardDescription>
+                            <CardDescription className="text-green-700">This is a valid certificate issued by Education Pixel.</CardDescription>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
@@ -148,3 +148,5 @@ export default function VerifyCertificatePage() {
     </>
   );
 }
+
+    

@@ -54,7 +54,7 @@
             "order": 3,
             "title": "Links",
             "content": "<h2>HTML Links (Anchors)</h2><p>HTML links are defined with the <code>&lt;a&gt;</code> tag. The link's destination is specified in the <code>href</code> attribute.</p><p>The link text is the part that will be visible to the reader. Clicking on the link text will send the reader to the specified URL address.</p><p>The <code>target=\"_blank\"</code> attribute can be used to open the link in a new browser tab.</p>",
-            "exampleCode": "<!-- A simple link -->\n<a href=\"https://www.mtechitinstitute.in\">Visit MTech IT Institute</a>\n\n<!-- A link that opens in a new tab -->\n<a href=\"/about\" target=\"_blank\">About Us</a>"
+            "exampleCode": "<!-- A simple link -->\n<a href=\"https://www.education-pixel.com\">Visit Education Pixel</a>\n\n<!-- A link that opens in a new tab -->\n<a href=\"/about\" target=\"_blank\">About Us</a>"
           },
           {
             "id": "images",
@@ -191,3 +191,5 @@
     "modules": []
   }
 ]
+
+    
