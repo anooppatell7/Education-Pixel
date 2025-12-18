@@ -12,29 +12,38 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, IndianRupee, Tag } from "lucide-react";
+import { Clock, IndianRupee, Tag, Briefcase } from "lucide-react";
 import { EnrollModal } from "./enroll-modal";
 
 type CourseCardProps = {
   course: Course;
 };
 
+const LOGO_URL = "https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png";
+
+
 export default function CourseCard({ course }: CourseCardProps) {
   const summary = course.description.length > 100 
     ? `${course.description.substring(0, 100)}...` 
     : course.description;
+    
+  const showGenericImage = !course.image || course.image === LOGO_URL;
 
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-xl group border-t-4 border-t-accent">
       <CardHeader className="p-0">
-        <div className="relative h-48 w-full overflow-hidden">
-            <Image
-                src={course.image}
-                alt={`${course.title} course at Education Pixel`}
-                data-ai-hint={course.title.split(' ').slice(0,2).join(' ').toLowerCase()}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
-            />
+        <div className="relative h-48 w-full overflow-hidden bg-primary/10 flex items-center justify-center">
+            {showGenericImage ? (
+                <Briefcase className="h-20 w-20 text-primary/50" />
+            ) : (
+                <Image
+                    src={course.image}
+                    alt={`${course.title} course at Education Pixel`}
+                    data-ai-hint={course.title.split(' ').slice(0,2).join(' ').toLowerCase()}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+            )}
         </div>
       </CardHeader>
       <CardContent className="flex-grow p-6">
@@ -66,3 +75,4 @@ export default function CourseCard({ course }: CourseCardProps) {
     </Card>
   );
 }
+
