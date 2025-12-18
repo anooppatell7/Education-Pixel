@@ -10,28 +10,25 @@ import VideoPlayer from '@/components/videos/VideoPlayer';
 import VideoCard from '@/components/videos/VideoCard';
 
 const YOUTUBE_API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
-const CHANNEL_NAME = process.env.NEXT_PUBLIC_YOUTUBE_CHANNEL_NAME;
+const CHANNEL_ID = process.env.NEXT_PUBLIC_YOUTUBE_CHANNEL_ID;
 
-async function fetchPlaylistsFromChannel(channelName: string) {
+async function fetchPlaylistsByChannelId(channelId: string) {
     if (!YOUTUBE_API_KEY) {
         throw new Error("YouTube API key is missing. Please set NEXT_PUBLIC_YOUTUBE_API_KEY in your .env file.");
     }
-
-    // 1. Get Channel ID from custom username
-    const channelSearchUrl = `https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${channelName}&key=${YOUTUBE_API_KEY}`;
-    const channelResponse = await fetch(channelSearchUrl);
-    const channelData = await channelResponse.json();
-
-    if (!channelData.items || channelData.items.length === 0) {
-        throw new Error(`YouTube channel with handle '${channelName}' not found.`);
+    if (!channelId) {
+        throw new Error("YouTube Channel ID is missing. Please set NEXT_PUBLIC_YOUTUBE_CHANNEL_ID in your .env file.");
     }
-    const channelId = channelData.items[0].id;
 
-    // 2. Get Playlists for that Channel ID
+    // Get Playlists for the Channel ID
     const playlistsUrl = `https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&channelId=${channelId}&maxResults=25&key=${YOUTUBE_API_KEY}`;
     const playlistsResponse = await fetch(playlistsUrl);
     const playlistsData = await playlistsResponse.json();
     
+    if (playlistsData.error) {
+        throw new Error(`YouTube API Error: ${playlistsData.error.message}`);
+    }
+
     return playlistsData.items || [];
 }
 
@@ -85,20 +82,20 @@ export default function LearnPage() {
         const loadPlaylists = async () => {
             setLoadingPlaylists(true);
             setError(null);
-            if (!CHANNEL_NAME) {
-                 setError("YouTube channel name is not configured.");
+            if (!CHANNEL_ID) {
+                 setError("YouTube Channel ID is not configured.");
                  setLoadingPlaylists(false);
                  return;
             }
             try {
-                const data = await fetchPlaylistsFromChannel(CHANNEL_NAME);
+                const data = await fetchPlaylistsByChannelId(CHANNEL_ID);
                 setPlaylists(data);
                 if (data.length > 0) {
                     setSelectedPlaylist(data[0].id);
                 }
             } catch (err: any) {
                 console.error(err);
-                setError(err.message || "Could not fetch playlists. Check API key and channel name.");
+                setError(err.message || "Could not fetch playlists. Check API key and channel ID.");
             } finally {
                 setLoadingPlaylists(false);
             }
