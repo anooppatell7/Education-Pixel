@@ -217,7 +217,7 @@ export default function ExamRegistrationPage() {
 
     return (
         <>
-            <div className="bg-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400 text-white">
+            <div className="bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-600 text-white">
                 <div className="container py-16 sm:py-24 text-center">
                     <h1 className="font-headline text-4xl font-bold sm:text-5xl">Student Registration</h1>
                     <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-50">
@@ -226,7 +226,7 @@ export default function ExamRegistrationPage() {
                 </div>
             </div>
             <div className="bg-secondary relative">
-                <SectionDivider style="wave" className="text-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400" position="top"/>
+                <SectionDivider style="wave" className="text-gradient-to-br from-purple-600 via-blue-500 to-indigo-600" position="top"/>
                 <div className="container py-16 sm:py-24">
                      <Card className="max-w-4xl mx-auto shadow-lg">
                         <CardHeader>
@@ -418,5 +418,3 @@ export default function ExamRegistrationPage() {
         </>
     );
 }
-
-    

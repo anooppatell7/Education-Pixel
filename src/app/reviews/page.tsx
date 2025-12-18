@@ -24,11 +24,11 @@ export default function ReviewsPage() {
   
   return (
     <>
-      <div className="bg-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400">
+      <div className="bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-600">
         <ReviewPageClient />
       </div>
       <div className="relative bg-secondary">
-          <SectionDivider style="wave" className="text-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400" position="top"/>
+          <SectionDivider style="wave" className="text-gradient-to-br from-purple-600 via-blue-500 to-indigo-600" position="top"/>
           <div className="h-24"></div>
       </div>
     </>

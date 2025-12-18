@@ -85,7 +85,7 @@ function LearnPageAuthenticated({ courses }: { courses: LearningCourse[] }) {
                                 const { progressPercentage } = getCourseProgress(course);
 
                                 return (
-                                    <Card key={course.id} className="flex flex-col shadow-sm hover:shadow-lg transition-shadow bg-background">
+                                    <Card key={course.id} className="flex flex-col shadow-sm hover:shadow-lg transition-shadow bg-background border-t-4 border-accent">
                                         <CardHeader className="flex-row items-center gap-4">
                                             <div className="text-4xl">{course.icon || '📚'}</div>
                                             <div>

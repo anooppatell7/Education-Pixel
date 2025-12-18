@@ -31,9 +31,9 @@ export default function CoursesPage() {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-blue-900 via-gray-900 to-black text-white">
+      <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-black text-white">
         <div className="container py-16 sm:py-24 text-center">
-          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Our Professional Tech Courses<span className="text-teal-400">.</span></h1>
+          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Our Professional Tech Courses<span className="text-blue-400">.</span></h1>
           <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-300">
             Find the perfect job-oriented course to advance your skills and launch your career in the tech industry.
           </p>

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from "react";
@@ -133,10 +132,10 @@ export default function MockTestsByCategoryPage() {
 
     return (
         <>
-            <div className="bg-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400 text-white">
+            <div className="bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-600 text-white">
                 <div className="container py-16 sm:py-24 text-center">
                     {pageLoading ? <Skeleton className="h-12 w-2/3 mx-auto" /> :
-                        <h1 className="font-headline text-4xl font-bold sm:text-5xl">{category?.title} Tests<span className="text-green-300">.</span></h1>
+                        <h1 className="font-headline text-4xl font-bold sm:text-5xl">{category?.title} Tests<span className="text-purple-300">.</span></h1>
                     }
                     {pageLoading ? <Skeleton className="h-6 w-1/2 mx-auto mt-4" /> :
                       <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-50">
@@ -147,7 +146,7 @@ export default function MockTestsByCategoryPage() {
             </div>
             
             <div className="bg-secondary relative">
-                <SectionDivider style="wave" className="text-gradient-to-br from-indigo-600 via-blue-500 to-cyan-400" position="top"/>
+                <SectionDivider style="wave" className="text-gradient-to-br from-purple-600 via-blue-500 to-indigo-600" position="top"/>
                 <div className="container py-16 sm:py-24">
                      <div className="mb-8">
                         <Button asChild variant="outline">

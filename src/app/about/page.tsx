@@ -66,7 +66,7 @@ export default function AboutPage() {
   return (
     <>
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-900 via-gray-900 to-black relative text-white">
+      <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-black relative text-white">
          <SectionDivider style="wave" className="text-background" position="top"/>
         <div className="container py-16 sm:py-24 text-center">
           <h1 className="font-headline text-4xl font-bold sm:text-5xl">Welcome to Education Pixel</h1>
