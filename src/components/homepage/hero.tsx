@@ -36,7 +36,7 @@ export default function Hero() {
           </Button>
         </div>
 
-        <div className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-2">
+        <div className="mt-10 flex w-full flex-wrap justify-center gap-x-6 gap-y-2 md:gap-x-8">
             <div className="flex items-center gap-2 text-sm font-medium text-white">
                 <Award className="h-5 w-5 text-purple-400" />
                 <span>Industry-Recognized Curriculum</span>

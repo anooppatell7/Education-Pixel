@@ -17,7 +17,7 @@ export default function Logo({ className, textClassName }: LogoProps) {
         className
       )}
     >
-      <Image 
+      <Image
         src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"
         alt="Education Pixel Logo"
         width={40}
@@ -26,7 +26,7 @@ export default function Logo({ className, textClassName }: LogoProps) {
       />
       <span
         className={cn(
-          "font-headline text-xl font-bold tracking-tight",
+          "font-headline text-xl font-bold tracking-tight text-primary",
           textClassName
         )}
       >
