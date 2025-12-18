@@ -1132,7 +1132,6 @@ export default function AdminDashboardPage() {
                                         {unreadEnrollments > 0 && <Badge className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{unreadEnrollments}</Badge>}
                                     </TabsTrigger>
                                     <TabsTrigger value="contacts"><MessageSquare className="mr-2 h-4 w-4"/>Contacts</TabsTrigger>
-                                    <TabsTrigger value="data-management"><Database className="mr-2 h-4 w-4"/>Data Management</TabsTrigger>
                                     <TabsTrigger value="site-settings"><Megaphone className="mr-2 h-4 w-4"/>Announcements</TabsTrigger>
                                     <TabsTrigger value="popup-settings"><Tv className="mr-2 h-4 w-4"/>Popup</TabsTrigger>
                                     <TabsTrigger value="settings"><Settings className="mr-2 h-4 w-4"/>Settings</TabsTrigger>
@@ -1277,7 +1276,7 @@ export default function AdminDashboardPage() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Learning Content</CardTitle>
-                                    <CardDescription>Manage interactive course modules, chapters, and lessons.</CardDescription>
+                                    <CardDescription>Manage interactive course modules, chapters, and lessons. You can auto-populate this section by uploading the `courses.json` file in "Data Management".</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     {loading ? <p>Loading content...</p> : (
@@ -1786,29 +1785,6 @@ export default function AdminDashboardPage() {
                                          <ScrollBar orientation="horizontal" />
                                      </ScrollArea>
                                      }
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                         <TabsContent value="data-management">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Data Management</CardTitle>
-                                    <CardDescription>
-                                        Use these tools to manage your site's static content.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-4 max-w-md">
-                                        <div className="rounded-lg border p-4">
-                                            <h3 className="font-semibold">Upload All Learning Content</h3>
-                                            <p className="text-sm text-muted-foreground mt-1">
-                                                This will upload content from your local `courses.json` file to the "learningCourses" collection in Firestore. This will overwrite any existing courses with the same IDs.
-                                            </p>
-                                            <Button onClick={handleUploadAllContent} variant="outline" className="mt-4">
-                                                <Upload className="mr-2 h-4 w-4"/> Upload Learning Content
-                                            </Button>
-                                        </div>
-                                    </div>
                                 </CardContent>
                             </Card>
                         </TabsContent>
