@@ -101,16 +101,7 @@ export default function ContactPage() {
           
           <div className="mt-16">
             <div className="rounded-lg overflow-hidden shadow-lg border">
-                <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d957.3305907170931!2d82.19267631634396!3d25.922230757602886!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399a9f8abb1173f7%3A0xf70478b1a3aa12da!2sMTECH%20IT%20INSTITUTE!5e0!3m2!1sen!2sin!4v1764752987433!5m2!1sen!2sin"
-                    width="100%"
-                    height="450"
-                    style={{ border: 0 }}
-                    allowFullScreen={true}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="Education Pixel Location Map"
-                ></iframe>
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11342.234595946415!2d81.52552566948638!3d25.94641764082319!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399ae30043f42cbd%3A0x814cb517774ea5b3!2sMTS%20Computer%20Institute!5e1!3m2!1sen!2sin!4v1766032707642!5m2!1sen!2sin" width="100%" height="450" style={{ border: 0 }} allowFullScreen={true} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
             </div>
           </div>
         </div>
