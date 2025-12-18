@@ -10,14 +10,32 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    domains: [
-        "i.ytimg.com",
-        "placehold.co",
-        "picsum.photos",
-        "images.jdmagicbox.com",
-        "jsdl.in",
-        "res.cloudinary.com"
-    ]
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.jdmagicbox.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'jsdl.in',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+    ],
   },
 };
 
