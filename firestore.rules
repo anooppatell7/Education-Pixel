@@ -46,6 +46,10 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+     match /blog/{postId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
 
     // Interactive learning content (courses, modules, lessons)
     match /learningCourses/{courseId}/{document=**} {
