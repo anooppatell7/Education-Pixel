@@ -86,34 +86,34 @@ export default function CertificateTemplate(data: CertificateData) {
             fontSize: '48pt',
             fontWeight: 700,
             color: '#0A2342',
-            margin: '0 0 15px 0',
+            margin: '0 0 10px 0',
             letterSpacing: '2px',
         },
         presentedTo: {
             fontSize: '16pt',
             color: '#555',
-            margin: '15px 0 0 0',
+            margin: '10px 0 0 0',
             textTransform: 'uppercase',
             letterSpacing: '1px',
         },
         certifyText: {
             fontSize: '14pt',
             color: '#333',
-            margin: '2px 0',
+            margin: '0',
         },
         studentName: {
             fontFamily: '"Playfair Display", serif',
             fontSize: '42pt',
             fontWeight: 700,
             color: '#C9A24B', // Gold color
-            margin: '5px 0',
+            margin: '2px 0',
             textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
         },
         bodyText: {
             fontSize: '15pt',
-            lineHeight: 1.5,
+            lineHeight: 1.4,
             color: '#333',
-            margin: '15px 0 0 0',
+            margin: '2px 0 0 0',
         },
         courseName: {
             fontWeight: 'bold',
@@ -137,7 +137,8 @@ export default function CertificateTemplate(data: CertificateData) {
              width: '120px',
              height: '120px',
              alignSelf: 'center',
-             marginBottom: '15px'
+             position: 'relative',
+             top: '10px'
         },
         signatureImage: {
             height: '50px',
