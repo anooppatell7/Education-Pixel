@@ -48,10 +48,10 @@ export default function SalesPopup({ settings }: { settings: PopupSettings }) {
         else setIsOpen(true);
     }}>
       <DialogContent 
-        className="sm:max-w-md w-[95%] p-0 overflow-hidden text-white border-2 border-blue-500/20 shadow-2xl rounded-2xl bg-[#0d1a3a]"
+        className="sm:max-w-md w-[95%] p-0 overflow-hidden text-foreground border-2 border-border shadow-2xl rounded-2xl bg-background"
         onInteractOutside={handleClose}
       >
-        <div className="relative isolate overflow-hidden p-8 pt-10 text-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/40 via-[#0d1a3a] to-[#0d1a3a]">
+        <div className="relative isolate overflow-hidden p-8 pt-10 text-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/30 via-background to-background">
             
             {/* Background Decorations */}
             <CircuitLine className="top-0 left-0 opacity-50" />
@@ -65,15 +65,15 @@ export default function SalesPopup({ settings }: { settings: PopupSettings }) {
             {/* Content */}
             <div className="flex flex-col items-center">
                 <div className="relative mb-4">
-                    <div className="absolute -inset-4 bg-blue-500/30 rounded-full blur-2xl animate-pulse"></div>
-                    <Image src={settings.imageUrl || "https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"} alt="Education Pixel" width={80} height={80} className="drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+                    <div className="absolute -inset-4 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+                    <Image src={settings.imageUrl || "https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"} alt="Education Pixel" width={80} height={80} className="drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]" />
                 </div>
                 
-                <h2 className="font-headline text-3xl font-bold uppercase tracking-wider drop-shadow-sm">
+                <h2 className="font-headline text-3xl font-bold uppercase tracking-wider drop-shadow-sm text-primary">
                   {settings.title || 'BLACK FRIDAY SALE!'}
                 </h2>
                 
-                <p className="mt-4 text-base text-blue-200/80">
+                <p className="mt-4 text-base text-foreground/80">
                   {settings.description || 'GET 20% off on any Course'}
                 </p>
 
