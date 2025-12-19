@@ -49,7 +49,7 @@ export default function ResourcesPage() {
           <title>{metadata.title as string}</title>
           <meta name="description" content={metadata.description as string} />
       </head>
-      <div className="bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-600 text-white">
+      <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-black text-white">
         <div className="container py-16 sm:py-24 text-center">
           <h1 className="font-headline text-4xl font-bold sm:text-5xl">Free Resources<span className="text-purple-300">.</span></h1>
           <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-50">
@@ -59,7 +59,7 @@ export default function ResourcesPage() {
       </div>
 
       <div className="bg-secondary relative">
-        <SectionDivider style="wave" className="text-gradient-to-br from-purple-600 via-blue-500 to-indigo-600" position="top"/>
+        <SectionDivider style="wave" className="text-gradient-to-br from-purple-900 via-blue-900 to-black" position="top"/>
         <div className="container py-16 sm:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
               <main className="lg:col-span-3">

@@ -132,7 +132,7 @@ export default function MockTestsByCategoryPage() {
 
     return (
         <>
-            <div className="bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-600 text-white">
+            <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-black text-white">
                 <div className="container py-16 sm:py-24 text-center">
                     {pageLoading ? <Skeleton className="h-12 w-2/3 mx-auto" /> :
                         <h1 className="font-headline text-4xl font-bold sm:text-5xl">{category?.title} Tests<span className="text-purple-300">.</span></h1>
@@ -146,7 +146,7 @@ export default function MockTestsByCategoryPage() {
             </div>
             
             <div className="bg-secondary relative">
-                <SectionDivider style="wave" className="text-gradient-to-br from-purple-600 via-blue-500 to-indigo-600" position="top"/>
+                <SectionDivider style="wave" className="text-gradient-to-br from-purple-900 via-blue-900 to-black" position="top"/>
                 <div className="container py-16 sm:py-24">
                      <div className="mb-8">
                         <Button asChild variant="outline">

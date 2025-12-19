@@ -87,7 +87,7 @@ export default function LearnPage() {
 
     return (
         <>
-            <div className="bg-gradient-to-br from-blue-900 via-indigo-900 to-black text-white">
+            <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-black text-white">
                 <div className="container py-16 sm:py-24 text-center">
                     <h1 className="font-headline text-4xl font-bold sm:text-5xl">Video Learning Hub</h1>
                     <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-200">
@@ -97,7 +97,7 @@ export default function LearnPage() {
             </div>
 
             <div className="bg-secondary relative">
-                <SectionDivider style="wave" className="text-gradient-to-br from-blue-900 via-indigo-900 to-black" position="top"/>
+                <SectionDivider style="wave" className="text-gradient-to-br from-purple-900 via-blue-900 to-black" position="top"/>
                 <div className="container py-16 sm:py-24">
                      <div className="mb-12 max-w-lg mx-auto relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />

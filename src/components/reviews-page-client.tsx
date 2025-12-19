@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 export default function ReviewPageClient({ reviews }: { reviews: Review[] }) {
     return (
-        <div className="bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-600 text-white">
+        <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-black text-white">
             <div className="container py-16 sm:py-24">
                 <div className="text-center mb-12">
                     <h1 className="font-headline text-4xl font-bold sm:text-5xl">Student Reviews</h1>

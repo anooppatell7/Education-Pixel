@@ -66,7 +66,7 @@ export default function VerifyCertificatePage() {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-600 text-white">
+      <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-black text-white">
         <div className="container py-16 sm:py-24 text-center">
           <h1 className="font-headline text-4xl font-bold sm:text-5xl">Verify Certificate<span className="text-purple-300">.</span></h1>
           <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-50">
@@ -75,7 +75,7 @@ export default function VerifyCertificatePage() {
         </div>
       </div>
       <div className="bg-secondary relative">
-        <SectionDivider style="wave" className="text-gradient-to-br from-purple-600 via-blue-500 to-indigo-600" position="top"/>
+        <SectionDivider style="wave" className="text-gradient-to-br from-purple-900 via-blue-900 to-black" position="top"/>
         <div className="container py-16 sm:py-24 flex justify-center">
           <Card className="w-full max-w-lg shadow-lg">
             <CardHeader>

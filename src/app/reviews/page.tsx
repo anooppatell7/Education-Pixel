@@ -1,7 +1,11 @@
 
 import type { Metadata } from 'next';
+import { db } from '@/firebase';
+import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import ReviewPageClient from "@/components/reviews-page-client";
 import SectionDivider from "@/components/section-divider";
+import type { Review } from '@/lib/types';
+
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
@@ -19,16 +23,34 @@ export const metadata: Metadata = {
   },
 };
 
+async function getReviews(): Promise<Review[]> {
+  const reviewsQuery = query(
+    collection(db, "reviews"),
+    where("isApproved", "==", true),
+    orderBy("submittedAt", "desc")
+  );
+  const reviewsSnapshot = await getDocs(reviewsQuery);
+  return reviewsSnapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      submittedAt: data.submittedAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+    } as Review;
+  });
+}
 
-export default function ReviewsPage() {
+
+export default async function ReviewsPage() {
+  const reviews = await getReviews();
   
   return (
     <>
-      <div className="bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-600">
-        <ReviewPageClient />
+      <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-black">
+        <ReviewPageClient reviews={reviews} />
       </div>
       <div className="relative bg-secondary">
-          <SectionDivider style="wave" className="text-gradient-to-br from-purple-600 via-blue-500 to-indigo-600" position="top"/>
+          <SectionDivider style="wave" className="text-gradient-to-br from-purple-900 via-blue-900 to-black" position="top"/>
           <div className="h-24"></div>
       </div>
     </>
