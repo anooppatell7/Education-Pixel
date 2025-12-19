@@ -66,7 +66,7 @@ export default function SalesPopup({ settings }: { settings: PopupSettings }) {
             <div className="flex flex-col items-center">
                 <div className="relative mb-4">
                     <div className="absolute -inset-4 bg-blue-500/30 rounded-full blur-2xl animate-pulse"></div>
-                    <Image src={settings.imageUrl || "https://res.cloudinary.com/dzr4xjizf/image/upload/v1757138798/mtechlogo_1_wsdhhx.png"} alt="MTech IT Institute" width={80} height={80} className="drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+                    <Image src={settings.imageUrl || "https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"} alt="Education Pixel" width={80} height={80} className="drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
                 </div>
                 
                 <h2 className="font-headline text-3xl font-bold uppercase tracking-wider drop-shadow-sm">
@@ -91,3 +91,4 @@ export default function SalesPopup({ settings }: { settings: PopupSettings }) {
     </Dialog>
   );
 }
+
