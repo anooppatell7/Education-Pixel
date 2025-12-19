@@ -13,6 +13,7 @@ import { collection, getDocs, query } from 'firebase/firestore';
 import type { YouTubePlaylist } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 function LoadingSkeleton() {
     return (
@@ -116,30 +117,36 @@ export default function LearnPage() {
                     {isLoading ? (
                         <LoadingSkeleton />
                     ) : filteredPlaylists.length > 0 ? (
-                        <div className="space-y-12">
+                         <Accordion type="single" collapsible className="w-full space-y-4">
                             {filteredPlaylists.map((playlist) => (
-                                <section key={playlist.id}>
-                                    <h2 className="font-headline text-2xl font-bold text-primary mb-2 flex items-center gap-3">
-                                       <ListVideo className="h-7 w-7 text-accent"/>
-                                       {playlist.title}
-                                    </h2>
-                                    <p className="text-muted-foreground mb-6 ml-10">{playlist.description}</p>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                        {playlist.videoUrls.map((url) => {
-                                            const videoId = getYouTubeId(url);
-                                            if (!videoId) return null;
-                                            return (
-                                                <VideoCard
-                                                    key={videoId}
-                                                    videoId={videoId}
-                                                    onVideoSelect={handleVideoSelect}
-                                                />
-                                            );
-                                        })}
-                                    </div>
-                                </section>
+                               <AccordionItem value={playlist.id} key={playlist.id} className="border bg-background rounded-lg shadow-sm">
+                                    <AccordionTrigger className="p-4 hover:no-underline">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-left">
+                                            <ListVideo className="h-8 w-8 text-accent flex-shrink-0"/>
+                                            <div>
+                                                <h2 className="font-headline text-xl font-bold text-primary">{playlist.title}</h2>
+                                                <p className="text-sm text-muted-foreground mt-1">{playlist.description}</p>
+                                            </div>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4 border-t">
+                                            {playlist.videoUrls.map((url) => {
+                                                const videoId = getYouTubeId(url);
+                                                if (!videoId) return null;
+                                                return (
+                                                    <VideoCard
+                                                        key={videoId}
+                                                        videoId={videoId}
+                                                        onVideoSelect={handleVideoSelect}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
                             ))}
-                        </div>
+                        </Accordion>
                     ) : (
                         <Card className="text-center p-8 bg-card">
                            <Youtube className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
