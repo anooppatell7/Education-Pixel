@@ -102,11 +102,11 @@ export default function CertificateTemplate(data: CertificateData) {
             margin: '5px 0',
         },
         studentName: {
-            fontFamily: '"Great Vibes", cursive',
-            fontSize: '60pt',
-            fontWeight: 400,
+            fontFamily: '"Playfair Display", serif',
+            fontSize: '42pt',
+            fontWeight: 700,
             color: '#C9A24B', // Gold color
-            margin: '-15px 0 0 0',
+            margin: '10px 0',
             textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
         },
         bodyText: {
