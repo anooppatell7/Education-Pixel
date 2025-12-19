@@ -6,13 +6,11 @@ import { Button } from '../ui/button';
 
 type VideoPlayerProps = {
     videoId: string;
-    playlistId: string;
     onClose: () => void;
 };
 
-export default function VideoPlayer({ videoId, playlistId, onClose }: VideoPlayerProps) {
-    // Construct the URL to autoplay the video within the context of its playlist
-    const src = `https://www.youtube.com/embed/${videoId}?playlist=${playlistId}&autoplay=1&rel=0`;
+export default function VideoPlayer({ videoId, onClose }: VideoPlayerProps) {
+    const src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
 
     return (
         <Dialog open={!!videoId} onOpenChange={(isOpen) => !isOpen && onClose()}>

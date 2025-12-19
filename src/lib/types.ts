@@ -137,6 +137,13 @@ export type UserProgress = {
     };
 };
 
+export type YouTubePlaylist = {
+  id: string;
+  title: string;
+  description: string;
+  videoUrls: string[];
+};
+
 // Types for Mock Test System
 export type TestCategory = {
     id: string; // This will be the slug

@@ -5,18 +5,18 @@ import { PlayCircle } from 'lucide-react';
 import Image from 'next/image';
 
 type VideoCardProps = {
-    video: any;
+    videoId: string;
     onVideoSelect: (videoId: string) => void;
 };
 
-export default function VideoCard({ video, onVideoSelect }: VideoCardProps) {
-    const thumbnailUrl = video.snippet.thumbnails.medium.url;
-    const title = video.snippet.title;
+export default function VideoCard({ videoId, onVideoSelect }: VideoCardProps) {
+    const thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
+    const title = "YouTube Video"; // Title is now on the playlist level
 
     return (
         <Card
             className="overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer border-t-4 border-t-transparent hover:border-t-accent"
-            onClick={() => onVideoSelect(video.id)}
+            onClick={() => onVideoSelect(videoId)}
         >
             <div className="relative aspect-video w-full">
                 <Image
@@ -29,10 +29,8 @@ export default function VideoCard({ video, onVideoSelect }: VideoCardProps) {
                     <PlayCircle className="h-14 w-14 text-white/80" />
                 </div>
             </div>
-            <CardContent className="p-4">
-                <h3 className="font-semibold text-primary text-base line-clamp-2 h-[40px]">
-                    {title}
-                </h3>
+            <CardContent className="p-3">
+                 <p className="text-sm text-muted-foreground text-center">Click to play</p>
             </CardContent>
         </Card>
     );

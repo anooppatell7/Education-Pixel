@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import React, { useState, useEffect, use } from "react";
-import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database } from "lucide-react";
+import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -68,7 +68,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Logo from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, LearningCourse, LearningModule, Lesson, MockTest, TestQuestion, TestCategory, ExamRegistration, ExamResult, Certificate, PopupSettings } from "@/lib/types";
+import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, LearningCourse, LearningModule, Lesson, MockTest, TestQuestion, TestCategory, ExamRegistration, ExamResult, Certificate, PopupSettings, YouTubePlaylist } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { signOut, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { useRouter } from "next/navigation";
@@ -82,7 +82,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 
 
 
-type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'learningCourse' | 'learningModule' | 'learningLesson' | 'mockTest' | 'testQuestion' | 'testCategory' | 'examRegistration' | 'examResult' | 'certificate';
+type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'learningCourse' | 'learningModule' | 'learningLesson' | 'mockTest' | 'testQuestion' | 'testCategory' | 'examRegistration' | 'examResult' | 'certificate' | 'youtubePlaylist';
 
 export default function AdminDashboardPage() {
     const auth = useAuth();
@@ -100,6 +100,7 @@ export default function AdminDashboardPage() {
     const [examRegistrations, setExamRegistrations] = useState<ExamRegistration[]>([]);
     const [examResults, setExamResults] = useState<ExamResult[]>([]);
     const [certificates, setCertificates] = useState<Certificate[]>([]);
+    const [youtubePlaylists, setYoutubePlaylists] = useState<YouTubePlaylist[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
@@ -153,6 +154,12 @@ export default function AdminDashboardPage() {
                 return courseData;
             }));
             setLearningCourses(learningCoursesList);
+            
+             // YouTube Playlists
+            const youtubePlaylistsQuery = query(collection(firestore, "youtubePlaylists"));
+            const youtubePlaylistsSnapshot = await getDocs(youtubePlaylistsQuery);
+            const youtubePlaylistsList = youtubePlaylistsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as YouTubePlaylist));
+            setYoutubePlaylists(youtubePlaylistsList);
 
             // Resources
             const resourcesCollection = collection(firestore, "resources");
@@ -317,6 +324,7 @@ export default function AdminDashboardPage() {
                 case 'examRegistration': docRef = doc(firestore, "examRegistrations", id); break;
                 case 'examResult': docRef = doc(firestore, "examResults", id); break;
                 case 'certificate': docRef = doc(firestore, "certificates", id); break;
+                case 'youtubePlaylist': docRef = doc(firestore, "youtubePlaylists", id); break;
                 case 'mockTest':
                     docRef = doc(firestore, "mockTests", id);
                     // Special handling for associated test results (consider if this needs permission error handling too)
@@ -420,7 +428,7 @@ export default function AdminDashboardPage() {
              return;
         }
 
-        if (name === 'tags' || name === 'syllabus') {
+        if (name === 'tags' || name === 'syllabus' || name === 'videoUrls') {
             setFormData({ ...formData, [name]: value.split(',').map(s => s.trim()) });
         } else if (name.startsWith('option')) { // For test question options
             const index = parseInt(name.split('-')[1]);
@@ -479,6 +487,8 @@ export default function AdminDashboardPage() {
             if (dataToSave.fileUrl) {
                 dataToSave.fileUrl = convertToDirectDownloadLink(dataToSave.fileUrl);
             }
+        } else if (activeTab === 'youtube') {
+            collectionRef = collection(firestore, "youtubePlaylists");
         } else if (activeTab === 'learn-content') {
              if (formParentIds?.courseId) { // Editing/Adding Module or Lesson
                 if (formParentIds.moduleId) { // Lesson
@@ -795,6 +805,7 @@ export default function AdminDashboardPage() {
         const isEditing = !!editingItem;
         if (activeTab === 'courses') return isEditing ? 'Edit Course' : 'Add New Course';
         if (activeTab === 'resources') return isEditing ? 'Edit Resource' : 'Add New Resource';
+        if (activeTab === 'youtube') return isEditing ? 'Edit YouTube Playlist' : 'Add New YouTube Playlist';
         if (activeTab === 'test-categories') return isEditing ? 'Edit Test Category' : 'Add New Test Category';
         if (activeTab === 'mock-tests') {
             if (formParentIds?.testId) return isEditing ? 'Edit Question' : 'Add New Question';
@@ -894,6 +905,22 @@ export default function AdminDashboardPage() {
                     <div className="grid gap-2">
                         <Label htmlFor="fileUrl">File URL</Label>
                         <Input id="fileUrl" name="fileUrl" value={formData.fileUrl || ''} onChange={handleFormChange} placeholder="https://drive.google.com/file/d/..."/>
+                    </div>
+                </>
+            );
+            case 'youtube': return (
+                 <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="title">Playlist Title</Label>
+                        <Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} placeholder="e.g., Learn HTML Basics" />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea id="description" name="description" value={formData.description || ''} onChange={handleFormChange} placeholder="A short summary of the playlist."/>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="videoUrls">Video URLs (comma-separated)</Label>
+                        <Textarea id="videoUrls" name="videoUrls" value={Array.isArray(formData.videoUrls) ? formData.videoUrls.join(', ') : ''} onChange={handleFormChange} placeholder="https://youtu.be/..., https://youtu.be/..."/>
                     </div>
                 </>
             );
@@ -1117,6 +1144,7 @@ export default function AdminDashboardPage() {
                                 <TabsList className="inline-flex">
                                     <TabsTrigger value="courses">Courses</TabsTrigger>
                                     <TabsTrigger value="resources">Resources</TabsTrigger>
+                                    <TabsTrigger value="youtube">YouTube</TabsTrigger>
                                     <TabsTrigger value="learn-content">Learn Content</TabsTrigger>
                                     <TabsTrigger value="test-categories"><BookCopy className="mr-2 h-4 w-4"/>Test Categories</TabsTrigger>
                                     <TabsTrigger value="mock-tests"><ListTodo className="mr-2 h-4 w-4" />Mock Tests</TabsTrigger>
@@ -1257,6 +1285,57 @@ export default function AdminDashboardPage() {
                                                                      <DropdownMenuSeparator />
                                                                     <DropdownMenuItem onClick={() => handleEdit(resource)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
                                                                     <DropdownMenuItem className="text-destructive" onClick={() => openConfirmationDialog('resources', resource.id)}>
+                                                                        <Trash className="mr-2 h-4 w-4" />Delete
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                         <ScrollBar orientation="horizontal" />
+                                     </ScrollArea>
+                                     }
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                         <TabsContent value="youtube">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>YouTube Content</CardTitle>
+                                    <CardDescription>
+                                        Manage video playlists for the "Learn" page.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                     {loading ? <p>Loading YouTube content...</p> :
+                                     <ScrollArea className="w-full whitespace-nowrap">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Playlist Title</TableHead>
+                                                    <TableHead>Video Count</TableHead>
+                                                    <TableHead>
+                                                        <span className="sr-only">Actions</span>
+                                                    </TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {youtubePlaylists.map(playlist => (
+                                                    <TableRow key={playlist.id}>
+                                                        <TableCell className="font-medium">{playlist.title}</TableCell>
+                                                        <TableCell>{playlist.videoUrls?.length || 0}</TableCell>
+                                                        <TableCell className="text-right">
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                                                                        <MoreHorizontal className="h-4 w-4" />
+                                                                    </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end">
+                                                                    <DropdownMenuItem onClick={() => handleEdit(playlist)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                                    <DropdownMenuItem className="text-destructive" onClick={() => openConfirmationDialog('youtubePlaylist', playlist.id)}>
                                                                         <Trash className="mr-2 h-4 w-4" />Delete
                                                                     </DropdownMenuItem>
                                                                 </DropdownMenuContent>

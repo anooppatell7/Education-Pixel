@@ -4,32 +4,12 @@ import { useEffect, useState } from 'react';
 import VideoCard from '@/components/videos/VideoCard';
 import VideoPlayer from '@/components/videos/VideoPlayer';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertTriangle, ListVideo, Youtube } from 'lucide-react';
+import { ListVideo, Youtube } from 'lucide-react';
 import SectionDivider from '@/components/section-divider';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const YOUTUBE_API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
-const CHANNEL_ID = process.env.NEXT_PUBLIC_YOUTUBE_CHANNEL_ID;
-
-async function fetchPlaylistsByChannelId(channelId: string) {
-    const url = `https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&channelId=${channelId}&maxResults=25&key=${YOUTUBE_API_KEY}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`YouTube API Error: ${errorData.error.message}`);
-    }
-    return response.json();
-}
-
-async function fetchVideosFromPlaylist(playlistId: string) {
-    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=50&key=${YOUTUBE_API_KEY}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`YouTube API Error: ${errorData.error.message}`);
-    }
-    return response.json();
-}
+import { useFirestore } from '@/firebase';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import type { YouTubePlaylist } from '@/lib/types';
 
 function LoadingSkeleton() {
     return (
@@ -53,49 +33,41 @@ function LoadingSkeleton() {
     );
 }
 
+// Helper to extract YouTube video ID from various URL formats
+function getYouTubeId(url: string) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
 export default function LearnPage() {
-    const [playlists, setPlaylists] = useState<any[]>([]);
+    const firestore = useFirestore();
+    const [playlists, setPlaylists] = useState<YouTubePlaylist[]>([]);
     const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
-    const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
-    const [videos, setVideos] = useState<any>({});
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!YOUTUBE_API_KEY || !CHANNEL_ID) {
-            setError("YouTube API key or Channel ID is not configured.");
-            setIsLoading(false);
-            return;
-        }
+        if (!firestore) return;
 
-        const loadData = async () => {
+        const fetchPlaylists = async () => {
+            setIsLoading(true);
             try {
-                const playlistData = await fetchPlaylistsByChannelId(CHANNEL_ID!);
-                setPlaylists(playlistData.items);
-
-                const allVideos: any = {};
-                for (const playlist of playlistData.items) {
-                    const videoData = await fetchVideosFromPlaylist(playlist.id);
-                    allVideos[playlist.id] = videoData.items.map((item: any) => ({
-                        ...item,
-                        id: item.snippet.resourceId.videoId,
-                    }));
-                }
-                setVideos(allVideos);
-            } catch (err: any) {
-                console.error(err);
-                setError(err.message || "An unknown error occurred while fetching videos.");
+                const q = query(collection(firestore, "youtubePlaylists"));
+                const querySnapshot = await getDocs(q);
+                const playlistData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as YouTubePlaylist));
+                setPlaylists(playlistData);
+            } catch (error) {
+                console.error("Error fetching playlists from Firestore:", error);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        loadData();
-    }, []);
+        fetchPlaylists();
+    }, [firestore]);
 
-    const handleVideoSelect = (videoId: string, playlistId: string) => {
+    const handleVideoSelect = (videoId: string) => {
         setSelectedVideoId(videoId);
-        setSelectedPlaylistId(playlistId);
     };
 
     return (
@@ -114,31 +86,27 @@ export default function LearnPage() {
                 <div className="container py-16 sm:py-24">
                     {isLoading ? (
                         <LoadingSkeleton />
-                    ) : error ? (
-                         <Card className="text-center p-8 bg-destructive/10 border-destructive">
-                           <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-                           <CardContent>
-                               <h3 className="text-xl font-semibold text-destructive-foreground">An Error Occurred</h3>
-                               <p className="text-muted-foreground mt-2">{error}</p>
-                                <p className="text-xs text-muted-foreground mt-4">Please ensure the YouTube API Key is correct and has the 'YouTube Data API v3' service enabled in your Google Cloud project.</p>
-                           </CardContent>
-                        </Card>
                     ) : playlists.length > 0 ? (
                         <div className="space-y-12">
                             {playlists.map((playlist) => (
                                 <section key={playlist.id}>
-                                    <h2 className="font-headline text-2xl font-bold text-primary mb-6 flex items-center gap-3">
+                                    <h2 className="font-headline text-2xl font-bold text-primary mb-2 flex items-center gap-3">
                                        <ListVideo className="h-7 w-7 text-accent"/>
-                                       {playlist.snippet.title}
+                                       {playlist.title}
                                     </h2>
+                                    <p className="text-muted-foreground mb-6 ml-10">{playlist.description}</p>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                        {(videos[playlist.id] || []).map((video: any) => (
-                                            <VideoCard
-                                                key={video.id}
-                                                video={video}
-                                                onVideoSelect={(videoId) => handleVideoSelect(videoId, playlist.id)}
-                                            />
-                                        ))}
+                                        {playlist.videoUrls.map((url) => {
+                                            const videoId = getYouTubeId(url);
+                                            if (!videoId) return null;
+                                            return (
+                                                <VideoCard
+                                                    key={videoId}
+                                                    videoId={videoId}
+                                                    onVideoSelect={handleVideoSelect}
+                                                />
+                                            );
+                                        })}
                                     </div>
                                 </section>
                             ))}
@@ -148,17 +116,16 @@ export default function LearnPage() {
                            <Youtube className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                            <CardContent>
                                <h3 className="text-xl font-semibold text-foreground">No Playlists Found</h3>
-                               <p className="text-muted-foreground mt-2">We couldn't find any public playlists on the configured YouTube channel. Please add some playlists to see them here.</p>
+                               <p className="text-muted-foreground mt-2">The admin has not added any video playlists yet. Please check back later.</p>
                            </CardContent>
                         </Card>
                     )}
                 </div>
             </div>
 
-            {selectedVideoId && selectedPlaylistId && (
+            {selectedVideoId && (
                 <VideoPlayer
                     videoId={selectedVideoId}
-                    playlistId={selectedPlaylistId}
                     onClose={() => setSelectedVideoId(null)}
                 />
             )}

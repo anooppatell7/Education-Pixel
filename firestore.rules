@@ -52,6 +52,11 @@ service cloud.firestore {
       allow read: if isAuth(); // Only logged-in users can access learning materials
       allow write: if isAdmin();
     }
+    
+    match /youtubePlaylists/{playlistId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
 
     // Test categories and mock tests are readable by anyone, writable by admin.
     match /testCategories/{categoryId} {
