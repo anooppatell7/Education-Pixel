@@ -20,30 +20,26 @@ const A4_WIDTH = 1123;
 const A4_HEIGHT = 794;
 
 async function getCertificateImages() {
-  const [logo, watermark, goldSeal, signature, leftSeal, rightSeal] = await Promise.all([
+  const [logo, goldSeal, signature] = await Promise.all([
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"),
-    preloadImageAsBase64("https://res.cloudinary.com/dzr4xjizf/image/upload/v1763804040/watermark_png.png"),
     preloadImageAsBase64("https://res.cloudinary.com/dzr4xjizf/image/upload/v1763803007/seal_png.png"),
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1763721267/signature_kfj27k.png"),
-    preloadImageAsBase64("https://res.cloudinary.com/dzr4xjizf/image/upload/v1763803007/seal_png.png"), // Using same seal for left
-    preloadImageAsBase64("https://res.cloudinary.com/dzr4xjizf/image/upload/v1763803007/seal_png.png")  // and right
   ]);
 
-  return { logo, watermark, goldSeal, signature, leftSeal, rightSeal };
+  return { logo, goldSeal, signature };
 }
 
 export async function generateCertificatePdf(data: CertificateData): Promise<Blob> {
   try {
-    const { logo, watermark, goldSeal, signature, leftSeal, rightSeal } = await getCertificateImages();
+    const { logo, goldSeal, signature } = await getCertificateImages();
     
+    // The logo is used for both the main logo and the watermark
     const finalData = {
       ...data,
       logoUrl: logo,
-      watermarkUrl: watermark,
+      watermarkUrl: logo, // Use the EP logo as the watermark
       goldSealUrl: goldSeal,
       signatureUrl: signature,
-      leftSealUrl: leftSeal,
-      rightSealUrl: rightSeal,
     };
     
     // Create an off-screen container for rendering
@@ -54,7 +50,7 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
     container.style.width = `${A4_WIDTH}px`;
     container.style.height = `${A4_HEIGHT}px`;
     container.style.zIndex = "-9999"; // Hide it
-    container.style.fontFamily = '"Great Vibes", "Playfair Display", serif';
+    container.style.fontFamily = '"Playfair Display", serif';
     document.body.appendChild(container);
     
     // Render the React component to an HTML string

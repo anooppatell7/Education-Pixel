@@ -54,7 +54,7 @@ export default function CertificateTemplate(data: CertificateData) {
             position: 'absolute',
             top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
-            opacity: 0.08,
+            opacity: 0.05,
             width: '550px',
             height: '550px',
             zIndex: 1,
@@ -92,28 +92,28 @@ export default function CertificateTemplate(data: CertificateData) {
         presentedTo: {
             fontSize: '16pt',
             color: '#555',
-            margin: '10px 0 0 0',
+            margin: '15px 0 0 0',
             textTransform: 'uppercase',
             letterSpacing: '1px',
         },
         certifyText: {
             fontSize: '14pt',
             color: '#333',
-            margin: '5px 0',
+            margin: '2px 0',
         },
         studentName: {
             fontFamily: '"Playfair Display", serif',
             fontSize: '42pt',
             fontWeight: 700,
             color: '#C9A24B', // Gold color
-            margin: '10px 0',
+            margin: '5px 0',
             textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
         },
         bodyText: {
             fontSize: '15pt',
-            lineHeight: 1.6,
+            lineHeight: 1.5,
             color: '#333',
-            margin: '25px 0 0 0',
+            margin: '15px 0 0 0',
         },
         courseName: {
             fontWeight: 'bold',
@@ -193,9 +193,10 @@ export default function CertificateTemplate(data: CertificateData) {
                         <img src={data.logoUrl} style={styles.logo} alt="Education Pixel Logo" />
                         <h1 style={styles.instituteName}>Education Pixel</h1>
                         <h2 style={styles.mainTitle}>Certificate of Completion</h2>
+                        
                         <p style={styles.presentedTo}>PROUDLY PRESENTED TO</p>
-
                         <p style={styles.certifyText}>This is to certify that</p>
+                        
                         <p style={styles.studentName}>{data.studentName}</p>
                         
                         <p style={styles.bodyText}>
