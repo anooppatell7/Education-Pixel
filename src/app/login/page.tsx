@@ -13,7 +13,7 @@ import { useAuth, useUser } from "@/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import Head from "next/head";
 
-const ADMIN_EMAILS = ["admin@educationpixel.com", "anooppbh8@gmail.com", "ashishkumargiri51@gmail.com"];
+const ADMIN_EMAILS = ["admin@educationpixel.com", "anooppbh8@gmail.com"];
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
