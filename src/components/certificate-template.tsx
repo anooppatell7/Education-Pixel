@@ -27,15 +27,15 @@ export default function CertificateTemplate(data: CertificateData) {
             height: '794px',
             boxSizing: 'border-box',
             backgroundColor: '#F7F5F2', // Soft paper texture color
-            fontFamily: '"Times New Roman", Times, serif',
-            color: '#001F54', // Dark Navy Blue
+            fontFamily: '"Playfair Display", serif',
+            color: '#0A2342', // Dark Navy Blue
             position: 'relative',
             padding: '25px',
         },
         borderOuter: {
             position: 'absolute',
             top: '25px', left: '25px', right: '25px', bottom: '25px',
-            border: '8px solid #001F54',
+            border: '8px solid #0A2342',
             padding: '8px',
             boxSizing: 'border-box',
         },
@@ -54,9 +54,9 @@ export default function CertificateTemplate(data: CertificateData) {
             position: 'absolute',
             top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
-            opacity: 0.15,
-            width: '600px', // Increased size
-            height: '600px',
+            opacity: 0.08,
+            width: '550px',
+            height: '550px',
             zIndex: 1,
         },
         content: {
@@ -67,50 +67,53 @@ export default function CertificateTemplate(data: CertificateData) {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            paddingTop: '10px',
+            paddingTop: '20px',
         },
         logo: {
             width: '80px',
             height: '80px',
-            marginBottom: '5px',
+            marginBottom: '15px',
         },
         instituteName: {
             fontFamily: '"Playfair Display", serif',
-            fontSize: '24pt',
-            fontWeight: 'bold',
-            color: '#001F54',
-            margin: '0 0 5px 0',
+            fontSize: '28pt',
+            fontWeight: 700,
+            color: '#0A2342',
+            margin: '0 0 10px 0',
         },
         mainTitle: {
-            fontFamily: '"UnifrakturMaguntia", cursive',
+            fontFamily: '"Playfair Display", serif',
             fontSize: '48pt',
-            fontWeight: 'normal',
-            color: '#001F54',
-            margin: '0 0 5px 0',
+            fontWeight: 700,
+            color: '#0A2342',
+            margin: '0 0 15px 0',
+            letterSpacing: '2px',
         },
         presentedTo: {
-            fontSize: '14pt',
+            fontSize: '16pt',
             color: '#555',
             margin: '10px 0 0 0',
             textTransform: 'uppercase',
+            letterSpacing: '1px',
         },
         certifyText: {
-            fontSize: '12pt',
+            fontSize: '14pt',
             color: '#333',
-            margin: '0',
+            margin: '5px 0',
         },
         studentName: {
             fontFamily: '"Great Vibes", cursive',
-            fontSize: '52pt',
-            fontWeight: 'normal',
-            color: '#C9A24B',
-            margin: '-10px 0 0 0',
+            fontSize: '60pt',
+            fontWeight: 400,
+            color: '#C9A24B', // Gold color
+            margin: '-15px 0 0 0',
+            textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
         },
         bodyText: {
-            fontSize: '13pt',
+            fontSize: '15pt',
             lineHeight: 1.6,
             color: '#333',
-            margin: '20px 0 0 0',
+            margin: '25px 0 0 0',
         },
         courseName: {
             fontWeight: 'bold',
@@ -149,7 +152,7 @@ export default function CertificateTemplate(data: CertificateData) {
         signatureTitle: {
             marginTop: '8px',
             fontWeight: 'bold',
-            color: '#001F54',
+            color: '#0A2342',
         },
         footerContainer: {
             position: 'absolute',
@@ -226,5 +229,3 @@ export default function CertificateTemplate(data: CertificateData) {
         </div>
     );
 }
-
-    
