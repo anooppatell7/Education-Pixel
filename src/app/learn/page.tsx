@@ -1,15 +1,18 @@
+
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import VideoCard from '@/components/videos/VideoCard';
 import VideoPlayer from '@/components/videos/VideoPlayer';
 import { Card, CardContent } from '@/components/ui/card';
-import { ListVideo, Youtube } from 'lucide-react';
+import { ListVideo, Youtube, Search, X } from 'lucide-react';
 import SectionDivider from '@/components/section-divider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore } from '@/firebase';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs, query } from 'firebase/firestore';
 import type { YouTubePlaylist } from '@/lib/types';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 function LoadingSkeleton() {
     return (
@@ -45,6 +48,7 @@ export default function LearnPage() {
     const [playlists, setPlaylists] = useState<YouTubePlaylist[]>([]);
     const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         if (!firestore) return;
@@ -66,6 +70,16 @@ export default function LearnPage() {
         fetchPlaylists();
     }, [firestore]);
 
+    const filteredPlaylists = useMemo(() => {
+        if (!searchTerm) {
+            return playlists;
+        }
+        return playlists.filter(playlist => 
+            playlist.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            playlist.description.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [playlists, searchTerm]);
+
     const handleVideoSelect = (videoId: string) => {
         setSelectedVideoId(videoId);
     };
@@ -84,11 +98,26 @@ export default function LearnPage() {
             <div className="bg-secondary relative">
                 <SectionDivider style="wave" className="text-gradient-to-br from-blue-900 via-indigo-900 to-black" position="top"/>
                 <div className="container py-16 sm:py-24">
+                     <div className="mb-12 max-w-lg mx-auto relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input
+                            type="text"
+                            placeholder="Search playlists like 'HTML', 'CSS Course'..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10 text-base"
+                        />
+                         {searchTerm && (
+                            <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setSearchTerm('')}>
+                               <X className="h-5 w-5" />
+                            </Button>
+                        )}
+                    </div>
                     {isLoading ? (
                         <LoadingSkeleton />
-                    ) : playlists.length > 0 ? (
+                    ) : filteredPlaylists.length > 0 ? (
                         <div className="space-y-12">
-                            {playlists.map((playlist) => (
+                            {filteredPlaylists.map((playlist) => (
                                 <section key={playlist.id}>
                                     <h2 className="font-headline text-2xl font-bold text-primary mb-2 flex items-center gap-3">
                                        <ListVideo className="h-7 w-7 text-accent"/>
@@ -115,8 +144,12 @@ export default function LearnPage() {
                         <Card className="text-center p-8 bg-card">
                            <Youtube className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                            <CardContent>
-                               <h3 className="text-xl font-semibold text-foreground">No Playlists Found</h3>
-                               <p className="text-muted-foreground mt-2">The admin has not added any video playlists yet. Please check back later.</p>
+                               <h3 className="text-xl font-semibold text-foreground">
+                                {playlists.length > 0 ? 'No Matching Playlists Found' : 'No Playlists Found'}
+                               </h3>
+                               <p className="text-muted-foreground mt-2">
+                                {playlists.length > 0 ? 'Try a different search term.' : 'The admin has not added any video playlists yet. Please check back later.'}
+                               </p>
                            </CardContent>
                         </Card>
                     )}
