@@ -129,9 +129,10 @@ export default function CertificateTemplate(data: CertificateData) {
         },
         signatureBlock: {
             width: '220px',
-            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
             fontSize: '12pt',
-            position: 'relative',
         },
         mainSeal: {
              width: '120px',
@@ -141,9 +142,10 @@ export default function CertificateTemplate(data: CertificateData) {
              top: '10px'
         },
         signatureImage: {
+            display: 'block',
             height: '60px',
             width: 'auto',
-            marginBottom: '-10px',
+            margin: '0 auto -10px auto',
         },
         signatureLine: {
             borderTop: '1px solid #555',
