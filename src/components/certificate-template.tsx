@@ -102,7 +102,7 @@ export default function CertificateTemplate(data: CertificateData) {
             margin: '5px 0',
         },
         studentName: {
-            fontFamily: '"Great Vibes", cursive',
+            fontFamily: '"Playfair Display", serif',
             fontSize: '48pt',
             fontWeight: 'normal',
             color: '#C9A24B', // Gold color
@@ -188,7 +188,7 @@ export default function CertificateTemplate(data: CertificateData) {
     return (
         <div style={styles.page}>
             <style>
-                {`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Great+Vibes&display=swap');`}
+                {`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');`}
             </style>
             <div style={styles.borderOuter}>
                 <div style={styles.borderInner}>
