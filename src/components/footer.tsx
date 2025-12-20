@@ -91,9 +91,6 @@ export default function Footer() {
               <Link href="#" aria-label="Instagram" className="p-2 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
                 <Instagram className="w-5 h-5" />
               </Link>
-              <Link href="https://www.youtube.com/@Educationpixel7" aria-label="YouTube" className="p-2 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
-                <Youtube className="w-5 h-5" />
-              </Link>
                <Link href="https://www.youtube.com/@epixel2.0" aria-label="YouTube" className="p-2 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
                 <Youtube className="w-5 h-5" />
               </Link>
