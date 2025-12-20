@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: "Free Student Resources (PDF, Notes) - Education Pixel",
   description: "Access and download free student resources from Education Pixel, including PDF notes, worksheets, and quizzes for computer courses.",
   keywords: ["free student resources", "computer course notes pdf", "it course study material", "education pixel resources"],
@@ -45,10 +45,6 @@ export default function ResourcesPage() {
 
   return (
     <>
-      <head>
-          <title>{metadata.title as string}</title>
-          <meta name="description" content={metadata.description as string} />
-      </head>
       <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-black text-white">
         <div className="container py-16 sm:py-24 text-center">
           <h1 className="font-headline text-4xl font-bold sm:text-5xl">Free Resources<span className="text-purple-300">.</span></h1>
