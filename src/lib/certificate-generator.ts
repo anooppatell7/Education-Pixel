@@ -22,7 +22,7 @@ const A4_HEIGHT = 794;
 async function getCertificateImages() {
   const [logo, goldSeal, signature] = await Promise.all([
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"),
-    preloadImageAsBase64("https://res.cloudinary.com/dzr4xjizf/image/upload/v1763803007/seal_png.png"),
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766205812/Gemini_Generated_Image_8z1csh8z1csh8z1c-removebg-preview_hir77o.png"),
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766205295/ashish-kumar-stalemate_h5zzej.png"),
   ]);
 
