@@ -1,6 +1,4 @@
 
-"use client";
-
 import { db } from "@/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import type { Resource } from "@/lib/types";
@@ -8,7 +6,6 @@ import AdPlaceholder from "@/components/ad-placeholder";
 import type { Metadata } from 'next';
 import ResourcesClient from "@/components/resources-client";
 import SectionDivider from "@/components/section-divider";
-import { useEffect, useState } from "react";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
 
@@ -26,22 +23,16 @@ export const metadata: Metadata = {
   },
 };
 
+async function getResources(): Promise<Resource[]> {
+    if (!db) return [];
+    const resourcesCollection = collection(db, "resources");
+    const resourceSnapshot = await getDocs(resourcesCollection);
+    return resourceSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Resource));
+}
 
-export default function ResourcesPage() {
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function getResources() {
-        if (!db) return;
-        const resourcesCollection = collection(db, "resources");
-        const resourceSnapshot = await getDocs(resourcesCollection);
-        const resourceList = resourceSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Resource));
-        setResources(resourceList);
-        setLoading(false);
-    }
-    getResources();
-  }, []);
+export default async function ResourcesPage() {
+  const resources = await getResources();
 
   return (
     <>
@@ -59,7 +50,7 @@ export default function ResourcesPage() {
         <div className="container py-16 sm:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
               <main className="lg:col-span-3">
-                  {loading ? <div>Loading resources...</div> : <ResourcesClient resources={resources} />}
+                  <ResourcesClient resources={resources} />
               </main>
               <aside className="lg:col-span-1 space-y-8">
                   <AdPlaceholder />
