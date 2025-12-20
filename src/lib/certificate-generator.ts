@@ -23,7 +23,7 @@ async function getCertificateImages() {
   const [logo, goldSeal, signature] = await Promise.all([
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"),
     preloadImageAsBase64("https://res.cloudinary.com/dzr4xjizf/image/upload/v1763803007/seal_png.png"),
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1763721267/signature_kfj27k.png"),
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766205295/ashish-kumar-stalemate_h5zzej.png"),
   ]);
 
   return { logo, goldSeal, signature };
