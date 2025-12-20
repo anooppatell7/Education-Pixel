@@ -102,9 +102,9 @@ export default function CertificateTemplate(data: CertificateData) {
             margin: '5px 0',
         },
         studentName: {
-            fontFamily: '"Playfair Display", serif',
-            fontSize: '42pt',
-            fontWeight: 700,
+            fontFamily: '"Great Vibes", cursive',
+            fontSize: '48pt',
+            fontWeight: 'normal',
             color: '#C9A24B', // Gold color
             margin: '5px 0',
             textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
@@ -187,6 +187,9 @@ export default function CertificateTemplate(data: CertificateData) {
     
     return (
         <div style={styles.page}>
+            <style>
+                {`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Great+Vibes&display=swap');`}
+            </style>
             <div style={styles.borderOuter}>
                 <div style={styles.borderInner}>
                     <span style={styles.certificateIdTopLeft}>Certificate ID: {data.certificateId}</span>
