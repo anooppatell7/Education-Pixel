@@ -68,7 +68,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Logo from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, LearningCourse, LearningModule, Lesson, MockTest, TestQuestion, TestCategory, ExamRegistration, ExamResult, Certificate, PopupSettings, YouTubePlaylist } from "@/lib/types";
+import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, MockTest, TestQuestion, TestCategory, ExamRegistration, ExamResult, Certificate, PopupSettings, YouTubePlaylist } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { signOut, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { useRouter } from "next/navigation";
@@ -82,7 +82,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 
 
 
-type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'learningCourse' | 'learningModule' | 'learningLesson' | 'mockTest' | 'testQuestion' | 'testCategory' | 'examRegistration' | 'examResult' | 'certificate' | 'youtubePlaylist';
+type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'mockTest' | 'testQuestion' | 'testCategory' | 'examRegistration' | 'examResult' | 'certificate' | 'youtubePlaylist';
 
 export default function AdminDashboardPage() {
     const auth = useAuth();
@@ -90,7 +90,6 @@ export default function AdminDashboardPage() {
     const { user, isLoading: isUserLoading } = useUser();
     const router = useRouter();
     const [courses, setCourses] = useState<Course[]>([]);
-    const [learningCourses, setLearningCourses] = useState<LearningCourse[]>([]);
     const [resources, setResources] = useState<Resource[]>([]);
     const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
     const [contacts, setContacts] = useState<ContactSubmission[]>([]);
@@ -131,29 +130,6 @@ export default function AdminDashboardPage() {
             const courseSnapshot = await getDocs(coursesCollection);
             const courseList = courseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
             setCourses(courseList);
-
-             // Learning Courses
-            const learningCoursesQuery = query(collection(firestore, "learningCourses"), orderBy("order"));
-            const learningCoursesSnapshot = await getDocs(learningCoursesQuery);
-            const learningCoursesList = await Promise.all(learningCoursesSnapshot.docs.map(async (courseDoc) => {
-                const courseData = { id: courseDoc.id, ...courseDoc.data() } as LearningCourse;
-                
-                const modulesQuery = query(collection(firestore, "learningCourses", courseDoc.id, "modules"), orderBy("order"));
-                const modulesSnapshot = await getDocs(modulesQuery);
-                
-                courseData.modules = await Promise.all(modulesSnapshot.docs.map(async (moduleDoc) => {
-                    const moduleData = { id: moduleDoc.id, ...moduleDoc.data() } as LearningModule;
-
-                    const lessonsQuery = query(collection(firestore, "learningCourses", courseDoc.id, "modules", moduleDoc.id, "lessons"), orderBy("order"));
-                    const lessonsSnapshot = await getDocs(lessonsQuery);
-                    moduleData.lessons = lessonsSnapshot.docs.map(lessonDoc => ({ id: lessonDoc.id, ...lessonDoc.data() } as Lesson));
-                    
-                    return moduleData;
-                }));
-
-                return courseData;
-            }));
-            setLearningCourses(learningCoursesList);
             
              // YouTube Playlists
             const youtubePlaylistsQuery = query(collection(firestore, "youtubePlaylists"));
@@ -317,9 +293,6 @@ export default function AdminDashboardPage() {
                 case 'enrollments': docRef = doc(firestore, "enrollments", id); break;
                 case 'contacts': docRef = doc(firestore, "contacts", id); break;
                 case 'reviews': docRef = doc(firestore, "reviews", id); break;
-                case 'learningCourse': docRef = doc(firestore, "learningCourses", id); break;
-                case 'learningModule': if (parentIds?.courseId) docRef = doc(firestore, "learningCourses", parentIds.courseId, "modules", id); break;
-                case 'learningLesson': if (parentIds?.courseId && parentIds?.moduleId) docRef = doc(firestore, "learningCourses", parentIds.courseId, "modules", parentIds.moduleId, "lessons", id); break;
                 case 'testCategory': docRef = doc(firestore, "testCategories", id); break;
                 case 'examRegistration': docRef = doc(firestore, "examRegistrations", id); break;
                 case 'examResult': docRef = doc(firestore, "examResults", id); break;
@@ -393,9 +366,7 @@ export default function AdminDashboardPage() {
     const handleAddNew = (parentIds: { courseId?: string, moduleId?: string, testId?: string } | null = null) => {
         setEditingItem(null);
         let initialData: any = {};
-        if (activeTab === 'learn-content' && parentIds?.courseId) {
-            setFormParentIds(parentIds);
-        } else if (activeTab === 'mock-tests' && parentIds?.testId) {
+        if (activeTab === 'mock-tests' && parentIds?.testId) {
             setFormParentIds(parentIds);
         } else {
             setFormParentIds(null);
@@ -473,8 +444,6 @@ export default function AdminDashboardPage() {
         
         // Cleanup data before saving
         delete dataToSave.id;
-        if ('modules' in dataToSave) delete dataToSave.modules;
-        if ('lessons' in dataToSave) delete dataToSave.lessons;
         
         if (activeTab === 'courses') {
             collectionRef = collection(firestore, "courses");
@@ -489,16 +458,6 @@ export default function AdminDashboardPage() {
             }
         } else if (activeTab === 'youtube') {
             collectionRef = collection(firestore, "youtubePlaylists");
-        } else if (activeTab === 'learn-content') {
-             if (formParentIds?.courseId) { // Editing/Adding Module or Lesson
-                if (formParentIds.moduleId) { // Lesson
-                    collectionRef = collection(firestore, "learningCourses", formParentIds.courseId, "modules", formParentIds.moduleId, "lessons");
-                } else { // Module
-                    collectionRef = collection(firestore, "learningCourses", formParentIds.courseId, "modules");
-                }
-            } else { // Course
-                collectionRef = collection(firestore, "learningCourses");
-            }
         } else if (activeTab === 'test-categories') {
              collectionRef = collection(firestore, "testCategories");
              docId = (editingItem as any)?.id || dataToSave.id; // Use existing id or form id
@@ -549,11 +508,9 @@ export default function AdminDashboardPage() {
         let docRef: any;
 
         if (operation === 'create') {
-            if (['learn-content', 'test-categories'].includes(activeTab) && docId) {
+            if (activeTab === 'test-categories' && docId) {
                 docRef = doc(collectionRef, docId);
-                if (activeTab === 'test-categories' || activeTab === 'learn-content') {
-                    dataToSave.id = docId;
-                }
+                dataToSave.id = docId;
                 setDoc(docRef, dataToSave).then(() => {
                     toast({ title: "Success", description: "Data saved successfully." });
                     fetchData(); handleCloseForm();
@@ -812,26 +769,12 @@ export default function AdminDashboardPage() {
             return isEditing ? 'Edit Mock Test' : 'Add New Mock Test';
         }
 
-        if (activeTab === 'learn-content') {
-             if (formParentIds?.courseId) {
-                if (formParentIds.moduleId) return isEditing ? 'Edit Lesson' : 'Add New Lesson';
-                return isEditing ? 'Edit Module' : 'Add New Module';
-            }
-            return isEditing ? 'Edit Learning Course' : 'Add New Learning Course';
-        }
         return 'Edit Item';
     }
 
 
     const renderFormFields = () => {
         let currentActiveTab = activeTab;
-        if (activeTab === 'learn-content') {
-            if (formParentIds?.courseId) {
-                currentActiveTab = formParentIds.moduleId ? 'learningLesson' : 'learningModule';
-            } else {
-                currentActiveTab = 'learningCourse';
-            }
-        }
         if (activeTab === 'mock-tests') {
             if(formParentIds?.testId) {
                 currentActiveTab = 'testQuestion';
@@ -921,93 +864,6 @@ export default function AdminDashboardPage() {
                     <div className="grid gap-2">
                         <Label htmlFor="videoUrls">Video URLs (comma-separated)</Label>
                         <Textarea id="videoUrls" name="videoUrls" value={Array.isArray(formData.videoUrls) ? formData.videoUrls.join(', ') : ''} onChange={handleFormChange} placeholder="https://youtu.be/..., https://youtu.be/..."/>
-                    </div>
-                </>
-            );
-             case 'learningCourse': return (
-                <>
-                    <div className="grid gap-2">
-                        <Label htmlFor="id">Course ID (Slug)</Label>
-                        <Input id="id" name="id" value={formData.id || ''} onChange={handleFormChange} disabled={!!editingItem} placeholder="e.g., html-basics"/>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="title">Title</Label>
-                        <Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="description">Description</Label>
-                        <Textarea id="description" name="description" value={formData.description || ''} onChange={handleFormChange} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="level">Level</Label>
-                        <Select name="level" value={formData.level || ''} onValueChange={(val) => setFormData({ ...formData, level: val })}>
-                             <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
-                             <SelectContent>
-                                <SelectItem value="Beginner">Beginner</SelectItem>
-                                <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                <SelectItem value="Advanced">Advanced</SelectItem>
-                                <SelectItem value="Beginner to Advanced">Beginner to Advanced</SelectItem>
-                             </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="order">Order</Label>
-                        <Input id="order" name="order" type="number" value={formData.order || 0} onChange={handleFormChange} />
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="icon">Icon (Emoji)</Label>
-                        <Input id="icon" name="icon" value={formData.icon || ''} onChange={handleFormChange} placeholder="e.g., 📄"/>
-                    </div>
-                </>
-            );
-            case 'learningModule': return (
-                <>
-                    <div className="grid gap-2">
-                        <Label htmlFor="id">Module ID (Slug)</Label>
-                        <Input id="id" name="id" value={formData.id || ''} onChange={handleFormChange} disabled={!!editingItem} placeholder="e.g., introduction"/>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="title">Title</Label>
-                        <Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="difficulty">Difficulty</Label>
-                        <Select name="difficulty" value={formData.difficulty || ''} onValueChange={(val) => setFormData({ ...formData, difficulty: val })}>
-                             <SelectTrigger><SelectValue placeholder="Select difficulty" /></SelectTrigger>
-                             <SelectContent>
-                                <SelectItem value="Beginner">Beginner</SelectItem>
-                                <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                <SelectItem value="Advanced">Advanced</SelectItem>
-                             </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="order">Order</Label>
-                        <Input id="order" name="order" type="number" value={formData.order || 0} onChange={handleFormChange} />
-                    </div>
-                </>
-            );
-            case 'learningLesson': return (
-                 <>
-                    <div className="grid gap-2">
-                        <Label htmlFor="id">Lesson ID (Slug)</Label>
-                        <Input id="id" name="id" value={formData.id || ''} onChange={handleFormChange} disabled={!!editingItem} placeholder="e.g., what-is-html"/>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="title">Title</Label>
-                        <Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} />
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="order">Order</Label>
-                        <Input id="order" name="order" type="number" value={formData.order || 0} onChange={handleFormChange} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="content">Content (HTML Supported)</Label>
-                        <Textarea id="content" name="content" value={formData.content || ''} onChange={handleFormChange} rows={10} />
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="exampleCode">Example Code (Optional)</Label>
-                        <Textarea id="exampleCode" name="exampleCode" value={formData.exampleCode || ''} onChange={handleFormChange} rows={6} />
                     </div>
                 </>
             );
@@ -1145,7 +1001,6 @@ export default function AdminDashboardPage() {
                                     <TabsTrigger value="courses">Courses</TabsTrigger>
                                     <TabsTrigger value="resources">Resources</TabsTrigger>
                                     <TabsTrigger value="youtube">YouTube</TabsTrigger>
-                                    <TabsTrigger value="learn-content">Learn Content</TabsTrigger>
                                     <TabsTrigger value="test-categories"><BookCopy className="mr-2 h-4 w-4"/>Test Categories</TabsTrigger>
                                     <TabsTrigger value="mock-tests"><ListTodo className="mr-2 h-4 w-4" />Mock Tests</TabsTrigger>
                                     <TabsTrigger value="reviews"><Star className="mr-2 h-4 w-4" />Reviews</TabsTrigger>
@@ -1348,79 +1203,6 @@ export default function AdminDashboardPage() {
                                          <ScrollBar orientation="horizontal" />
                                      </ScrollArea>
                                      }
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                        <TabsContent value="learn-content">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Learning Content</CardTitle>
-                                    <CardDescription>Manage interactive course modules, chapters, and lessons. You can auto-populate this section by uploading the `courses.json` file in "Data Management".</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    {loading ? <p>Loading content...</p> : (
-                                        <div className="space-y-4">
-                                            <Accordion type="multiple" className="w-full">
-                                                {learningCourses.map(course => (
-                                                    <AccordionItem value={course.id} key={course.id}>
-                                                        <div className="flex items-center pr-4 hover:bg-muted/50 rounded-lg">
-                                                            <AccordionTrigger className="flex-1 px-4 py-2 hover:no-underline">
-                                                                 <div className="flex items-center gap-4">
-                                                                    <BookOpen className="h-5 w-5 text-primary" />
-                                                                    <span className="font-semibold text-lg">{course.title}</span>
-                                                                </div>
-                                                            </AccordionTrigger>
-                                                            <div className="flex items-center gap-2 pl-2">
-                                                                <Button variant="outline" size="sm" onClick={(e) => {e.stopPropagation(); handleEdit(course)}}><Edit className="h-4 w-4 mr-1"/> Edit</Button>
-                                                                <Button variant="destructive" size="sm" onClick={(e) => {e.stopPropagation(); openConfirmationDialog('learningCourse', course.id)}}><Trash className="h-4 w-4 mr-1"/> Delete</Button>
-                                                            </div>
-                                                        </div>
-                                                        <AccordionContent className="pl-6 border-l ml-3">
-                                                            <div className="space-y-2 py-2">
-                                                                {course.modules.map(module => (
-                                                                     <Accordion type="multiple" key={module.id}>
-                                                                        <AccordionItem value={module.id}>
-                                                                             <div className="flex items-center pr-4 hover:bg-muted/50 rounded-lg">
-                                                                                <AccordionTrigger className="flex-1 px-4 py-2 hover:no-underline">
-                                                                                     <div className="flex items-center gap-3">
-                                                                                         <Layers className="h-5 w-5 text-accent" />
-                                                                                        <span>{module.title}</span>
-                                                                                    </div>
-                                                                                </AccordionTrigger>
-                                                                                <div className="flex items-center gap-2 pl-2">
-                                                                                    <Button variant="outline" size="sm" onClick={(e) => {e.stopPropagation(); handleEdit(module, { courseId: course.id })}}><Edit className="h-4 w-4 mr-1"/> Edit</Button>
-                                                                                    <Button variant="destructive" size="sm" onClick={(e) => {e.stopPropagation(); openConfirmationDialog('learningModule', module.id, { courseId: course.id })}}><Trash className="h-4 w-4 mr-1"/> Delete</Button>
-                                                                                </div>
-                                                                             </div>
-                                                                            <AccordionContent className="pl-6 border-l ml-3">
-                                                                                <div className="space-y-1 py-2">
-                                                                                {module.lessons.map(lesson => (
-                                                                                    <div key={lesson.id} className="flex justify-between items-center p-2 rounded-md hover:bg-muted">
-                                                                                        <span>{lesson.title}</span>
-                                                                                         <div className="flex items-center gap-2">
-                                                                                            <Button variant="ghost" size="sm" onClick={() => handleEdit(lesson, { courseId: course.id, moduleId: module.id })}><Edit className="h-4 w-4"/></Button>
-                                                                                            <Button variant="ghost" size="sm" className="text-destructive" onClick={() => openConfirmationDialog('learningLesson', lesson.id, { courseId: course.id, moduleId: module.id })}><Trash className="h-4 w-4"/></Button>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                ))}
-                                                                                <Button variant="secondary" size="sm" className="mt-2" onClick={() => handleAddNew({ courseId: course.id, moduleId: module.id })}>
-                                                                                    <PlusCircle className="h-4 w-4 mr-2" /> Add Lesson
-                                                                                </Button>
-                                                                                </div>
-                                                                            </AccordionContent>
-                                                                        </AccordionItem>
-                                                                     </Accordion>
-                                                                ))}
-                                                                 <Button variant="outline" size="sm" className="mt-4" onClick={() => handleAddNew({ courseId: course.id })}>
-                                                                    <PlusCircle className="h-4 w-4 mr-2" /> Add Module
-                                                                </Button>
-                                                            </div>
-                                                        </AccordionContent>
-                                                    </AccordionItem>
-                                                ))}
-                                            </Accordion>
-                                        </div>
-                                    )}
                                 </CardContent>
                             </Card>
                         </TabsContent>
