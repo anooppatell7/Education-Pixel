@@ -57,8 +57,14 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
     const staticMarkup = renderToStaticMarkup(CertificateTemplate(finalData));
     container.innerHTML = staticMarkup;
     
-    // Add a small delay to ensure fonts and images are loaded by the browser
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Add a small delay and check for font loading to ensure fonts and images are loaded
+    await new Promise<void>((resolve) => {
+      // Use document.fonts.ready to wait for all fonts to be loaded
+      document.fonts.ready.then(() => {
+        // Even after fonts are ready, give a small buffer for rendering
+        setTimeout(resolve, 500); 
+      });
+    });
 
     // Render to canvas
     const canvas = await html2canvas(container, {
