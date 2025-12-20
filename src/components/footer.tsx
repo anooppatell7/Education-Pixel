@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import { Facebook, Instagram, Phone, Mail, MapPin, Send } from "lucide-react";
+import { Facebook, Instagram, Phone, Mail, MapPin, Send, Youtube } from "lucide-react";
 import Logo from "./logo";
 
 export default function Footer() {
@@ -81,7 +81,7 @@ export default function Footer() {
 
         {/* Bottom Section: Socials and Copyright */}
         <div className="pt-8 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex space-x-4">
+          <div className="flex flex-wrap justify-center gap-4">
               <Link href="https://wa.me/917355379619" aria-label="WhatsApp" className="p-2 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
                 <Send className="w-5 h-5" />
               </Link>
@@ -90,6 +90,12 @@ export default function Footer() {
               </Link>
               <Link href="#" aria-label="Instagram" className="p-2 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
                 <Instagram className="w-5 h-5" />
+              </Link>
+              <Link href="https://www.youtube.com/@Educationpixel7" aria-label="YouTube" className="p-2 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
+                <Youtube className="w-5 h-5" />
+              </Link>
+               <Link href="https://www.youtube.com/@epixel2.0" aria-label="YouTube" className="p-2 bg-primary/10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
+                <Youtube className="w-5 h-5" />
               </Link>
             </div>
           <div className="text-sm text-center sm:text-right">
