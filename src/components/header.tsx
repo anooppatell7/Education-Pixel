@@ -153,14 +153,6 @@ export default function Header() {
       registeredOnly: false,
       hideWhenRegistered: true,
     },
-     {
-      title: "Check Result",
-      href: "/exam/result",
-      description: "Enter your registration number to view your exam performance report.",
-      auth: false,
-      registeredOnly: false,
-      hideWhenRegistered: false,
-    },
   ];
 
 
