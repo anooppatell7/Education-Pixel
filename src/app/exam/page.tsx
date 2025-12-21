@@ -157,7 +157,7 @@ export default function StudentExamPage() {
                                 const result = latestResultsMap.get(test.id);
 
                                 return (
-                                    <Card key={test.id} className="flex flex-col shadow-sm hover:shadow-lg transition-shadow bg-background border-t-4 border-t-accent">
+                                    <Card key={test.id} className="flex flex-col shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-background border-t-4 border-t-accent">
                                         <CardHeader>
                                             <CardTitle className="font-headline text-xl text-primary">{test.title}</CardTitle>
                                             <CardDescription className="line-clamp-3 h-[60px]">{test.description}</CardDescription>
@@ -194,7 +194,7 @@ export default function StudentExamPage() {
                             })}
                         </div>
                     ) : (
-                        <Card>
+                        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                             <CardContent className="p-12 text-center text-muted-foreground">
                                 <p className="text-lg">{!registration ? "You are not registered for any official exams." : "No official exams are available for your course right now."}</p>
                                 <p className="mt-2 text-sm">{!registration ? <Link href="/exam/register" className="text-accent underline">Click here to register.</Link> : "Please check back later."}</p>

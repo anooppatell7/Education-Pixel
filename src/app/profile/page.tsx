@@ -252,7 +252,7 @@ export default function ProfilePage() {
     return (
         <div className="bg-secondary">
              <div className="container py-12 sm:py-20">
-                <Card className="max-w-4xl mx-auto shadow-2xl overflow-hidden border-t-4 border-t-accent">
+                <Card className="max-w-4xl mx-auto shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border-t-4 border-t-accent">
                     <CardHeader className="bg-card p-8 border-b">
                          <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
                             <Avatar className="w-28 h-28 text-4xl border-4 border-primary/10 shadow-md">
@@ -325,7 +325,7 @@ export default function ProfilePage() {
                         <div className="mt-12 pt-8 border-t">
                             <h3 className="font-headline text-2xl text-primary mb-6 border-l-4 border-accent pl-4">Exam History</h3>
                             {examHistory.length > 0 ? (
-                                <div className="border rounded-lg overflow-hidden bg-card">
+                                <div className="border rounded-lg overflow-hidden bg-card shadow-lg">
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
@@ -367,7 +367,7 @@ export default function ProfilePage() {
                                     </Table>
                                 </div>
                             ) : (
-                                <div className="text-center py-10 px-4 border-2 border-dashed rounded-lg bg-card">
+                                <div className="text-center py-10 px-4 border-2 border-dashed rounded-lg bg-card shadow-lg">
                                     <FileText className="mx-auto h-12 w-12 text-muted-foreground/50" />
                                     <p className="mt-4 font-semibold text-lg text-primary/90">No Exams Attempted Yet</p>
                                     <p className="text-muted-foreground mt-1">Your past exam results will appear here.</p>

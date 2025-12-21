@@ -96,7 +96,7 @@ export default function CoursesClient() {
             {filteredCourses.map((course) => (
                 <React.Fragment key={course.id}>
                 <JsonLd data={courseSchema(course)} />
-                <Card className="overflow-hidden shadow-lg grid grid-cols-1 md:grid-cols-2 border-t-4 border-t-accent">
+                <Card className="overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 grid grid-cols-1 md:grid-cols-2 border-t-4 border-t-accent">
                     <div className="relative min-h-[250px] md:min-h-full">
                     <Image
                         src={course.image}

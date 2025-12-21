@@ -164,7 +164,7 @@ function MockTestClientComponent({ testId }: { testId: string }) {
             <div className="container py-8 mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                 {/* Main Content */}
                 <div className="lg:col-span-3 space-y-6">
-                    <Card>
+                    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                         <CardHeader className="border-b">
                              <div className="flex justify-between items-center">
                                 <h1 className="text-xl font-bold text-primary">{testData.title}</h1>
@@ -209,7 +209,7 @@ function MockTestClientComponent({ testId }: { testId: string }) {
 
                 {/* Sidebar */}
                 <div className="space-y-6 sticky top-24">
-                     <Card>
+                     <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                         <CardHeader><CardTitle>Question Palette</CardTitle></CardHeader>
                         <CardContent className="grid grid-cols-5 gap-2">
                              {testData.questions.map((_, index) => (
@@ -265,7 +265,7 @@ function MockTestClientComponent({ testId }: { testId: string }) {
                             </AlertDialogContent>
                         </AlertDialog>
                     </div>
-                     <Card className="text-xs">
+                     <Card className="text-xs shadow-lg">
                         <CardHeader className="p-3"><CardTitle className="text-sm">Legend</CardTitle></CardHeader>
                         <CardContent className="p-3 space-y-2">
                             <div className="flex items-center gap-2"><div className="h-4 w-4 rounded-sm bg-green-500"></div><span>Answered</span></div>

@@ -107,7 +107,7 @@ export default function MockTestCategoriesPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {filteredCategories.map((category) => (
                                 <Link key={category.id} href={`/mock-tests/category/${category.id}`} className="group">
-                                  <Card className="flex flex-col h-full shadow-sm hover:shadow-lg transition-shadow bg-background border-t-4 border-t-accent">
+                                  <Card className="flex flex-col h-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-background border-t-4 border-t-accent">
                                       <CardHeader className="flex-row items-center gap-4">
                                           <div className="text-4xl p-3 bg-accent/10 text-accent rounded-full">
                                             {category.icon ? <span>{category.icon}</span> : <FileText />}
@@ -127,7 +127,7 @@ export default function MockTestCategoriesPage() {
                             ))}
                         </div>
                     ) : (
-                        <Card>
+                        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                             <CardContent className="p-12 text-center text-muted-foreground">
                                 <p className="text-lg">No test categories found.</p>
                                 <p className="mt-2 text-sm">{searchTerm ? "Try a different search term." : "Please check back later."}</p>

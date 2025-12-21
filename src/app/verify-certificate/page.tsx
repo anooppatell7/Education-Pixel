@@ -77,7 +77,7 @@ export default function VerifyCertificatePage() {
       <div className="bg-secondary relative">
         <SectionDivider style="wave" className="text-gradient-to-br from-purple-900 via-blue-900 to-black" position="top"/>
         <div className="container py-16 sm:py-24 flex justify-center">
-          <Card className="w-full max-w-lg shadow-lg">
+          <Card className="w-full max-w-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Certificate Verification</CardTitle>
               <CardDescription>Enter the ID to check the certificate details.</CardDescription>
@@ -109,7 +109,7 @@ export default function VerifyCertificatePage() {
               </Form>
 
               {verificationResult && (
-                 <Card className="mt-8 bg-green-500/10 border-green-500">
+                 <Card className="mt-8 bg-green-500/10 border-green-500 shadow-lg">
                     <CardHeader className="flex-row items-center gap-4">
                         <CheckCircle className="h-10 w-10 text-green-600" />
                         <div>
@@ -127,7 +127,7 @@ export default function VerifyCertificatePage() {
               )}
 
               {notFound && (
-                 <Card className="mt-8 bg-destructive/10 border-destructive">
+                 <Card className="mt-8 bg-destructive/10 border-destructive shadow-lg">
                     <CardHeader className="flex-row items-center gap-4">
                         <XCircle className="h-10 w-10 text-destructive" />
                          <div>

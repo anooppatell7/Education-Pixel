@@ -1033,7 +1033,7 @@ export default function AdminDashboardPage() {
                             </div>
                         </div>
                         <TabsContent value="courses">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>Courses</CardTitle>
                                     <CardDescription>
@@ -1100,7 +1100,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="resources">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>Resources</CardTitle>
                                     <CardDescription>
@@ -1156,7 +1156,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="youtube">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>YouTube Content</CardTitle>
                                     <CardDescription>
@@ -1207,7 +1207,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="test-categories">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>Test Categories</CardTitle>
                                     <CardDescription>Manage the categories for your mock tests. Create a category called "Student Exam" for registered student exams.</CardDescription>
@@ -1259,7 +1259,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="mock-tests">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>Mock Tests</CardTitle>
                                     <CardDescription>Create and manage mock tests. Assign tests to the "Student Exam" category to make them visible only to registered students.</CardDescription>
@@ -1320,7 +1320,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="reviews">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>Student Reviews</CardTitle>
                                     <CardDescription>Manage and approve student testimonials. Approved reviews will appear on the site.</CardDescription>
@@ -1374,7 +1374,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="exam-registrations">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>Student Registrations</CardTitle>
                                     <CardDescription>View and manage student registrations for official exams.</CardDescription>
@@ -1427,7 +1427,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="exam-results">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>Exam Results</CardTitle>
                                     <CardDescription>View results from registration-based exams.</CardDescription>
@@ -1480,7 +1480,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="certificates">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>Issued Certificates</CardTitle>
                                     <CardDescription>View and manage all auto-generated student certificates.</CardDescription>
@@ -1533,7 +1533,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="enrollments">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>Enrollment Submissions</CardTitle>
                                     <CardDescription>
@@ -1593,7 +1593,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="contacts">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>Contact Submissions</CardTitle>
                                     <CardDescription>
@@ -1650,7 +1650,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="site-settings">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>Announcement Bar</CardTitle>
                                     <CardDescription>Manage the announcement bar that appears at the top of your site.</CardDescription>
@@ -1676,7 +1676,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="popup-settings">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>Sales & Event Popup</CardTitle>
                                     <CardDescription>Manage the promotional popup on the homepage. It appears once per session for visitors.</CardDescription>
@@ -1713,7 +1713,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="settings">
-                            <Card>
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                                 <CardHeader>
                                     <CardTitle>Admin Settings</CardTitle>
                                     <CardDescription>Update your administrator credentials. Note: Phone number cannot be changed.</CardDescription>

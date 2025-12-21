@@ -113,7 +113,7 @@ export default function StartExamPage() {
         <div className="bg-secondary relative">
             <SectionDivider style="wave" className="text-gradient-to-br from-purple-900 via-blue-900 to-black" position="top"/>
             <div className="container py-16 sm:py-24 flex justify-center">
-                <Card className="w-full max-w-2xl shadow-lg">
+                <Card className="w-full max-w-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
                     <CardHeader>
                         <CardTitle className="font-headline text-2xl">Student Verification</CardTitle>
                         <CardDescription>Enter the registration number you received after completing the registration form.</CardDescription>
@@ -139,7 +139,7 @@ export default function StartExamPage() {
                             </form>
                         ) : (
                             <div className="space-y-6">
-                                <Card className="bg-primary/5">
+                                <Card className="bg-primary/5 shadow-lg">
                                     <CardHeader className="text-center">
                                         <div className="w-24 h-24 rounded-full mx-auto overflow-hidden border-4 border-white shadow-md bg-muted flex items-center justify-center">
                                             <User className="h-12 w-12 text-muted-foreground" />

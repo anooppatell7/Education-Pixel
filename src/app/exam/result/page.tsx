@@ -78,7 +78,7 @@ export default function CheckResultPage() {
       <div className="bg-secondary relative">
         <SectionDivider style="wave" className="text-gradient-to-br from-purple-900 via-blue-900 to-black" position="top"/>
         <div className="container py-16 sm:py-24 flex justify-center">
-          <Card className="w-full max-w-md shadow-lg">
+          <Card className="w-full max-w-md shadow-lg hover:shadow-xl transition-shadow duration-300">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Result Portal</CardTitle>
               <CardDescription>Enter your registration number below.</CardDescription>
