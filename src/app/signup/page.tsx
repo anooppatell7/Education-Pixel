@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -13,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser, db } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Head from "next/head";
-import { doc, setDoc, getDocs, collection, query, where, serverTimestamp, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDocs, collection, query, where, serverTimestamp, addDoc } from "firebase/firestore";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Franchise } from "@/lib/types";
 
@@ -39,11 +38,32 @@ export default function SignupPage() {
   useEffect(() => {
     const fetchFranchises = async () => {
         if (!db) return;
-        const q = query(collection(db, "franchises"), where("status", "==", "active"));
-        const querySnapshot = await getDocs(q);
-        const franchiseList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Franchise));
-        // For simplicity, let's use a predefined list for now. In a real app, you'd fetch this.
-        setFranchises(franchiseList);
+        try {
+            const q = query(collection(db, "franchises"), where("status", "==", "active"));
+            const querySnapshot = await getDocs(q);
+            const franchiseList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Franchise));
+
+            if (franchiseList.length > 0) {
+                 setFranchises(franchiseList);
+            } else {
+                // Fallback for development if no active franchises are in the DB
+                const fallbackFranchises = [
+                    { id: 'fb_patti', name: 'Education Pixel Patti', city: 'Patti', district: 'Pratapgarh', ownerName: 'Admin', email: 'patti@ep.com', status: 'active', createdAt: new Date() },
+                    { id: 'fb_kunda', name: 'Education Pixel Kunda', city: 'Kunda', district: 'Pratapgarh', ownerName: 'Admin', email: 'kunda@ep.com', status: 'active', createdAt: new Date() },
+                    { id: 'fb_pratapgarh', name: 'Education Pixel Pratapgarh', city: 'Pratapgarh', district: 'Pratapgarh', ownerName: 'Admin', email: 'pratapgarh@ep.com', status: 'active', createdAt: new Date() },
+                ] as Franchise[];
+                setFranchises(fallbackFranchises);
+            }
+        } catch (error) {
+            console.error("Error fetching franchises:", error);
+            // Set fallback on error as well
+             const fallbackFranchises = [
+                { id: 'fb_patti', name: 'Education Pixel Patti', city: 'Patti', district: 'Pratapgarh', ownerName: 'Admin', email: 'patti@ep.com', status: 'active', createdAt: new Date() },
+                { id: 'fb_kunda', name: 'Education Pixel Kunda', city: 'Kunda', district: 'Pratapgarh', ownerName: 'Admin', email: 'kunda@ep.com', status: 'active', createdAt: new Date() },
+                { id: 'fb_pratapgarh', name: 'Education Pixel Pratapgarh', city: 'Pratapgarh', district: 'Pratapgarh', ownerName: 'Admin', email: 'pratapgarh@ep.com', status: 'active', createdAt: new Date() },
+            ] as Franchise[];
+            setFranchises(fallbackFranchises);
+        }
     }
     fetchFranchises();
   }, [db]);
