@@ -449,7 +449,3 @@ export default function ExamRegistrationPage() {
         </>
     );
 }
-
-    
-
-    
