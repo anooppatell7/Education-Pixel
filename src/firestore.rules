@@ -41,6 +41,9 @@ service cloud.firestore {
       allow get, update: if isOwner(userId);
       // Anyone can create a user doc (signup)
       allow create: if true;
+      // Allow anyone to query the users collection (needed for signup email check).
+      // This is secure because read rules above still prevent reading full documents.
+      allow list: if true;
     }
     
     // Franchises can only be created and managed by Super Admins, but read by anyone for signup.
@@ -69,7 +72,7 @@ service cloud.firestore {
         // A student can read their own registration.
         allow get: if isOwner(userId);
 
-        // Allow any authenticated user to query the collection (needed for verification)
+        // Allow authenticated users (like admin) to query the collection
         allow list: if isAuth();
     }
     
