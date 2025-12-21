@@ -165,7 +165,7 @@ export default function MockTestsByCategoryPage() {
                                 const result = latestResultsMap.get(test.id);
 
                                 return (
-                                    <Card key={test.id} className="flex flex-col shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-background border-t-4 border-t-accent">
+                                    <Card key={test.id} className="flex flex-col shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-background border-t-4 border-t-accent rounded-lg">
                                         <CardHeader>
                                             <CardTitle className="font-headline text-xl text-primary">{test.title}</CardTitle>
                                             <CardDescription className="line-clamp-3 h-[60px]">{test.description}</CardDescription>
@@ -209,7 +209,7 @@ export default function MockTestsByCategoryPage() {
                             })}
                         </div>
                     ) : (
-                        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                             <CardContent className="p-12 text-center text-muted-foreground">
                                 <p className="text-lg">No mock tests are available in this category yet.</p>
                                 <p className="mt-2 text-sm">Please check back later for new practice tests.</p>

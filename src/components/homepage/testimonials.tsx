@@ -75,7 +75,7 @@ export default function Testimonials() {
                     {reviews.map((review) => (
                         <CarouselItem key={review.id} className="md:basis-1/2 lg:basis-1/3">
                             <div className="p-1 h-full">
-                               <Card className="h-full flex flex-col shadow-lg bg-secondary/50 border-t-4 border-t-accent">
+                               <Card className="h-full flex flex-col shadow-lg bg-secondary/50 border-t-4 border-t-accent rounded-lg">
                                     <CardContent className="p-8 flex-grow flex flex-col justify-between">
                                        <div>
                                             <div className="flex items-center mb-4">

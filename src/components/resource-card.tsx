@@ -30,7 +30,7 @@ export default function ResourceCard({ resource, onPreview }: ResourceCardProps)
   }
 
   return (
-    <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col border-t-4 border-t-accent">
+    <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col border-t-4 border-t-accent rounded-lg">
         <CardHeader className="flex flex-row items-center gap-4">
             {iconMap[resource.type]}
             <div>

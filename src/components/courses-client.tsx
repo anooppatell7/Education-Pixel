@@ -25,7 +25,7 @@ function CoursesSkeleton() {
     return (
         <div className="space-y-12">
             {Array.from({ length: 2 }).map((_, i) => (
-                <Card key={i} className="overflow-hidden shadow-lg grid grid-cols-1 md:grid-cols-2">
+                <Card key={i} className="overflow-hidden shadow-lg grid grid-cols-1 md:grid-cols-2 rounded-lg">
                     <Skeleton className="h-64 md:h-full w-full" />
                     <div className="p-6 md:p-8 flex flex-col">
                         <Skeleton className="h-8 w-3/4 mb-2" />
@@ -96,7 +96,7 @@ export default function CoursesClient() {
             {filteredCourses.map((course) => (
                 <React.Fragment key={course.id}>
                 <JsonLd data={courseSchema(course)} />
-                <Card className="overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 grid grid-cols-1 md:grid-cols-2 border-t-4 border-t-accent">
+                <Card className="overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 grid grid-cols-1 md:grid-cols-2 border-t-4 border-t-accent rounded-lg">
                     <div className="relative min-h-[250px] md:min-h-full">
                     <Image
                         src={course.image}

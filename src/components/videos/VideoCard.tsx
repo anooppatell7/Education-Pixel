@@ -16,7 +16,7 @@ export default function VideoCard({ videoId, onVideoSelect }: VideoCardProps) {
 
     return (
         <Card
-            className="overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer border-t-4 border-t-transparent hover:border-t-accent"
+            className="overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer border-t-4 border-t-transparent hover:border-t-accent rounded-lg"
             onClick={() => onVideoSelect(videoId)}
         >
             <div className="relative aspect-video w-full">

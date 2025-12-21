@@ -214,7 +214,7 @@ export default function ExamResultPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                        <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-lg">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Score</CardTitle>
                                 <BarChart className="h-4 w-4 text-muted-foreground" />
@@ -224,7 +224,7 @@ export default function ExamResultPage() {
                                 <p className="text-xs text-muted-foreground">Marks Obtained</p>
                             </CardContent>
                         </Card>
-                        <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                        <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-lg">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Accuracy</CardTitle>
                                 <Target className="h-4 w-4 text-muted-foreground" />
@@ -234,7 +234,7 @@ export default function ExamResultPage() {
                                 <p className="text-xs text-muted-foreground">Based on attempted questions</p>
                             </CardContent>
                         </Card>
-                        <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                        <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-lg">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Time Taken</CardTitle>
                                 <Clock className="h-4 w-4 text-muted-foreground" />
@@ -244,7 +244,7 @@ export default function ExamResultPage() {
                                 <p className="text-xs text-muted-foreground">Total time spent</p>
                             </CardContent>
                         </Card>
-                         <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                         <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-lg">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Rank</CardTitle>
                                 <Award className="h-4 w-4 text-muted-foreground" />
@@ -262,7 +262,7 @@ export default function ExamResultPage() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                          <div className="lg:col-span-2 space-y-4">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                  <CardHeader><CardTitle>Question Review</CardTitle></CardHeader>
                                  <CardContent>
                                     {result.responses.map((response, index) => {
@@ -307,7 +307,7 @@ export default function ExamResultPage() {
                             </Card>
                          </div>
                         <div className="space-y-6 sticky top-24">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Performance Summary</CardTitle>
                                 </CardHeader>

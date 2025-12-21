@@ -102,7 +102,7 @@ export default function AboutPage() {
                      </div>
                 </div>
                  <div className="w-full">
-                    <Card className="overflow-hidden shadow-xl rounded-lg border-t-4 border-t-accent transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                    <Card className="overflow-hidden shadow-xl rounded-xl border-t-4 border-t-accent transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                         <CardContent className="p-0">
                         <Image
                             src="https://picsum.photos/seed/mtech-classroom/800/600"
@@ -146,7 +146,7 @@ export default function AboutPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {whyChooseUsItems.map((item, index) => (
-              <Card key={index} className="text-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-card border-t-4 border-t-accent">
+              <Card key={index} className="text-center rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-card border-t-4 border-t-accent">
                 <CardHeader>
                   <div className="flex justify-center mb-4">{item.icon}</div>
                   <CardTitle className="font-headline text-xl text-primary font-semibold">{item.title}</CardTitle>

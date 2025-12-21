@@ -97,7 +97,7 @@ export default function SignupPage() {
          <meta name="robots" content="noindex, follow" />
       </Head>
       <div className="flex items-center justify-center min-h-[80vh] bg-secondary">
-        <Card className="mx-auto max-w-sm w-full shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <Card className="mx-auto max-w-sm w-full shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <Logo />

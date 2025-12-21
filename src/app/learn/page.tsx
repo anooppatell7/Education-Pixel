@@ -23,7 +23,7 @@ function LoadingSkeleton() {
                     <Skeleton className="h-8 w-1/3 mb-4" />
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         {[...Array(4)].map((_, j) => (
-                            <Card key={j}>
+                            <Card key={j} className="rounded-lg">
                                 <Skeleton className="aspect-video w-full" />
                                 <CardContent className="p-4">
                                     <Skeleton className="h-5 w-full" />
@@ -148,7 +148,7 @@ export default function LearnPage() {
                             ))}
                         </Accordion>
                     ) : (
-                        <Card className="text-center p-8 bg-card">
+                        <Card className="text-center p-8 bg-card rounded-lg">
                            <Youtube className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                            <CardContent>
                                <h3 className="text-xl font-semibold text-foreground">

@@ -25,7 +25,7 @@ function ProfileSkeleton() {
     return (
         <div className="bg-secondary min-h-[80vh]">
             <div className="container py-16 sm:py-24 animate-pulse">
-                <Card className="max-w-4xl mx-auto shadow-lg">
+                <Card className="max-w-4xl mx-auto shadow-lg rounded-lg">
                     <CardHeader className="bg-muted/30 p-8">
                         <div className="flex items-center gap-6">
                             <Skeleton className="h-24 w-24 rounded-full" />
@@ -252,7 +252,7 @@ export default function ProfilePage() {
     return (
         <div className="bg-secondary">
              <div className="container py-12 sm:py-20">
-                <Card className="max-w-4xl mx-auto shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border-t-4 border-t-accent">
+                <Card className="max-w-4xl mx-auto shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border-t-4 border-t-accent rounded-lg">
                     <CardHeader className="bg-card p-8 border-b">
                          <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
                             <Avatar className="w-28 h-28 text-4xl border-4 border-primary/10 shadow-md">
