@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import React, { useState, useEffect, use } from "react";
-import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database, Youtube, CheckCircle, XCircle } from "lucide-react";
+import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database, Youtube, CheckCircle, XCircle, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -68,7 +68,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Logo from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, MockTest, TestQuestion, TestCategory, ExamRegistration, ExamResult, Certificate, PopupSettings, YouTubePlaylist } from "@/lib/types";
+import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, MockTest, TestQuestion, TestCategory, ExamRegistration, ExamResult, Certificate, PopupSettings, YouTubePlaylist, Franchise, ActivityLog } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { signOut, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { useRouter } from "next/navigation";
@@ -82,7 +82,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 
 
 
-type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'mockTest' | 'testQuestion' | 'testCategory' | 'examRegistration' | 'examResult' | 'certificate' | 'youtubePlaylist';
+type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'mockTest' | 'testQuestion' | 'testCategory' | 'examRegistration' | 'examResult' | 'certificate' | 'youtubePlaylist' | 'franchise' | 'activityLog';
 
 export default function AdminDashboardPage() {
     const auth = useAuth();
@@ -100,6 +100,8 @@ export default function AdminDashboardPage() {
     const [examResults, setExamResults] = useState<ExamResult[]>([]);
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [youtubePlaylists, setYoutubePlaylists] = useState<YouTubePlaylist[]>([]);
+    const [franchises, setFranchises] = useState<Franchise[]>([]);
+    const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
@@ -125,6 +127,22 @@ export default function AdminDashboardPage() {
         if (!firestore) return;
         setLoading(true);
         try {
+            // Franchises
+            const franchisesCollection = collection(firestore, "franchises");
+            const franchiseSnapshot = await getDocs(franchisesCollection);
+            const franchiseList = franchiseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Franchise));
+            setFranchises(franchiseList);
+
+            // Activity Logs
+            const activityLogsQuery = query(collection(firestore, "activityLogs"), orderBy("timestamp", "desc"));
+            const activityLogsSnapshot = await getDocs(activityLogsQuery);
+            const activityLogList = activityLogsSnapshot.docs.map(doc => {
+              const data = doc.data();
+              const timestamp = (data.timestamp as Timestamp)?.toDate().toLocaleString() || new Date().toLocaleString();
+              return { id: doc.id, ...data, timestamp } as ActivityLog;
+            });
+            setActivityLogs(activityLogList);
+
             // Courses
             const coursesCollection = collection(firestore, "courses");
             const courseSnapshot = await getDocs(coursesCollection);
@@ -287,6 +305,7 @@ export default function AdminDashboardPage() {
             let operation: 'delete' | 'update' = 'delete';
 
             switch (type) {
+                case 'franchise': docRef = doc(firestore, "franchises", id); break;
                 case 'courses': docRef = doc(firestore, "courses", id); break;
                 case 'blog': case 'guidance': docRef = doc(firestore, "blog", id); break;
                 case 'resources': docRef = doc(firestore, "resources", id); break;
@@ -445,7 +464,10 @@ export default function AdminDashboardPage() {
         // Cleanup data before saving
         delete dataToSave.id;
         
-        if (activeTab === 'courses') {
+        if (activeTab === 'franchises') {
+            collectionRef = collection(firestore, "franchises");
+            dataToSave.createdAt = editingItem?.createdAt || serverTimestamp();
+        } else if (activeTab === 'courses') {
             collectionRef = collection(firestore, "courses");
             dataToSave.image = dataToSave.image || "https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png";
             dataToSave.actualPrice = String(dataToSave.actualPrice || '');
@@ -783,6 +805,7 @@ export default function AdminDashboardPage() {
 
     const getFormTitle = () => {
         const isEditing = !!editingItem;
+        if (activeTab === 'franchises') return isEditing ? 'Edit Franchise' : 'Add New Franchise';
         if (activeTab === 'courses') return isEditing ? 'Edit Course' : 'Add New Course';
         if (activeTab === 'resources') return isEditing ? 'Edit Resource' : 'Add New Resource';
         if (activeTab === 'youtube') return isEditing ? 'Edit YouTube Playlist' : 'Add New YouTube Playlist';
@@ -810,6 +833,42 @@ export default function AdminDashboardPage() {
         }
 
         switch(currentActiveTab) {
+             case 'franchises': return (
+                <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="name">Franchise Name</Label>
+                        <Input id="name" name="name" value={formData.name || ''} onChange={handleFormChange} />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="city">City</Label>
+                            <Input id="city" name="city" value={formData.city || ''} onChange={handleFormChange} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="district">District</Label>
+                            <Input id="district" name="district" value={formData.district || ''} onChange={handleFormChange} />
+                        </div>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="ownerName">Owner Name</Label>
+                        <Input id="ownerName" name="ownerName" value={formData.ownerName || ''} onChange={handleFormChange} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="email">Franchise Email</Label>
+                        <Input id="email" name="email" type="email" value={formData.email || ''} onChange={handleFormChange} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="status">Status</Label>
+                        <Select name="status" value={formData.status || 'inactive'} onValueChange={(val) => setFormData({ ...formData, status: val })}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="inactive">Inactive</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </>
+            );
             case 'courses': return (
                 <>
                     <div className="grid gap-2">
@@ -1003,15 +1062,17 @@ export default function AdminDashboardPage() {
     const unreadEnrollments = enrollments.filter(e => !e.isRead).length;
     const unreadRegistrations = examRegistrations.filter(r => !r.isRead).length;
 
-    const StatusBadge = ({ status }: { status: 'Pending' | 'Approved' | 'Rejected' }) => {
+    const StatusBadge = ({ status }: { status: 'Pending' | 'Approved' | 'Rejected' | 'active' | 'inactive' }) => {
+        const statusConfig = {
+            'Approved': 'bg-green-100 text-green-800',
+            'active': 'bg-green-100 text-green-800',
+            'Pending': 'bg-yellow-100 text-yellow-800',
+            'Rejected': 'bg-red-100 text-red-800',
+            'inactive': 'bg-gray-100 text-gray-800',
+        }
         return (
             <Badge
-                className={cn(
-                    'text-xs font-semibold',
-                    status === 'Approved' && 'bg-green-100 text-green-800',
-                    status === 'Pending' && 'bg-yellow-100 text-yellow-800',
-                    status === 'Rejected' && 'bg-red-100 text-red-800'
-                )}
+                className={cn('text-xs font-semibold', statusConfig[status])}
                 variant="outline"
             >
                 {status}
@@ -1036,7 +1097,8 @@ export default function AdminDashboardPage() {
                     <Tabs defaultValue="courses" onValueChange={(value) => setActiveTab(value as string)}>
                         <div className="flex items-center">
                             <ScrollArea className="w-full whitespace-nowrap">
-                                <TabsList className="inline-flex">
+                                <TabsList className="inline-flex h-auto">
+                                    <TabsTrigger value="franchises">Franchises</TabsTrigger>
                                     <TabsTrigger value="courses">Courses</TabsTrigger>
                                     <TabsTrigger value="resources">Resources</TabsTrigger>
                                     <TabsTrigger value="youtube">YouTube</TabsTrigger>
@@ -1054,6 +1116,7 @@ export default function AdminDashboardPage() {
                                         {unreadEnrollments > 0 && <Badge className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{unreadEnrollments}</Badge>}
                                     </TabsTrigger>
                                     <TabsTrigger value="contacts"><MessageSquare className="mr-2 h-4 w-4"/>Contacts</TabsTrigger>
+                                    <TabsTrigger value="activity-logs"><Activity className="mr-2 h-4 w-4"/>Logs</TabsTrigger>
                                     <TabsTrigger value="site-settings"><Megaphone className="mr-2 h-4 w-4"/>Announcements</TabsTrigger>
                                     <TabsTrigger value="popup-settings"><Tv className="mr-2 h-4 w-4"/>Popup</TabsTrigger>
                                     <TabsTrigger value="settings"><Settings className="mr-2 h-4 w-4"/>Settings</TabsTrigger>
@@ -1061,7 +1124,7 @@ export default function AdminDashboardPage() {
                                 <ScrollBar orientation="horizontal" />
                             </ScrollArea>
                              <div className="ml-auto flex items-center gap-2 pl-4">
-                                {activeTab !== 'settings' && activeTab !== 'site-settings' && activeTab !== 'popup-settings' && activeTab !== 'enrollments' && activeTab !== 'contacts' && activeTab !== 'reviews' && activeTab !== 'exam-registrations' && activeTab !== 'exam-results' && activeTab !== 'certificates' && activeTab !== 'data-management' && (
+                                {['franchises', 'courses', 'resources', 'youtube', 'test-categories', 'mock-tests'].includes(activeTab) && (
                                 <Button size="sm" className="h-8 gap-1" onClick={() => handleAddNew()}>
                                     <PlusCircle className="h-3.5 w-3.5" />
                                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -1071,8 +1134,55 @@ export default function AdminDashboardPage() {
                                 )}
                             </div>
                         </div>
+                        <TabsContent value="franchises">
+                            <Card className="shadow-lg rounded-lg">
+                                <CardHeader>
+                                    <CardTitle>Franchise Management</CardTitle>
+                                    <CardDescription>Manage all city and district-level franchises.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {loading ? <p>Loading franchises...</p> : (
+                                    <ScrollArea className="w-full whitespace-nowrap">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Name</TableHead>
+                                                    <TableHead>City</TableHead>
+                                                    <TableHead>Owner</TableHead>
+                                                    <TableHead>Email</TableHead>
+                                                    <TableHead>Status</TableHead>
+                                                    <TableHead><span className="sr-only">Actions</span></TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {franchises.map(franchise => (
+                                                    <TableRow key={franchise.id}>
+                                                        <TableCell className="font-medium">{franchise.name}</TableCell>
+                                                        <TableCell>{franchise.city}</TableCell>
+                                                        <TableCell>{franchise.ownerName}</TableCell>
+                                                        <TableCell>{franchise.email}</TableCell>
+                                                        <TableCell><StatusBadge status={franchise.status} /></TableCell>
+                                                        <TableCell className="text-right">
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end">
+                                                                    <DropdownMenuItem onClick={() => handleEdit(franchise)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                                                    <DropdownMenuItem className="text-destructive" onClick={() => openConfirmationDialog('franchise', franchise.id)}><Trash className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                        <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
                         <TabsContent value="courses">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Courses</CardTitle>
                                     <CardDescription>
@@ -1139,7 +1249,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="resources">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Resources</CardTitle>
                                     <CardDescription>
@@ -1195,7 +1305,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="youtube">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>YouTube Content</CardTitle>
                                     <CardDescription>
@@ -1246,7 +1356,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="test-categories">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Test Categories</CardTitle>
                                     <CardDescription>Manage the categories for your mock tests. Create a category called "Student Exam" for registered student exams.</CardDescription>
@@ -1298,7 +1408,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="mock-tests">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Mock Tests</CardTitle>
                                     <CardDescription>Create and manage mock tests. Assign tests to the "Student Exam" category to make them visible only to registered students.</CardDescription>
@@ -1307,8 +1417,8 @@ export default function AdminDashboardPage() {
                                     {loading ? <p>Loading mock tests...</p> : (
                                         <Accordion type="multiple" className="w-full">
                                             {mockTests.map(test => (
-                                                <AccordionItem value={test.id} key={test.id}>
-                                                    <div className="flex items-center pr-4 hover:bg-muted/50 rounded-lg">
+                                                <AccordionItem value={test.id} key={test.id} className="rounded-lg mb-2 border bg-card">
+                                                    <div className="flex items-center pr-4 hover:bg-muted/50 rounded-t-lg">
                                                         <AccordionTrigger className="flex-1 px-4 py-2 hover:no-underline">
                                                             <div className="flex items-center justify-between w-full">
                                                                 <div>
@@ -1334,7 +1444,7 @@ export default function AdminDashboardPage() {
                                                             <h4 className="font-semibold mb-4">Questions</h4>
                                                             <div className="space-y-2">
                                                                 {test.questions?.map((q, index) => (
-                                                                    <div key={q.id} className="flex justify-between items-center p-3 rounded-md border bg-card">
+                                                                    <div key={q.id} className="flex justify-between items-center p-3 rounded-md border bg-background">
                                                                         <p className="flex-1 truncate">{index + 1}. {q.questionText}</p>
                                                                         <div className="flex items-center gap-2 ml-4">
                                                                             <Button variant="ghost" size="sm" onClick={() => handleEdit(q, { testId: test.id })}><Edit className="h-4 w-4" /></Button>
@@ -1359,7 +1469,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="reviews">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Student Reviews</CardTitle>
                                     <CardDescription>Manage and approve student testimonials. Approved reviews will appear on the site.</CardDescription>
@@ -1413,7 +1523,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="exam-registrations">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Student Registrations</CardTitle>
                                     <CardDescription>View and manage student registrations for official exams.</CardDescription>
@@ -1478,7 +1588,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="exam-results">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Exam Results</CardTitle>
                                     <CardDescription>View results from registration-based exams.</CardDescription>
@@ -1531,7 +1641,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="certificates">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Issued Certificates</CardTitle>
                                     <CardDescription>View and manage all auto-generated student certificates.</CardDescription>
@@ -1584,7 +1694,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="enrollments">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Enrollment Submissions</CardTitle>
                                     <CardDescription>
@@ -1644,7 +1754,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="contacts">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Contact Submissions</CardTitle>
                                     <CardDescription>
@@ -1700,8 +1810,42 @@ export default function AdminDashboardPage() {
                                 </CardContent>
                             </Card>
                         </TabsContent>
+                        <TabsContent value="activity-logs">
+                            <Card className="shadow-lg rounded-lg">
+                                <CardHeader>
+                                    <CardTitle>Activity Logs</CardTitle>
+                                    <CardDescription>Track important actions across the application.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {loading ? <p>Loading logs...</p> : (
+                                    <ScrollArea className="h-[60vh] w-full">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Timestamp</TableHead>
+                                                    <TableHead>Action</TableHead>
+                                                    <TableHead>User ID</TableHead>
+                                                    <TableHead>Franchise ID</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {activityLogs.map(log => (
+                                                    <TableRow key={log.id}>
+                                                        <TableCell>{log.timestamp}</TableCell>
+                                                        <TableCell><Badge variant="secondary">{log.action}</Badge></TableCell>
+                                                        <TableCell className="font-mono text-xs">{log.userId}</TableCell>
+                                                        <TableCell className="font-mono text-xs">{log.franchiseId}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </ScrollArea>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
                         <TabsContent value="site-settings">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Announcement Bar</CardTitle>
                                     <CardDescription>Manage the announcement bar that appears at the top of your site.</CardDescription>
@@ -1727,7 +1871,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="popup-settings">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Sales & Event Popup</CardTitle>
                                     <CardDescription>Manage the promotional popup on the homepage. It appears once per session for visitors.</CardDescription>
@@ -1764,7 +1908,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="settings">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                            <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Admin Settings</CardTitle>
                                     <CardDescription>Update your administrator credentials. Note: Phone number cannot be changed.</CardDescription>
@@ -1834,5 +1978,7 @@ export default function AdminDashboardPage() {
         </>
     );
 }
+
+    
 
     

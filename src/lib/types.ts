@@ -212,6 +212,7 @@ export type ExamRegistration = {
   isRead: boolean;
   isApproved: boolean;
   status: 'Pending' | 'Approved' | 'Rejected';
+  franchiseId?: string;
 };
 
 export type ExamResult = {
@@ -244,7 +245,41 @@ export type Certificate = {
     examResultId: string; // Link back to the specific exam result
 }
 
+// Franchise System Types
+export type Franchise = {
+    id: string;
+    name: string;
+    city: string;
+    district: string;
+    ownerName: string;
+    email: string;
+    status: 'active' | 'inactive';
+    createdAt: any; // Firestore Timestamp
+}
+
+export type User = {
+    id: string; // maps to user.uid
+    name: string;
+    email: string;
+    role: 'superAdmin' | 'franchiseAdmin' | 'student';
+    city: string;
+    franchiseId: string;
+    phone?: string;
+    createdAt: any;
+}
+
+export type ActivityLog = {
+    id: string;
+    userId: string;
+    franchiseId: string;
+    action: string; // e.g., 'STUDENT_REGISTERED', 'FRANCHISE_CREATED'
+    timestamp: any;
+}
+
 
 // Add types for more complex schemas
 export type HowToSchema = HowTo;
 export type FAQPageSchema = FAQPage;
+
+
+    

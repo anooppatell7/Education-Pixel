@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,11 +10,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Logo from "@/components/logo";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth, useUser } from "@/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { useAuth, useUser, db } from "@/firebase";
+import { signInWithEmailAndPassword, User } from "firebase/auth";
 import Head from "next/head";
+import { doc, getDoc } from "firebase/firestore";
+import type { User as AppUser } from "@/lib/types";
 
-const ADMIN_EMAILS = ["admin@educationpixel.com", "anooppbh8@gmail.com"];
+
+const handleRedirect = async (user: User, router: any) => {
+    if (!db) return;
+    const userDocRef = doc(db, "users", user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+        const userData = userDocSnap.data() as AppUser;
+        switch (userData.role) {
+            case 'superAdmin':
+                router.push('/admin/dashboard');
+                break;
+            case 'franchiseAdmin':
+                // Assuming you'll have a franchise-specific dashboard
+                router.push(`/franchise/${userData.franchiseId}/dashboard`); 
+                break;
+            case 'student':
+            default:
+                router.push('/learn');
+                break;
+        }
+    } else {
+        // Fallback for users without a role doc (e.g. old users)
+        router.push('/learn');
+    }
+};
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -25,13 +53,9 @@ export default function LoginPage() {
   const { user, isLoading: isUserLoading } = useUser();
 
   useEffect(() => {
-    // Only redirect if user loading is complete
+    // Only redirect if user loading is complete and user exists
     if (!isUserLoading && user) {
-      if (user.email && ADMIN_EMAILS.includes(user.email)) {
-        router.push('/admin/dashboard');
-      } else {
-        router.push('/learn');
-      }
+        handleRedirect(user, router);
     }
   }, [user, isUserLoading, router]);
 
@@ -54,12 +78,7 @@ export default function LoginPage() {
             description: "Welcome back!",
         });
         
-        // Redirect based on user role
-        if (userCredential.user.email && ADMIN_EMAILS.includes(userCredential.user.email)) {
-            router.push('/admin/dashboard');
-        } else {
-            router.push('/learn');
-        }
+        await handleRedirect(userCredential.user, router);
 
     } catch (error: any) {
          let errorMessage = "An unknown error occurred.";
@@ -97,7 +116,7 @@ export default function LoginPage() {
         <meta name="robots" content="noindex, follow" />
       </Head>
       <div className="flex items-center justify-center min-h-[80vh] bg-secondary">
-        <Card className="mx-auto max-w-sm w-full shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+        <Card className="mx-auto max-w-sm w-full shadow-lg rounded-lg">
           <CardHeader className="text-center">
               <div className="flex justify-center mb-4">
                 <Logo />
@@ -144,3 +163,5 @@ export default function LoginPage() {
     </>
   );
 }
+
+    
