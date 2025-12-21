@@ -6,9 +6,9 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useFirestore } from '@/firebase';
-import { collection, addDoc, doc, runTransaction, serverTimestamp, getDocs, query, orderBy, getDoc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, runTransaction, serverTimestamp, getDocs, query, orderBy, getDoc, setDoc, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import type { Course, ExamRegistration } from '@/lib/types';
+import type { Course, ExamRegistration, Franchise } from '@/lib/types';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 
@@ -59,6 +59,7 @@ export default function ExamRegistrationPage() {
     const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
     
     const [courses, setCourses] = useState<Course[]>([]);
+    const [franchises, setFranchises] = useState<Franchise[]>([]);
     const [coursesLoading, setCoursesLoading] = useState(true);
     const { toast } = useToast();
     
@@ -86,7 +87,7 @@ export default function ExamRegistrationPage() {
     }, [user, userLoading, router, db]);
 
     useEffect(() => {
-        const fetchCourses = async () => {
+        const fetchDropdownData = async () => {
             if (!db) return;
             setCoursesLoading(true);
             try {
@@ -94,18 +95,24 @@ export default function ExamRegistrationPage() {
                 const courseSnapshot = await getDocs(coursesQuery);
                 const courseList = courseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
                 setCourses(courseList);
+
+                const franchiseQuery = query(collection(db, "franchises"), where("status", "==", "active"));
+                const franchiseSnapshot = await getDocs(franchiseQuery);
+                const franchiseList = franchiseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Franchise));
+                setFranchises(franchiseList);
+
             } catch (error) {
-                console.error("Failed to fetch courses:", error);
+                console.error("Failed to fetch dropdown data:", error);
                 toast({
                     title: "Error",
-                    description: "Could not load course list. Please try refreshing.",
+                    description: "Could not load necessary data. Please try refreshing.",
                     variant: "destructive",
                 });
             } finally {
                 setCoursesLoading(false);
             }
         };
-        fetchCourses();
+        fetchDropdownData();
     }, [toast, db]);
 
 
@@ -117,9 +124,9 @@ export default function ExamRegistrationPage() {
             phone: '',
             email: '',
             address: '',
-            city: 'Patti',
+            city: '',
             state: 'Uttar Pradesh',
-            pinCode: '230135',
+            pinCode: '',
             course: '',
         }
     });
@@ -132,6 +139,13 @@ export default function ExamRegistrationPage() {
         setIsLoading(true);
 
         try {
+             const selectedFranchise = franchises.find(f => f.city === data.city);
+            if (!selectedFranchise) {
+                toast({ title: "Error", description: "Selected city does not have an active franchise. Please contact support.", variant: "destructive" });
+                setIsLoading(false);
+                return;
+            }
+
             const counterRef = doc(db, 'counters', 'examRegistrations');
             const newRegNumber = await runTransaction(db, async (transaction) => {
                 const counterDoc = await transaction.get(counterRef);
@@ -158,6 +172,7 @@ export default function ExamRegistrationPage() {
                 isRead: false,
                 isApproved: false,
                 status: 'Pending',
+                franchiseId: selectedFranchise.id,
             };
 
             await setDoc(doc(db, "examRegistrations", user.uid), registrationData);
@@ -373,13 +388,26 @@ export default function ExamRegistrationPage() {
                                                 </FormItem>
                                             )}
                                         />
-                                        <FormField
+                                         <FormField
                                             control={form.control}
                                             name="city"
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>City</FormLabel>
-                                                    <FormControl><Input placeholder="Patti" {...field} /></FormControl>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder={coursesLoading ? "Loading cities..." : "Select your city"} />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {franchises.map(franchise => (
+                                                                <SelectItem key={franchise.id} value={franchise.city}>
+                                                                    {franchise.city}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -421,3 +449,5 @@ export default function ExamRegistrationPage() {
         </>
     );
 }
+
+    
