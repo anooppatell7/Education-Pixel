@@ -212,7 +212,7 @@ export type ExamRegistration = {
   isRead: boolean;
   isApproved: boolean;
   status: 'Pending' | 'Approved' | 'Rejected';
-  franchiseId?: string;
+  franchiseId: string;
 };
 
 export type ExamResult = {
@@ -281,5 +281,7 @@ export type ActivityLog = {
 export type HowToSchema = HowTo;
 export type FAQPageSchema = FAQPage;
 
+
+    
 
     
