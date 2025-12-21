@@ -98,6 +98,7 @@ service cloud.firestore {
     match /examRegistrations/{userId} {
         allow create: if isOwner(userId);
         allow read, update, delete: if isAdmin() || isOwner(userId);
+        allow list: if isAuth(); // Allow any authenticated user to query the collection
     }
     
     // Users can view their own results. Admins can manage all.
