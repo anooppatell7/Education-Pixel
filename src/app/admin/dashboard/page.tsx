@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import React, { useState, useEffect, use } from "react";
-import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database, Youtube } from "lucide-react";
+import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database, Youtube, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -595,6 +595,29 @@ export default function AdminDashboardPage() {
         });
     };
 
+    const handleRegistrationStatusChange = (registrationId: string, status: 'Approved' | 'Rejected') => {
+        if (!firestore) return;
+        const regRef = doc(firestore, "examRegistrations", registrationId);
+        const data = { 
+            isApproved: status === 'Approved',
+            status: status
+        };
+
+        updateDoc(regRef, data).then(() => {
+            setExamRegistrations(prev => prev.map(reg => 
+                reg.id === registrationId ? { ...reg, ...data } : reg
+            ));
+            toast({ title: "Success", description: `Registration has been ${status}.` });
+        }).catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: regRef.path,
+                operation: 'update',
+                requestResourceData: data
+            } satisfies SecurityRuleContext);
+            errorEmitter.emit('permission-error', permissionError);
+        });
+    };
+
 
     const handleSiteSettingsSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -980,6 +1003,22 @@ export default function AdminDashboardPage() {
     const unreadEnrollments = enrollments.filter(e => !e.isRead).length;
     const unreadRegistrations = examRegistrations.filter(r => !r.isRead).length;
 
+    const StatusBadge = ({ status }: { status: 'Pending' | 'Approved' | 'Rejected' }) => {
+        return (
+            <Badge
+                className={cn(
+                    'text-xs font-semibold',
+                    status === 'Approved' && 'bg-green-100 text-green-800',
+                    status === 'Pending' && 'bg-yellow-100 text-yellow-800',
+                    status === 'Rejected' && 'bg-red-100 text-red-800'
+                )}
+                variant="outline"
+            >
+                {status}
+            </Badge>
+        );
+    };
+
 
     return (
         <>
@@ -1033,7 +1072,7 @@ export default function AdminDashboardPage() {
                             </div>
                         </div>
                         <TabsContent value="courses">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Courses</CardTitle>
                                     <CardDescription>
@@ -1100,7 +1139,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="resources">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Resources</CardTitle>
                                     <CardDescription>
@@ -1156,7 +1195,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="youtube">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>YouTube Content</CardTitle>
                                     <CardDescription>
@@ -1207,7 +1246,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="test-categories">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Test Categories</CardTitle>
                                     <CardDescription>Manage the categories for your mock tests. Create a category called "Student Exam" for registered student exams.</CardDescription>
@@ -1259,7 +1298,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="mock-tests">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Mock Tests</CardTitle>
                                     <CardDescription>Create and manage mock tests. Assign tests to the "Student Exam" category to make them visible only to registered students.</CardDescription>
@@ -1320,7 +1359,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="reviews">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Student Reviews</CardTitle>
                                     <CardDescription>Manage and approve student testimonials. Approved reviews will appear on the site.</CardDescription>
@@ -1374,7 +1413,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="exam-registrations">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Student Registrations</CardTitle>
                                     <CardDescription>View and manage student registrations for official exams.</CardDescription>
@@ -1388,6 +1427,7 @@ export default function AdminDashboardPage() {
                                                     <TableHead>Reg. No</TableHead>
                                                     <TableHead>Name</TableHead>
                                                     <TableHead>Course</TableHead>
+                                                    <TableHead>Status</TableHead>
                                                     <TableHead className="hidden md:table-cell">Phone</TableHead>
                                                     <TableHead className="hidden md:table-cell">Registered</TableHead>
                                                     <TableHead className="text-right">Actions</TableHead>
@@ -1402,6 +1442,9 @@ export default function AdminDashboardPage() {
                                                             {reg.fullName}
                                                         </TableCell>
                                                         <TableCell>{reg.course}</TableCell>
+                                                        <TableCell>
+                                                            <StatusBadge status={reg.status} />
+                                                        </TableCell>
                                                         <TableCell className="hidden md:table-cell">{reg.phone}</TableCell>
                                                         <TableCell className="hidden md:table-cell">{reg.registeredAt}</TableCell>
                                                         <TableCell className="text-right">
@@ -1410,6 +1453,14 @@ export default function AdminDashboardPage() {
                                                                     <Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /></Button>
                                                                 </DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end">
+                                                                     <DropdownMenuLabel>Status</DropdownMenuLabel>
+                                                                    <DropdownMenuItem onClick={() => handleRegistrationStatusChange(reg.id, 'Approved')}>
+                                                                        <CheckCircle className="mr-2 h-4 w-4 text-green-500" /> Approve
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem onClick={() => handleRegistrationStatusChange(reg.id, 'Rejected')}>
+                                                                        <XCircle className="mr-2 h-4 w-4 text-red-500" /> Reject
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuSeparator />
                                                                     <DropdownMenuItem className="text-destructive" onClick={() => openConfirmationDialog('examRegistration', reg.id)}>
                                                                         <Trash className="mr-2 h-4 w-4" />Delete
                                                                     </DropdownMenuItem>
@@ -1427,7 +1478,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="exam-results">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Exam Results</CardTitle>
                                     <CardDescription>View results from registration-based exams.</CardDescription>
@@ -1480,7 +1531,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="certificates">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Issued Certificates</CardTitle>
                                     <CardDescription>View and manage all auto-generated student certificates.</CardDescription>
@@ -1533,7 +1584,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="enrollments">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Enrollment Submissions</CardTitle>
                                     <CardDescription>
@@ -1593,7 +1644,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="contacts">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Contact Submissions</CardTitle>
                                     <CardDescription>
@@ -1650,7 +1701,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="site-settings">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Announcement Bar</CardTitle>
                                     <CardDescription>Manage the announcement bar that appears at the top of your site.</CardDescription>
@@ -1676,7 +1727,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="popup-settings">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Sales & Event Popup</CardTitle>
                                     <CardDescription>Manage the promotional popup on the homepage. It appears once per session for visitors.</CardDescription>
@@ -1713,7 +1764,7 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="settings">
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Admin Settings</CardTitle>
                                     <CardDescription>Update your administrator credentials. Note: Phone number cannot be changed.</CardDescription>
@@ -1783,3 +1834,5 @@ export default function AdminDashboardPage() {
         </>
     );
 }
+
+    
