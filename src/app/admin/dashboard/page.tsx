@@ -76,7 +76,7 @@ import { cn } from "@/lib/utils";
 import coursesData from "@/lib/data/courses.json";
 import type { Metadata } from 'next';
 import { useAuth, useFirestore, useUser } from "@/firebase";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, setDoc, Timestamp, where, arrayUnion, arrayRemove, getDoc, writeBatch } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, setDoc, Timestamp, where, arrayUnion, arrayRemove, getDoc, writeBatch, serverTimestamp } from "firebase/firestore";
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 
@@ -1978,6 +1978,8 @@ export default function AdminDashboardPage() {
         </>
     );
 }
+
+    
 
     
 
