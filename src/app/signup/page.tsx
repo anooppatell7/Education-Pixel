@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser, db } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Head from "next/head";
-import { doc, setDoc, getDocs, collection, query, where, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDocs, collection, query, where, serverTimestamp, updateDoc } from "firebase/firestore";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Franchise } from "@/lib/types";
 
@@ -43,13 +43,10 @@ export default function SignupPage() {
         const querySnapshot = await getDocs(q);
         const franchiseList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Franchise));
         // For simplicity, let's use a predefined list for now. In a real app, you'd fetch this.
-        setFranchises([
-            { id: 'franchise_001', name: 'MTS Computer Indore', city: 'Indore', district: 'Indore', ownerName: 'Rahul Verma', email: 'indore@mts.com', status: 'active', createdAt: new Date() },
-            { id: 'franchise_002', name: 'MTS Computer Bhopal', city: 'Bhopal', district: 'Bhopal', ownerName: 'Priya Sharma', email: 'bhopal@mts.com', status: 'active', createdAt: new Date() },
-        ]);
+        setFranchises(franchiseList);
     }
     fetchFranchises();
-  }, []);
+  }, [db]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,10 +65,33 @@ export default function SignupPage() {
     }
 
     try {
-      // Find franchise based on city
-      const selectedFranchise = franchises.find(f => f.city === city);
-      if (!selectedFranchise) {
-          toast({ title: "Error", description: "Selected city does not have an active franchise. Please contact support.", variant: "destructive" });
+      // Check if a user document pre-exists for a franchise admin
+      const userQuery = query(collection(db, "users"), where("email", "==", email), where("role", "==", "franchiseAdmin"));
+      const userSnap = await getDocs(userQuery);
+
+      let role = "student";
+      let franchiseId: string | null = null;
+      let existingUserDocRef = null;
+
+      if (!userSnap.empty) {
+        // This email is pre-registered as a franchise admin
+        const franchiseAdminData = userSnap.docs[0].data();
+        role = "franchiseAdmin";
+        franchiseId = franchiseAdminData.franchiseId;
+        existingUserDocRef = userSnap.docs[0].ref;
+      } else {
+        // This is a regular student signup
+        const selectedFranchise = franchises.find(f => f.city === city);
+        if (!selectedFranchise) {
+            toast({ title: "Error", description: "Selected city does not have an active franchise. Please contact support.", variant: "destructive" });
+            setIsLoading(false);
+            return;
+        }
+        franchiseId = selectedFranchise.id;
+      }
+      
+      if (!franchiseId) {
+          toast({ title: "Error", description: "Could not assign a franchise. Please contact support.", variant: "destructive" });
           setIsLoading(false);
           return;
       }
@@ -83,22 +103,35 @@ export default function SignupPage() {
       // 2. Update Auth profile
       await updateProfile(authUser, { displayName: name });
       
-      // 3. Create user document in Firestore
-      const userDocRef = doc(db, "users", authUser.uid);
-      await setDoc(userDocRef, {
-        name: name,
-        email: email,
-        role: "student",
-        city: city,
-        franchiseId: selectedFranchise.id,
-        createdAt: serverTimestamp()
-      });
+      // 3. Create or Update user document in Firestore
+      if (existingUserDocRef) {
+          // Update the pre-existing franchise admin document with the new UID
+          const newDocRef = doc(db, "users", authUser.uid);
+          await setDoc(newDocRef, { ...userSnap.docs[0].data(), name, id: authUser.uid });
+          // Optionally delete the old document if it was using a different ID
+          if (existingUserDocRef.id !== authUser.uid) {
+             // await deleteDoc(existingUserDocRef); 
+             // Be careful with this; for now, let's just update. The new doc is keyed by UID.
+          }
+      } else {
+          // Create a new document for a student
+          const userDocRef = doc(db, "users", authUser.uid);
+          await setDoc(userDocRef, {
+            id: authUser.uid,
+            name: name,
+            email: email,
+            role: "student",
+            city: city,
+            franchiseId: franchiseId,
+            createdAt: serverTimestamp()
+          });
+      }
 
       // 4. (Optional) Log this activity
       await addDoc(collection(db, "activityLogs"), {
           userId: authUser.uid,
-          franchiseId: selectedFranchise.id,
-          action: "STUDENT_REGISTERED",
+          franchiseId: franchiseId,
+          action: role === 'franchiseAdmin' ? "FRANCHISE_ADMIN_SIGNED_UP" : "STUDENT_REGISTERED",
           timestamp: serverTimestamp()
       });
       
@@ -106,7 +139,13 @@ export default function SignupPage() {
         title: "Account Created",
         description: "Welcome! You have successfully signed up.",
       });
-      router.push('/learn');
+
+      if (role === 'franchiseAdmin') {
+          router.push(`/franchise/${franchiseId}/dashboard`);
+      } else {
+          router.push('/learn');
+      }
+
     } catch (error: any) {
       let errorMessage = "An unknown error occurred.";
       if (error.code) {

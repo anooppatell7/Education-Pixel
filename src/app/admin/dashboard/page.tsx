@@ -467,6 +467,43 @@ export default function AdminDashboardPage() {
         if (activeTab === 'franchises') {
             collectionRef = collection(firestore, "franchises");
             dataToSave.createdAt = editingItem?.createdAt || serverTimestamp();
+            
+            // For new franchises, also create a user entry for the owner
+            if (!editingItem) {
+                const batch = writeBatch(firestore);
+                const newFranchiseRef = doc(collectionRef);
+                batch.set(newFranchiseRef, dataToSave);
+
+                // Create a corresponding user document for the franchise admin
+                const userQuery = query(collection(firestore, "users"), where("email", "==", dataToSave.email));
+                const userSnap = await getDocs(userQuery);
+                if (userSnap.empty) {
+                    const newUserRef = doc(collection(firestore, "users")); // Let Firestore generate ID
+                    batch.set(newUserRef, {
+                        name: dataToSave.ownerName,
+                        email: dataToSave.email,
+                        role: "franchiseAdmin",
+                        franchiseId: newFranchiseRef.id,
+                        city: dataToSave.city,
+                        createdAt: serverTimestamp()
+                    });
+                } else {
+                    // If user exists, update their role to franchiseAdmin
+                    const existingUserRef = userSnap.docs[0].ref;
+                    batch.update(existingUserRef, {
+                        role: "franchiseAdmin",
+                        franchiseId: newFranchiseRef.id
+                    });
+                }
+
+
+                await batch.commit();
+                toast({ title: "Success", description: "Franchise and Admin User created successfully." });
+                fetchData(); 
+                handleCloseForm();
+                return;
+            }
+
         } else if (activeTab === 'courses') {
             collectionRef = collection(firestore, "courses");
             dataToSave.image = dataToSave.image || "https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png";

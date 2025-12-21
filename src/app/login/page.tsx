@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,8 +17,14 @@ import { doc, getDoc } from "firebase/firestore";
 import type { User as AppUser } from "@/lib/types";
 
 
-const handleRedirect = async (user: User, router: any) => {
+const handleRedirect = async (user: User, router: any, redirectUrl?: string | null) => {
+    if (redirectUrl) {
+        router.push(redirectUrl);
+        return;
+    }
+
     if (!db) return;
+    // Check for a user document in Firestore to determine the role
     const userDocRef = doc(db, "users", user.uid);
     const userDocSnap = await getDoc(userDocRef);
 
@@ -29,7 +35,6 @@ const handleRedirect = async (user: User, router: any) => {
                 router.push('/admin/dashboard');
                 break;
             case 'franchiseAdmin':
-                // Assuming you'll have a franchise-specific dashboard
                 router.push(`/franchise/${userData.franchiseId}/dashboard`); 
                 break;
             case 'student':
@@ -38,7 +43,7 @@ const handleRedirect = async (user: User, router: any) => {
                 break;
         }
     } else {
-        // Fallback for users without a role doc (e.g. old users)
+        // Fallback for users without a role doc or old users
         router.push('/learn');
     }
 };
@@ -51,13 +56,15 @@ export default function LoginPage() {
   const router = useRouter();
   const auth = useAuth();
   const { user, isLoading: isUserLoading } = useUser();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect');
 
   useEffect(() => {
     // Only redirect if user loading is complete and user exists
     if (!isUserLoading && user) {
-        handleRedirect(user, router);
+        handleRedirect(user, router, redirect);
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router, redirect]);
 
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -78,7 +85,7 @@ export default function LoginPage() {
             description: "Welcome back!",
         });
         
-        await handleRedirect(userCredential.user, router);
+        await handleRedirect(userCredential.user, router, redirect);
 
     } catch (error: any) {
          let errorMessage = "An unknown error occurred.";
