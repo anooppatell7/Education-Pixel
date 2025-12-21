@@ -212,7 +212,7 @@ export default function ExamRegistrationPage() {
         return (
              <div className="bg-secondary">
                 <div className="container flex items-center justify-center min-h-[80vh]">
-                    <Card className="w-full max-w-md text-center shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                    <Card className="w-full max-w-md text-center shadow-lg rounded-lg">
                         <CardHeader>
                             <CardTitle className="text-2xl font-headline text-green-600">Registration Submitted!</CardTitle>
                             <CardDescription>Your application is pending approval.</CardDescription>
@@ -246,7 +246,7 @@ export default function ExamRegistrationPage() {
             <div className="bg-secondary relative">
                 <SectionDivider style="wave" className="text-gradient-to-br from-purple-900 via-blue-900 to-black" position="top"/>
                 <div className="container py-16 sm:py-24">
-                     <Card className="max-w-4xl mx-auto shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                     <Card className="max-w-4xl mx-auto shadow-lg rounded-lg">
                         <CardHeader>
                             <CardTitle className="font-headline text-2xl">Student Details</CardTitle>
                             <CardDescription>Please fill in all fields accurately.</CardDescription>
