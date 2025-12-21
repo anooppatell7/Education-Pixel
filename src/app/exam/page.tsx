@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useParams, notFound } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Clock, ArrowRight, BarChart, ChevronLeft } from "lucide-react";
+import { ListChecks, Clock, ArrowRight, BarChart, ChevronLeft, ShieldAlert, BadgeInfo } from "lucide-react";
 import type { MockTest, TestResult, TestCategory, ExamResult, ExamRegistration } from "@/lib/types";
 import { useUser, useFirestore } from "@/firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
@@ -18,7 +18,7 @@ function TestsLoadingSkeleton() {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {Array.from({length: 3}).map((_, i) => (
-                <Card key={i}>
+                <Card key={i} className="rounded-lg shadow-lg">
                     <CardHeader>
                         <Skeleton className="h-6 w-3/4" />
                         <Skeleton className="h-10 w-full mt-2" />
@@ -57,13 +57,19 @@ export default function StudentExamPage() {
                 const regSnap = await getDoc(regRef);
 
                 if (!regSnap.exists()) {
-                    // If user is not registered, they shouldn't see any exams.
+                    setRegistration(null);
                     setIsLoading(false);
                     return;
                 }
                 
                 const regData = { id: regSnap.id, ...regSnap.data() } as ExamRegistration;
                 setRegistration(regData);
+
+                // If not approved, no need to fetch exams.
+                if (!regData.isApproved) {
+                    setIsLoading(false);
+                    return;
+                }
 
                 // 2. Fetch tests that match the user's registered course
                 const testsQuery = query(
@@ -129,6 +135,101 @@ export default function StudentExamPage() {
     });
 
     const pageLoading = userLoading || isLoading;
+    
+    const renderContent = () => {
+        if (pageLoading) {
+            return <TestsLoadingSkeleton />;
+        }
+        
+        if (!registration) {
+            return (
+                <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                    <CardContent className="p-12 text-center text-muted-foreground">
+                        <p className="text-lg">You are not registered for any official exams.</p>
+                        <p className="mt-2 text-sm"><Link href="/exam/register" className="text-accent underline">Click here to register.</Link></p>
+                    </CardContent>
+                </Card>
+            )
+        }
+        
+        if (!registration.isApproved) {
+            const statusMessage = registration.status === 'Rejected' 
+                ? "Your registration has been rejected. Please contact administration for more details."
+                : "Your registration is pending approval. Please check back later.";
+
+            return (
+                 <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                    <CardHeader className="items-center text-center">
+                        {registration.status === 'Rejected' 
+                            ? <ShieldAlert className="h-12 w-12 text-destructive"/>
+                            : <BadgeInfo className="h-12 w-12 text-blue-500"/>
+                        }
+                    </CardHeader>
+                    <CardContent className="p-12 text-center text-muted-foreground">
+                        <p className="text-lg font-semibold">{statusMessage}</p>
+                        <p className="mt-4 text-sm">You cannot access exams until your registration is approved.</p>
+                    </CardContent>
+                </Card>
+            )
+        }
+
+        if (mockTests.length > 0) {
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {mockTests.map((test) => {
+                        const hasAttempted = latestResultsMap.has(test.id);
+                        const result = latestResultsMap.get(test.id);
+
+                        return (
+                            <Card key={test.id} className="flex flex-col shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-background border-t-4 border-t-accent rounded-lg">
+                                <CardHeader>
+                                    <CardTitle className="font-headline text-xl text-primary">{test.title}</CardTitle>
+                                    <CardDescription className="line-clamp-3 h-[60px]">{test.description}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-grow">
+                                    <div className="flex justify-between text-sm text-muted-foreground">
+                                        <div className="flex items-center gap-2">
+                                            <ListChecks className="h-4 w-4" />
+                                            <span>{test.questions?.length || 0} Questions</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="h-4 w-4" />
+                                            <span>{test.duration} minutes</span>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                                <CardFooter className="flex">
+                                    {user && hasAttempted && result ? (
+                                        <Button asChild variant="outline" className="w-full">
+                                            <Link href={`/exam/result/${result.id}`}>
+                                                <BarChart className="mr-2 h-4 w-4" /> View Result
+                                            </Link>
+                                        </Button>
+                                    ) : (
+                                        <Button asChild className="w-full">
+                                            <Link href={user ? `/exam/start`: `/login?redirect=/exam`}>
+                                                Start Exam <ArrowRight className="ml-2 h-4 w-4" />
+                                            </Link>
+                                        </Button>
+                                    )}
+                                </CardFooter>
+                            </Card>
+                        );
+                    })}
+                </div>
+            )
+        }
+        
+        return (
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                <CardContent className="p-12 text-center text-muted-foreground">
+                    <p className="text-lg">No official exams are available for your course right now.</p>
+                    <p className="mt-2 text-sm">Please check back later.</p>
+                </CardContent>
+            </Card>
+        );
+    }
+
 
     return (
         <>
@@ -148,59 +249,7 @@ export default function StudentExamPage() {
             <div className="bg-secondary relative">
                 <SectionDivider style="wave" className="text-gradient-to-br from-purple-900 via-blue-900 to-black" position="top"/>
                 <div className="container py-16 sm:py-24">
-                    {pageLoading ? (
-                        <TestsLoadingSkeleton />
-                    ) : mockTests.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {mockTests.map((test) => {
-                                const hasAttempted = latestResultsMap.has(test.id);
-                                const result = latestResultsMap.get(test.id);
-
-                                return (
-                                    <Card key={test.id} className="flex flex-col shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-background border-t-4 border-t-accent rounded-lg">
-                                        <CardHeader>
-                                            <CardTitle className="font-headline text-xl text-primary">{test.title}</CardTitle>
-                                            <CardDescription className="line-clamp-3 h-[60px]">{test.description}</CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="flex-grow">
-                                            <div className="flex justify-between text-sm text-muted-foreground">
-                                                <div className="flex items-center gap-2">
-                                                    <ListChecks className="h-4 w-4" />
-                                                    <span>{test.questions?.length || 0} Questions</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Clock className="h-4 w-4" />
-                                                    <span>{test.duration} minutes</span>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                        <CardFooter className="flex">
-                                            {user && hasAttempted && result ? (
-                                                <Button asChild variant="outline" className="w-full">
-                                                    <Link href={`/exam/result/${result.id}`}>
-                                                        <BarChart className="mr-2 h-4 w-4" /> View Result
-                                                    </Link>
-                                                </Button>
-                                            ) : (
-                                                <Button asChild className="w-full">
-                                                    <Link href={user ? `/exam/start`: `/login?redirect=/exam`}>
-                                                        Start Exam <ArrowRight className="ml-2 h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-                                            )}
-                                        </CardFooter>
-                                    </Card>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
-                            <CardContent className="p-12 text-center text-muted-foreground">
-                                <p className="text-lg">{!registration ? "You are not registered for any official exams." : "No official exams are available for your course right now."}</p>
-                                <p className="mt-2 text-sm">{!registration ? <Link href="/exam/register" className="text-accent underline">Click here to register.</Link> : "Please check back later."}</p>
-                            </CardContent>
-                        </Card>
-                    )}
+                   {renderContent()}
                 </div>
             </div>
         </>

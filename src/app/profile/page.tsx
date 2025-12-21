@@ -8,7 +8,7 @@ import { db } from '@/lib/firebase';
 import type { ExamRegistration, ExamResult, Certificate } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, Mail, Phone, Calendar, Key, UserCheck, Briefcase, FileText, BarChart, GraduationCap, Award, Loader2, Edit } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Key, UserCheck, Briefcase, FileText, BarChart, GraduationCap, Award, Loader2, Edit, ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format, parseISO } from 'date-fns';
@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { generateCertificatePdf } from '@/lib/certificate-generator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 function ProfileSkeleton() {
     return (
@@ -71,6 +72,22 @@ function ProfileDetail({ icon, label, value }: { icon: React.ReactNode, label: s
     )
 }
 
+function StatusBadge({ status }: { status: 'Pending' | 'Approved' | 'Rejected' }) {
+    return (
+        <Badge
+            className={cn(
+                'text-xs font-semibold ml-2',
+                status === 'Approved' && 'bg-green-100 text-green-800 border-green-200',
+                status === 'Pending' && 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                status === 'Rejected' && 'bg-red-100 text-red-800 border-red-200'
+            )}
+            variant="outline"
+        >
+            {status}
+        </Badge>
+    );
+}
+
 export default function ProfilePage() {
     const { user, isLoading: userLoading } = useUser();
     const [registration, setRegistration] = useState<ExamRegistration | null>(null);
@@ -100,18 +117,20 @@ export default function ProfilePage() {
                 setRegistration(regData);
                 setFormData(regData);
 
-                // Fetch Exam History
-                const historyQuery = query(
-                    collection(db, "examResults"),
-                    where("registrationNumber", "==", regData.registrationNumber),
-                    orderBy("submittedAt", "desc")
-                );
-                const historySnapshot = await getDocs(historyQuery);
-                const history = historySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                } as ExamResult));
-                setExamHistory(history);
+                // Fetch Exam History only if approved
+                if (regData.isApproved) {
+                    const historyQuery = query(
+                        collection(db, "examResults"),
+                        where("registrationNumber", "==", regData.registrationNumber),
+                        orderBy("submittedAt", "desc")
+                    );
+                    const historySnapshot = await getDocs(historyQuery);
+                    const history = historySnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    } as ExamResult));
+                    setExamHistory(history);
+                }
 
             }
             setIsLoading(false);
@@ -130,8 +149,14 @@ export default function ProfilePage() {
         setIsSaving(true);
         try {
             const docRef = doc(db, 'examRegistrations', user.uid);
-            // Ensure the course cannot be changed
-            const dataToUpdate = { ...formData, course: registration.course };
+            // Ensure sensitive fields cannot be changed by the user
+            const dataToUpdate = { 
+                ...formData, 
+                course: registration.course,
+                registrationNumber: registration.registrationNumber,
+                isApproved: registration.isApproved,
+                status: registration.status,
+             };
             await updateDoc(docRef, dataToUpdate);
             setRegistration(dataToUpdate as ExamRegistration);
             setIsEditing(false);
@@ -259,7 +284,10 @@ export default function ProfilePage() {
                                 <AvatarFallback className="bg-primary/20 text-primary font-semibold">{getInitials(registration.fullName)}</AvatarFallback>
                             </Avatar>
                             <div>
-                                <CardTitle className="text-4xl font-headline text-primary">{registration.fullName}</CardTitle>
+                                <div className="flex items-center justify-center sm:justify-start">
+                                    <CardTitle className="text-4xl font-headline text-primary">{registration.fullName}</CardTitle>
+                                    <StatusBadge status={registration.status} />
+                                </div>
                                 <CardDescription className="text-base text-muted-foreground mt-1 flex items-center justify-center sm:justify-start gap-2">
                                    <Mail className="h-4 w-4" /> {registration.email}
                                 </CardDescription>
@@ -324,56 +352,64 @@ export default function ProfilePage() {
 
                         <div className="mt-12 pt-8 border-t">
                             <h3 className="font-headline text-2xl text-primary mb-6 border-l-4 border-accent pl-4">Exam History</h3>
-                            {examHistory.length > 0 ? (
-                                <div className="border rounded-lg overflow-hidden bg-card shadow-lg">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Exam Name</TableHead>
-                                                <TableHead>Date</TableHead>
-                                                <TableHead>Score</TableHead>
-                                                <TableHead className="text-right">Action</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {examHistory.map(result => {
-                                                const isGenerating = isGeneratingCert === result.id;
-                                                
-                                                return (
-                                                    <TableRow key={result.id}>
-                                                        <TableCell className="font-medium">{result.testName}</TableCell>
-                                                        <TableCell>{format(new Date(result.submittedAt.seconds * 1000), "dd MMM, yyyy")}</TableCell>
-                                                        <TableCell>
-                                                            <Badge variant={result.score / result.totalMarks > 0.4 ? 'default' : 'destructive'} className="text-sm">
-                                                                {result.score} / {result.totalMarks}
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell className="text-right space-x-2">
-                                                            <Button asChild variant="outline" size="sm">
-                                                                <Link href={`/exam/result/${result.id}`}>
-                                                                    <BarChart className="mr-2 h-4 w-4" /> View Result
-                                                                </Link>
-                                                            </Button>
-                                                            
-                                                            <Button onClick={() => handleGenerateCertificate(result)} disabled={isGenerating} size="sm">
-                                                                {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GraduationCap className="mr-2 h-4 w-4" />}
-                                                                {isGenerating ? 'Generating...' : 'Download Certificate'}
-                                                            </Button>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                );
-                                            })}
-                                        </TableBody>
-                                    </Table>
-                                </div>
+                            {registration.isApproved ? (
+                                examHistory.length > 0 ? (
+                                    <div className="border rounded-lg overflow-hidden bg-card shadow-lg">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Exam Name</TableHead>
+                                                    <TableHead>Date</TableHead>
+                                                    <TableHead>Score</TableHead>
+                                                    <TableHead className="text-right">Action</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {examHistory.map(result => {
+                                                    const isGenerating = isGeneratingCert === result.id;
+                                                    
+                                                    return (
+                                                        <TableRow key={result.id}>
+                                                            <TableCell className="font-medium">{result.testName}</TableCell>
+                                                            <TableCell>{format(new Date(result.submittedAt.seconds * 1000), "dd MMM, yyyy")}</TableCell>
+                                                            <TableCell>
+                                                                <Badge variant={result.score / result.totalMarks > 0.4 ? 'default' : 'destructive'} className="text-sm">
+                                                                    {result.score} / {result.totalMarks}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell className="text-right space-x-2">
+                                                                <Button asChild variant="outline" size="sm">
+                                                                    <Link href={`/exam/result/${result.id}`}>
+                                                                        <BarChart className="mr-2 h-4 w-4" /> View Result
+                                                                    </Link>
+                                                                </Button>
+                                                                
+                                                                <Button onClick={() => handleGenerateCertificate(result)} disabled={isGenerating} size="sm">
+                                                                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GraduationCap className="mr-2 h-4 w-4" />}
+                                                                    {isGenerating ? 'Generating...' : 'Download Certificate'}
+                                                                </Button>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-10 px-4 border-2 border-dashed rounded-lg bg-card shadow-lg">
+                                        <FileText className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                                        <p className="mt-4 font-semibold text-lg text-primary/90">No Exams Attempted Yet</p>
+                                        <p className="text-muted-foreground mt-1">Your past exam results will appear here.</p>
+                                        <Button asChild variant="link" className="mt-2 text-accent">
+                                            <Link href="/exam">Go to Exams</Link>
+                                        </Button>
+                                    </div>
+                                )
                             ) : (
-                                <div className="text-center py-10 px-4 border-2 border-dashed rounded-lg bg-card shadow-lg">
-                                    <FileText className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                                    <p className="mt-4 font-semibold text-lg text-primary/90">No Exams Attempted Yet</p>
-                                    <p className="text-muted-foreground mt-1">Your past exam results will appear here.</p>
-                                    <Button asChild variant="link" className="mt-2 text-accent">
-                                        <Link href="/exam">Go to Exams</Link>
-                                    </Button>
+                                 <div className="text-center py-10 px-4 border-2 border-dashed rounded-lg bg-card shadow-lg">
+                                    <ShieldAlert className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                                    <p className="mt-4 font-semibold text-lg text-primary/90">Approval Required</p>
+                                    <p className="text-muted-foreground mt-1">Your exam history will appear here once your registration is approved.</p>
                                 </div>
                             )}
                         </div>

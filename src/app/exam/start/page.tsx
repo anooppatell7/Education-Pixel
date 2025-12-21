@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { db } from '@/firebase';
+import { db, useUser } from '@/firebase';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -15,17 +15,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, User, BookOpen } from 'lucide-react';
+import { Loader2, User, BookOpen, ShieldAlert } from 'lucide-react';
 import SectionDivider from '@/components/section-divider';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const validationSchema = z.object({
   registrationNumber: z.string().min(5, "Please enter a valid registration number."),
 });
 
 export default function StartExamPage() {
+  const { user, isLoading: isUserLoading } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [studentDetails, setStudentDetails] = useState<ExamRegistration | null>(null);
   const [availableTest, setAvailableTest] = useState<MockTest | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
   
   const { toast } = useToast();
   const router = useRouter();
@@ -33,31 +36,49 @@ export default function StartExamPage() {
   const { register, handleSubmit, formState: { errors } } = useForm<{ registrationNumber: string }>({
     resolver: zodResolver(validationSchema),
   });
+  
+  // Auto-verify if user is logged in
+  useEffect(() => {
+    if (user && !isUserLoading) {
+      onVerify({ registrationNumber: user.uid }, true);
+    }
+  }, [user, isUserLoading]);
 
-  const onVerify: (data: { registrationNumber: string }) => void = async ({ registrationNumber }) => {
+  const onVerify: (data: { registrationNumber: string }, isAutoVerify?: boolean) => void = async ({ registrationNumber }, isAutoVerify = false) => {
     setIsLoading(true);
     setStudentDetails(null);
     setAvailableTest(null);
+    setVerificationError(null);
+
+    const isUid = registrationNumber.length > 20; // Simple check if it's likely a UID
+    const fieldToQuery = isUid ? "id" : "registrationNumber";
+    const valueToQuery = isUid ? registrationNumber : registrationNumber.trim().toUpperCase();
 
     try {
       const q = query(
         collection(db, "examRegistrations"),
-        where("registrationNumber", "==", registrationNumber.trim().toUpperCase()),
+        where(isUid ? "id" : "registrationNumber", "==", valueToQuery),
         limit(1)
       );
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        toast({
-          title: "Not Found",
-          description: "No student found with this registration number.",
-          variant: "destructive",
-        });
+         setVerificationError("No student found with this registration number.");
       } else {
         const studentData = { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() } as ExamRegistration;
+
+        if (!studentData.isApproved) {
+            const statusMessage = studentData.status === 'Rejected'
+                ? "Your registration has been rejected. Please contact administration."
+                : "Your registration is pending approval. You cannot start an exam yet.";
+            setVerificationError(statusMessage);
+            setStudentDetails(studentData); // Still show details but no exam
+            setIsLoading(false);
+            return;
+        }
+
         setStudentDetails(studentData);
         
-        // Fetch the specific test available for the student's course
         const testsQuery = query(
             collection(db, "mockTests"), 
             where("isPublished", "==", true), 
@@ -68,16 +89,18 @@ export default function StartExamPage() {
         const testsSnapshot = await getDocs(testsQuery);
         
         if (testsSnapshot.empty) {
-            toast({ title: "No Exam Found", description: "There is no exam available for your registered course at the moment.", variant: "destructive" });
+            setVerificationError("There is no exam available for your registered course at the moment.");
         } else {
             const test = { id: testsSnapshot.docs[0].id, ...testsSnapshot.docs[0].data() } as MockTest;
             setAvailableTest(test);
-            toast({ title: "Verification Successful", description: "Please confirm your details and start the exam." });
+            if (!isAutoVerify) {
+              toast({ title: "Verification Successful", description: "Please confirm your details and start the exam." });
+            }
         }
       }
     } catch (error) {
       console.error("Verification failed:", error);
-      toast({ title: "Error", description: "An error occurred during verification.", variant: "destructive" });
+      setVerificationError("An error occurred during verification. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -100,13 +123,21 @@ export default function StartExamPage() {
     router.push(`/mock-tests/${availableTest.id}?${params.toString()}`);
   };
 
+  if (isUserLoading) {
+    return (
+        <div className="flex justify-center items-center h-screen">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    )
+  }
+
   return (
     <>
         <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-black text-white">
             <div className="container py-16 sm:py-24 text-center">
                 <h1 className="font-headline text-4xl font-bold sm:text-5xl">Start Your Exam</h1>
                 <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-50">
-                    Enter your registration number to begin the examination process.
+                    Verify your registration to begin the examination process.
                 </p>
             </div>
         </div>
@@ -116,10 +147,14 @@ export default function StartExamPage() {
                 <Card className="w-full max-w-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                     <CardHeader>
                         <CardTitle className="font-headline text-2xl">Student Verification</CardTitle>
-                        <CardDescription>Enter the registration number you received after completing the registration form.</CardDescription>
+                        <CardDescription>Enter your registration number to confirm your identity.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {!studentDetails ? (
+                        {isLoading && !studentDetails ? (
+                            <div className="flex justify-center items-center h-40">
+                                <Loader2 className="h-8 w-8 animate-spin" />
+                            </div>
+                        ) : !studentDetails ? (
                             <form onSubmit={handleSubmit(onVerify)} className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="registrationNumber">Registration Number</Label>
@@ -157,7 +192,12 @@ export default function StartExamPage() {
                                     </CardContent>
                                 </Card>
                                 
-                                {availableTest ? (
+                                {verificationError ? (
+                                    <div className="text-center text-destructive p-4 border border-dashed border-destructive rounded-md flex flex-col items-center gap-2">
+                                       <ShieldAlert className="h-8 w-8" />
+                                       <p className="font-semibold">{verificationError}</p>
+                                    </div>
+                                ) : availableTest ? (
                                     <div className="space-y-4">
                                          <Label>Selected Exam</Label>
                                          <div className="flex items-center gap-3 rounded-md border bg-background p-4">
@@ -166,14 +206,12 @@ export default function StartExamPage() {
                                          </div>
                                     </div>
                                 ) : (
-                                    <div className="text-center text-muted-foreground p-4 border border-dashed rounded-md">
-                                        No exam is currently available for your registered course.
-                                    </div>
+                                   <div className="flex justify-center p-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
                                 )}
                                 
                                 <div className="flex flex-col sm:flex-row gap-4">
-                                     <Button variant="outline" className="w-full" onClick={() => setStudentDetails(null)}>Back</Button>
-                                     <Button className="w-full" onClick={handleStartTest} disabled={!availableTest}>Start Exam</Button>
+                                     <Button variant="outline" className="w-full" onClick={() => { setStudentDetails(null); setVerificationError(null); }}>Back</Button>
+                                     <Button className="w-full" onClick={handleStartTest} disabled={!availableTest || !!verificationError}>Start Exam</Button>
                                 </div>
                             </div>
                         )}

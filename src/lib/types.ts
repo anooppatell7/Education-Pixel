@@ -210,6 +210,8 @@ export type ExamRegistration = {
   pinCode: string;
   registeredAt: any; // Firestore Timestamp
   isRead: boolean;
+  isApproved: boolean;
+  status: 'Pending' | 'Approved' | 'Rejected';
 };
 
 export type ExamResult = {

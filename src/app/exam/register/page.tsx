@@ -156,13 +156,15 @@ export default function ExamRegistrationPage() {
                 registrationNumber: newRegNumber,
                 registeredAt: serverTimestamp(),
                 isRead: false,
+                isApproved: false,
+                status: 'Pending',
             };
 
             await setDoc(doc(db, "examRegistrations", user.uid), registrationData);
 
             toast({
-                title: "Registration Successful!",
-                description: `Your registration number is ${newRegNumber}. Please save it for future reference.`,
+                title: "Registration Submitted!",
+                description: `Your application has been submitted for approval.`,
             });
             setRegistrationSuccess(true);
             form.reset();
@@ -197,12 +199,13 @@ export default function ExamRegistrationPage() {
                 <div className="container flex items-center justify-center min-h-[80vh]">
                     <Card className="w-full max-w-md text-center shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                         <CardHeader>
-                            <CardTitle className="text-2xl font-headline text-green-600">Registration Successful!</CardTitle>
-                            <CardDescription>Your registration number has been generated.</CardDescription>
+                            <CardTitle className="text-2xl font-headline text-green-600">Registration Submitted!</CardTitle>
+                            <CardDescription>Your application is pending approval.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-muted-foreground">Please save this number for future reference:</p>
-                            <div className="my-4 p-4 bg-primary/10 border-2 border-dashed border-primary rounded-lg">
+                            <p className="text-muted-foreground">We have received your details. Your registration will be reviewed by an administrator. You will be notified once it is approved.</p>
+                             <div className="my-4 p-4 bg-primary/10 border-2 border-dashed border-primary rounded-lg">
+                                <p className="text-lg font-semibold text-primary">Registration Number</p>
                                 <p className="text-2xl font-bold text-primary tracking-widest">{registrationNumber}</p>
                             </div>
                             <Button asChild className="mt-6">
@@ -407,7 +410,7 @@ export default function ExamRegistrationPage() {
 
                                     <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
                                         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                        {isLoading ? 'Registering...' : 'Submit Registration'}
+                                        {isLoading ? 'Submitting...' : 'Submit for Approval'}
                                     </Button>
                                 </form>
                             </Form>
