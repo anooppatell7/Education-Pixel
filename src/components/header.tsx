@@ -104,7 +104,10 @@ export default function Header() {
   }, [user, db]);
 
   const userRole = appUser?.role || 'student';
-  const isAdmin = userRole === 'superAdmin' || userRole === 'franchiseAdmin';
+  const isSuperAdmin = userRole === 'superAdmin' || (user?.email && ["admin@educationpixel.com", "anooppbh8@gmail.com", "ashishkumargiri51@gmail.com"].includes(user.email));
+  const isFranchiseAdmin = userRole === 'franchiseAdmin';
+  const isAdmin = isSuperAdmin || isFranchiseAdmin;
+
 
   useEffect(() => {
     if (user && !isAdmin) {
@@ -129,8 +132,8 @@ export default function Header() {
   }
 
   const getDashboardPath = () => {
-      if (userRole === 'superAdmin') return '/admin/dashboard';
-      if (userRole === 'franchiseAdmin' && appUser?.franchiseId) return `/franchise/${appUser.franchiseId}/dashboard`;
+      if (isSuperAdmin) return '/admin/dashboard';
+      if (isFranchiseAdmin && appUser?.franchiseId) return `/franchise/${appUser.franchiseId}/dashboard`;
       return '/';
   }
   
