@@ -140,7 +140,7 @@ export const useMockTest = (testId: string) => {
         
         let finalRegistrationNumber = registrationNumber;
         let finalStudentName = studentName;
-        let examDate = new Date();
+        let finalFranchiseId = '';
 
         try {
             if (isOfficialExam && registrationNumber) {
@@ -150,12 +150,13 @@ export const useMockTest = (testId: string) => {
                  if (!regSnap.empty) {
                     const regData = regSnap.docs[0].data() as ExamRegistration;
                     finalStudentName = regData.fullName;
-                    // @ts-ignore
-                    examDate = regData.registeredAt?.toDate ? regData.registeredAt.toDate() : new Date();
+                    finalFranchiseId = regData.franchiseId;
                  }
             } else {
                 finalRegistrationNumber = user.uid;
                 finalStudentName = user.displayName || user.email || 'Anonymous';
+                // For non-official tests, franchiseId can be an empty string.
+                finalFranchiseId = ''; 
             }
             
             if (!finalRegistrationNumber || !finalStudentName) {
@@ -212,6 +213,7 @@ export const useMockTest = (testId: string) => {
                 studentName: finalStudentName,
                 testId: testData.id,
                 testName: testData.title,
+                franchiseId: finalFranchiseId,
                 score,
                 totalMarks: testData.totalMarks,
                 accuracy: parseFloat(accuracy.toFixed(2)) || 0,

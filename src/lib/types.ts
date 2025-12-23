@@ -221,6 +221,7 @@ export type ExamResult = {
   studentName: string;
   testId: string;
   testName: string;
+  franchiseId: string;
   score: number;
   totalMarks: number;
   accuracy: number;
