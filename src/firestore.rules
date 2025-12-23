@@ -86,6 +86,9 @@ service cloud.firestore {
         // Readable by the student who owns the result.
         allow read: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId) || (isAuth() && resource.data.registrationNumber == request.auth.uid);
         
+        // Allow any authenticated user to query the collection (needed for profile history)
+        allow list: if isAuth();
+
         // Only Super Admins can delete results.
         allow delete: if isSuperAdmin();
     }
