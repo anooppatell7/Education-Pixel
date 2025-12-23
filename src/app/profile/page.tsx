@@ -21,6 +21,8 @@ import { generateCertificatePdf } from '@/lib/certificate-generator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 function ProfileSkeleton() {
     return (
@@ -109,31 +111,50 @@ export default function ProfilePage() {
 
         const fetchProfileData = async () => {
             setIsLoading(true);
-            const docRef = doc(db, 'examRegistrations', user.uid);
-            const docSnap = await getDoc(docRef);
+            try {
+                const docRef = doc(db, 'examRegistrations', user.uid);
+                const docSnap = await getDoc(docRef);
 
-            if (docSnap.exists()) {
-                const regData = { id: docSnap.id, ...docSnap.data() } as ExamRegistration;
-                setRegistration(regData);
-                setFormData(regData);
+                if (docSnap.exists()) {
+                    const regData = { id: docSnap.id, ...docSnap.data() } as ExamRegistration;
+                    setRegistration(regData);
+                    setFormData(regData);
 
-                // Fetch Exam History only if approved
-                if (regData.isApproved) {
-                    const historyQuery = query(
-                        collection(db, "examResults"),
-                        where("registrationNumber", "==", regData.registrationNumber),
-                        orderBy("submittedAt", "desc")
-                    );
-                    const historySnapshot = await getDocs(historyQuery);
-                    const history = historySnapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    } as ExamResult));
-                    setExamHistory(history);
+                    // Fetch Exam History only if approved
+                    if (regData.isApproved) {
+                        const historyQuery = query(
+                            collection(db, "examResults"),
+                            where("registrationNumber", "==", regData.registrationNumber),
+                            orderBy("submittedAt", "desc")
+                        );
+                        try {
+                            const historySnapshot = await getDocs(historyQuery);
+                            const history = historySnapshot.docs.map(doc => ({
+                                id: doc.id,
+                                ...doc.data()
+                            } as ExamResult));
+                            setExamHistory(history);
+                        } catch (error) {
+                             const permissionError = new FirestorePermissionError({
+                                path: `examResults where registrationNumber == ${regData.registrationNumber}`,
+                                operation: 'list',
+                            } satisfies SecurityRuleContext);
+                            errorEmitter.emit('permission-error', permissionError);
+                            console.error("Error fetching exam history:", error);
+                        }
+                    }
+
                 }
-
+            } catch (error) {
+                 const permissionError = new FirestorePermissionError({
+                    path: `examRegistrations/${user.uid}`,
+                    operation: 'get',
+                } satisfies SecurityRuleContext);
+                errorEmitter.emit('permission-error', permissionError);
+                console.error("Error fetching profile data:", error);
+            } finally {
+                setIsLoading(false);
             }
-            setIsLoading(false);
         };
 
         fetchProfileData();
@@ -163,7 +184,13 @@ export default function ProfilePage() {
             toast({ title: "Success", description: "Your profile has been updated." });
         } catch (error) {
             console.error("Error updating profile:", error);
-            toast({ title: "Error", description: "Failed to update profile. Please try again.", variant: "destructive" });
+            const docRef = doc(db, 'examRegistrations', user.uid);
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'update',
+                requestResourceData: formData
+            } satisfies SecurityRuleContext);
+            errorEmitter.emit('permission-error', permissionError);
         } finally {
             setIsSaving(false);
         }
