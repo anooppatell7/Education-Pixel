@@ -2,6 +2,20 @@
 {
   "indexes": [
     {
+      "collectionGroup": "examRegistrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "franchiseId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registeredAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "examResults",
       "queryScope": "COLLECTION",
       "fields": [
