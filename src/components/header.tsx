@@ -290,10 +290,6 @@ export default function Header() {
                                <UserCircle className="mr-2 h-4 w-4" />
                                <span>My Profile</span>
                             </DropdownMenuItem>
-                             <DropdownMenuItem onClick={() => router.push('/learn')}>
-                               <BookOpen className="mr-2 h-4 w-4" />
-                               <span>My Learning</span>
-                            </DropdownMenuItem>
                           </>
                         )}
                         <DropdownMenuSeparator />

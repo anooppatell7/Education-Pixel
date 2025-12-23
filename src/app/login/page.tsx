@@ -38,12 +38,12 @@ const handleRedirect = async (user: User, router: any, redirectUrl?: string | nu
                 break;
             case 'student':
             default:
-                router.push('/learn');
+                router.push('/profile');
                 break;
         }
     } else {
         // Fallback for users without a role doc or old users
-        router.push('/learn');
+        router.push('/profile');
     }
 };
 

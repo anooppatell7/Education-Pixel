@@ -31,7 +31,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (user) {
-      router.push('/learn');
+      router.push('/profile');
     }
   }, [user, router]);
   
@@ -163,7 +163,7 @@ export default function SignupPage() {
       if (role === 'franchiseAdmin') {
           router.push(`/franchise/${franchiseId}/dashboard`);
       } else {
-          router.push('/learn');
+          router.push('/profile');
       }
 
     } catch (error: any) {
