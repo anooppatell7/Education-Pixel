@@ -2,7 +2,6 @@
 import { db } from "@/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import type { Resource } from "@/lib/types";
-import AdPlaceholder from "@/components/ad-placeholder";
 import type { Metadata } from 'next';
 import ResourcesClient from "@/components/resources-client";
 import SectionDivider from "@/components/section-divider";
@@ -48,14 +47,7 @@ export default async function ResourcesPage() {
       <div className="bg-secondary relative">
         <SectionDivider style="wave" className="text-gradient-to-br from-purple-900 via-blue-900 to-black" position="top"/>
         <div className="container py-16 sm:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
-              <main className="lg:col-span-3">
-                  <ResourcesClient resources={resources} />
-              </main>
-              <aside className="lg:col-span-1 space-y-8">
-                  <AdPlaceholder />
-              </aside>
-          </div>
+          <ResourcesClient resources={resources} />
         </div>
       </div>
     </>
