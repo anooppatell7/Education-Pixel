@@ -20,7 +20,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "franchiseId",
+          "fieldPath": "registrationNumber",
           "order": "ASCENDING"
         },
         {
