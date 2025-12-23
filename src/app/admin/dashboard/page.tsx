@@ -468,18 +468,25 @@ export default function AdminDashboardPage() {
             collectionRef = collection(firestore, "franchises");
             dataToSave.createdAt = editingItem?.createdAt || serverTimestamp();
             
-            // For new franchises, also create a user entry for the owner
-            if (!editingItem) {
+            if (!editingItem) { // Creating a new franchise
                 const batch = writeBatch(firestore);
-                const newFranchiseRef = doc(collectionRef);
+                const newFranchiseRef = doc(collectionRef); // Let Firestore generate ID for the franchise
+        
+                // Set the franchise document
                 batch.set(newFranchiseRef, dataToSave);
-
+        
                 // Create a corresponding user document for the franchise admin
+                // Check if a user with this email already exists
                 const userQuery = query(collection(firestore, "users"), where("email", "==", dataToSave.email));
                 const userSnap = await getDocs(userQuery);
+                
                 if (userSnap.empty) {
-                    const newUserRef = doc(collection(firestore, "users")); // Let Firestore generate ID
-                    batch.set(newUserRef, {
+                    // No user exists, create a placeholder document that will be claimed on signup
+                    // Note: We don't know the UID yet, so we can't create the final doc.
+                    // Instead, we will store franchise-admin emails in a separate collection or within franchise doc itself.
+                    // For this simple model, we'll create a user doc with an auto-generated ID.
+                    const userDocRef = doc(collection(firestore, "users"));
+                    batch.set(userDocRef, {
                         name: dataToSave.ownerName,
                         email: dataToSave.email,
                         role: "franchiseAdmin",
@@ -488,22 +495,26 @@ export default function AdminDashboardPage() {
                         createdAt: serverTimestamp()
                     });
                 } else {
-                    // If user exists, update their role to franchiseAdmin
+                    // User already exists (maybe they were a student), update their role.
                     const existingUserRef = userSnap.docs[0].ref;
                     batch.update(existingUserRef, {
                         role: "franchiseAdmin",
                         franchiseId: newFranchiseRef.id
                     });
                 }
-
-
+        
                 await batch.commit();
-                toast({ title: "Success", description: "Franchise and Admin User created successfully." });
-                fetchData(); 
-                handleCloseForm();
-                return;
+                toast({ title: "Success", description: "Franchise created successfully. The owner can now sign up with their email." });
+            } else { // Editing an existing franchise
+                 const franchiseRef = doc(collectionRef, docId);
+                await updateDoc(franchiseRef, dataToSave);
+                toast({ title: "Success", description: "Franchise updated successfully." });
             }
-
+        
+            fetchData();
+            handleCloseForm();
+            return; // Exit function after handling franchise
+        
         } else if (activeTab === 'courses') {
             collectionRef = collection(firestore, "courses");
             dataToSave.image = dataToSave.image || "https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png";
@@ -2015,6 +2026,8 @@ export default function AdminDashboardPage() {
         </>
     );
 }
+
+    
 
     
 
