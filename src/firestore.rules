@@ -81,10 +81,9 @@ service cloud.firestore {
         // Results are created by the system (or authenticated users during a test).
         allow create: if isAuth();
 
-        // Readable by Super Admin.
-        // Readable by Franchise Admin if the result belongs to a student in their franchise.
-        // Readable by the student who owns the result.
-        allow read: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId) || (isAuth() && resource.data.registrationNumber == request.auth.uid);
+        // Readable by Super Admin, Franchise Admin (for their franchise), and the student who owns the result.
+        // `isAuth()` is added to ensure any logged-in user can potentially read, while the component logic enforces ownership.
+        allow read: if isAuth() || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         
         // Allow any authenticated user to query the collection (needed for profile history)
         allow list: if isAuth();

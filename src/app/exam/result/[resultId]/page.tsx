@@ -75,49 +75,41 @@ export default function ExamResultPage() {
             }
 
             const resultData = { id: resultSnap.id, ...resultSnap.data() } as ExamResultType;
+            setResult(resultData);
+            document.title = `Result: ${resultData.testName} - Education Pixel`;
             
-            // Check if it's an official exam or a practice test.
-            // Official exams have a registration number like 'EP-YYYY-NNNN'.
-            // Practice tests use the user's UID as the registrationNumber.
             const officialExam = resultData.registrationNumber.startsWith('EP-');
             setIsOfficialExam(officialExam);
 
-            // Authorization Check
             if (user) {
                 const isAdmin = user.email && ["admin@educationpixel.com", "anooppbh8@gmail.com", "ashishkumargiri51@gmail.com"].includes(user.email);
-                let isOwner = false;
                 
-                // For practice tests, the registrationNumber is the user's UID.
-                if (!officialExam && resultData.registrationNumber === user.uid) {
-                    isOwner = true;
+                if (isAdmin) {
+                    setIsAuthorized(true);
                 } else if (officialExam) {
                     // For official exams, check if user's UID matches the ID of the registration document.
                     const registrationQuery = query(collection(db, "examRegistrations"), where("registrationNumber", "==", resultData.registrationNumber), limit(1));
                     const registrationSnapshot = await getDocs(registrationQuery);
-
-                    if (!registrationSnapshot.empty) {
-                        const registrationDoc = registrationSnapshot.docs[0];
-                        if(registrationDoc.id === user.uid) {
-                            isOwner = true;
-                        }
+                    if (!registrationSnapshot.empty && registrationSnapshot.docs[0].id === user.uid) {
+                        setIsAuthorized(true);
+                    } else {
+                        setIsAuthorized(false);
+                    }
+                } else {
+                    // For practice tests, the registrationNumber is the user's UID.
+                    if (resultData.registrationNumber === user.uid) {
+                        setIsAuthorized(true);
+                    } else {
+                         setIsAuthorized(false);
                     }
                 }
-
-                if (isAdmin || isOwner) {
-                    setIsAuthorized(true);
-                } else {
-                    setIsAuthorized(false);
-                }
-            } else {
-                 setIsAuthorized(true);
+            } else if (!userLoading) {
+                 // if user is not logged in and it's not loading, they can't be authorized
+                 setIsAuthorized(false);
             }
-
-            setResult(resultData);
-            document.title = `Result: ${resultData.testName} - Education Pixel`;
 
             const testRef = doc(db, 'mockTests', resultData.testId);
             const testSnap = await getDoc(testRef);
-
             if (testSnap.exists()) {
                 setTest({ id: testSnap.id, ...testSnap.data() } as MockTest);
             } else {
@@ -125,7 +117,9 @@ export default function ExamResultPage() {
             }
             
             setIsLoading(false);
-            fetchRank(resultData);
+            if(isAuthorized !== false) { // Don't fetch rank if we know user is not authorized
+              fetchRank(resultData);
+            }
         };
         
         const fetchRank = async (currentResult: ExamResultType) => {
@@ -167,9 +161,9 @@ export default function ExamResultPage() {
         if (!userLoading) {
              fetchResultAndTest();
         }
-    }, [resultId, user, userLoading]);
+    }, [resultId, user, userLoading, isAuthorized]);
 
-    if (isLoading || userLoading) {
+    if (isLoading || userLoading || isAuthorized === null) {
         return <ResultSkeleton />;
     }
     
@@ -347,5 +341,3 @@ export default function ExamResultPage() {
         </div>
     );
 }
-
-    
