@@ -108,7 +108,7 @@ export function EnrollModal({ children }: { children: React.ReactNode }) {
         setIsOpen(open);
     }
     
-    const whatsAppUrl = `https://wa.me/918299809562?text=${encodeURIComponent("Hello, I am interested in enrolling for a course.")}`;
+    const whatsAppUrl = `https://wa.me/917355379619?text=${encodeURIComponent("Hello, I am interested in enrolling for a course.")}`;
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
