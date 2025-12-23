@@ -19,12 +19,12 @@ import { useEffect, useState } from "react";
 async function getFeaturedReviews(): Promise<Review[]> {
     const reviewsQuery = query(
         collection(db, "reviews"),
+        where("isApproved", "==", true),
         orderBy("submittedAt", "desc"),
-        limit(12) // Fetch a bit more to ensure we get enough approved ones
+        limit(6)
     );
     const reviewsSnapshot = await getDocs(reviewsQuery);
-    const allReviews = reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
-    return allReviews.filter(review => review.isApproved).slice(0, 6);
+    return reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
 }
 
 
@@ -35,6 +35,9 @@ export default function Testimonials() {
   useEffect(() => {
     getFeaturedReviews().then(data => {
         setReviews(data);
+        setLoading(false);
+    }).catch(error => {
+        console.error("Error fetching reviews:", error);
         setLoading(false);
     });
   }, []);
