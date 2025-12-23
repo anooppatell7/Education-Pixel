@@ -37,11 +37,9 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import type { NavItem } from "@/lib/types";
+import type { NavItem, User as AppUser } from "@/lib/types";
 import React from "react";
 
-
-const ADMIN_EMAILS = ["admin@educationpixel.com", "anooppbh8@gmail.com", "ashishkumargiri51@gmail.com"];
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -77,6 +75,7 @@ export default function Header() {
   const { user, isLoading } = useUser();
   const router = useRouter();
   const [isRegistered, setIsRegistered] = useState(false);
+  const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -86,7 +85,26 @@ export default function Header() {
   const isLearnPage = pathname.startsWith('/learn');
   const courseSlug = isLearnPage ? pathname.split('/')[2] : '';
 
-  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
+  useEffect(() => {
+    if (user && db) {
+      const fetchAppUser = async () => {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          setAppUser(userDocSnap.data() as AppUser);
+        } else {
+            // This might be a user who registered before the `users` collection was standard
+            setAppUser({ role: 'student' } as AppUser);
+        }
+      };
+      fetchAppUser();
+    } else {
+      setAppUser(null);
+    }
+  }, [user, db]);
+
+  const userRole = appUser?.role || 'student';
+  const isAdmin = userRole === 'superAdmin' || userRole === 'franchiseAdmin';
 
   useEffect(() => {
     if (user && !isAdmin) {
@@ -97,7 +115,7 @@ export default function Header() {
       };
       checkRegistration();
     } else if (isAdmin) {
-      setIsRegistered(true);
+      setIsRegistered(true); // Admins are considered "registered" for navigation purposes
     } else {
       setIsRegistered(false);
     }
@@ -108,6 +126,12 @@ export default function Header() {
         await signOut(auth);
         router.push('/');
     }
+  }
+
+  const getDashboardPath = () => {
+      if (userRole === 'superAdmin') return '/admin/dashboard';
+      if (userRole === 'franchiseAdmin' && appUser?.franchiseId) return `/franchise/${appUser.franchiseId}/dashboard`;
+      return '/';
   }
   
   const academicsComponents: { title: string; href: string; description: string }[] = [
@@ -253,7 +277,7 @@ export default function Header() {
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         {isAdmin ? (
-                            <DropdownMenuItem onClick={() => router.push('/admin/dashboard')}>
+                            <DropdownMenuItem onClick={() => router.push(getDashboardPath())}>
                                <LayoutDashboard className="mr-2 h-4 w-4" />
                                <span>Dashboard</span>
                             </DropdownMenuItem>
