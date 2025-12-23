@@ -20,25 +20,11 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "registrationNumber",
+          "fieldPath": "franchiseId",
           "order": "ASCENDING"
         },
         {
           "fieldPath": "submittedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "certificates",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "registrationNumber",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "issueDate",
           "order": "DESCENDING"
         }
       ]
