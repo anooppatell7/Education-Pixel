@@ -41,7 +41,7 @@ export default function PrivacyPolicyPage() {
                         </p>
 
                         <p>
-                          This privacy notice describes how we might use your information if you visit our website at <a href={siteUrl}>{siteUrl}</a>, or otherwise engage with us.
+                          This privacy notice describes how we might use your information if you visit our website (Education Pixel), or otherwise engage with us.
                         </p>
 
                         <h2>1. WHAT INFORMATION DO WE COLLECT?</h2>

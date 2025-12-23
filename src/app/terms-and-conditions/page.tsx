@@ -38,7 +38,7 @@ export default function TermsAndConditionsPage() {
 
                 <h2>1. Agreement to Terms</h2>
                 <p>
-                  By accessing or using our website ({siteUrl}) and services, you agree to be bound by these Terms and Conditions. If you disagree with any part of the terms, then you may not access the service.
+                  By accessing or using our website and services, you agree to be bound by these Terms and Conditions. If you disagree with any part of the terms, then you may not access the service.
                 </p>
 
                 <h2>2. Intellectual Property</h2>
