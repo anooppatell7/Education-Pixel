@@ -150,6 +150,7 @@ export type TestCategory = {
     title: string;
     description: string;
     icon: string; // e.g., an emoji or a lucide-icon name
+    franchiseId?: string;
 };
 
 export type TestQuestion = {
@@ -171,6 +172,7 @@ export type MockTest = {
     isPublished: boolean;
     categoryId: string;
     categoryName: string;
+    franchiseId?: string;
 };
 
 export type TestResponse = {

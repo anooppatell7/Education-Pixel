@@ -132,12 +132,22 @@ service cloud.firestore {
 
     // Test categories and mock tests are readable by anyone, writable by admin.
     match /testCategories/{categoryId} {
-        allow read: if true;
-        allow write: if isSuperAdmin();
+        // Public can read categories not associated with a franchise
+        allow read: if resource.data.franchiseId == null;
+        // Admins can read their own franchise categories
+        allow get: if isFranchiseAdmin(resource.data.franchiseId);
+        allow list: if isFranchiseAdmin(request.query.franchiseId);
+        // Admins can manage their own categories
+        allow write: if isSuperAdmin() || (isFranchiseAdmin(request.resource.data.franchiseId) && request.resource.data.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId);
     }
      match /mockTests/{testId} {
-        allow read: if true;
-        allow write: if isSuperAdmin();
+        // Public can read tests not associated with a franchise
+        allow read: if resource.data.franchiseId == null;
+         // Admins can read their own franchise tests
+        allow get: if isFranchiseAdmin(resource.data.franchiseId);
+        allow list: if isFranchiseAdmin(request.query.franchiseId);
+        // Admins can manage their own tests
+        allow write: if isSuperAdmin() || (isFranchiseAdmin(request.resource.data.franchiseId) && request.resource.data.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId);
     }
     
     // Reviews can be created by anyone, but only read publicly if approved.
