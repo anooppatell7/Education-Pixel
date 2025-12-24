@@ -66,11 +66,12 @@ export default function MockTestsByCategoryPage() {
                     return;
                 }
 
-                // Fetch tests for this category
+                // Fetch tests for this category that are public (no franchiseId)
                 const testsQuery = query(
                     collection(firestore, "mockTests"),
                     where("categoryId", "==", categoryId),
-                    where("isPublished", "==", true)
+                    where("isPublished", "==", true),
+                    where("franchiseId", "in", [null, ""])
                 );
                 const testsSnapshot = await getDocs(testsQuery);
                 const testList = testsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MockTest));

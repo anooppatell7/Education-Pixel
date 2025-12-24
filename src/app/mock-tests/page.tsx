@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ArrowRight, FileText, Search, X } from "lucide-react";
 import type { TestCategory } from "@/lib/types";
-import { collection, query, getDocs } from "firebase/firestore";
+import { collection, query, getDocs, where } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 import SectionDivider from "@/components/section-divider";
@@ -45,7 +45,12 @@ export default function MockTestCategoriesPage() {
             if (!db) return;
             setIsLoading(true);
             try {
-                const categoriesQuery = query(collection(db, "testCategories"));
+                // Query for categories where franchiseId is null or does not exist.
+                // This ensures we only get "public" categories created by the super admin.
+                const categoriesQuery = query(
+                    collection(db, "testCategories"),
+                    where("franchiseId", "in", [null, ""])
+                );
                 const querySnapshot = await getDocs(categoriesQuery);
                 const categoryList = querySnapshot.docs
                     .map(doc => ({ id: doc.id, ...doc.data() } as TestCategory))
