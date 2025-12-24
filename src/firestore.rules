@@ -71,13 +71,13 @@ service cloud.firestore {
         
         // SuperAdmins can manage all registrations.
         // Franchise Admins can read/update registrations belonging to their franchise.
-        allow read, update: if isSuperAdmin() || isRequestingOwnFranchiseData(resource.data.franchiseId);
+        allow read, update: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         
         // A student can read their own registration.
         allow get: if isOwner(userId);
 
-        // Allow Super Admin or the correct Franchise Admin to query the collection
-        allow list: if isSuperAdmin() || isRequestingOwnFranchiseData(request.query.franchiseId);
+        // Allow any authenticated user to query the collection (needed for verification)
+        allow list: if isAuth();
     }
     
     // Exam results for students.
@@ -86,10 +86,10 @@ service cloud.firestore {
         allow create: if isAuth();
 
         // Readable by Super Admin, Franchise Admin (for their franchise), and the student who owns the result.
-        allow read: if isAuth() || isSuperAdmin() || isRequestingOwnFranchiseData(resource.data.franchiseId);
+        allow read: if isAuth() || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         
-        // Allow Super Admin or the correct Franchise Admin to query the collection
-        allow list: if isSuperAdmin() || isRequestingOwnFranchiseData(request.query.franchiseId);
+        // Allow any authenticated user to query the collection (needed for verification)
+        allow list: if isAuth();
 
         // Only Super Admins can delete results.
         allow delete: if isSuperAdmin();
@@ -136,19 +136,17 @@ service cloud.firestore {
     // Test categories and mock tests are readable by anyone, writable by admin.
     match /testCategories/{categoryId} {
         // Public can read categories not associated with a franchise
-        allow read: if resource.data.franchiseId == null;
         // Admins can read their own franchise categories
-        allow get: if isFranchiseAdmin(resource.data.franchiseId);
-        allow list: if isRequestingOwnFranchiseData(request.query.franchiseId);
+        allow read: if resource.data.franchiseId == null || isFranchiseAdmin(resource.data.franchiseId);
+        
         // Admins can manage their own categories
         allow write: if isSuperAdmin() || (isFranchiseAdmin(request.resource.data.franchiseId) && request.resource.data.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId);
     }
      match /mockTests/{testId} {
         // Public can read tests not associated with a franchise
-        allow read: if resource.data.franchiseId == null;
-         // Admins can read their own franchise tests
-        allow get: if isFranchiseAdmin(resource.data.franchiseId);
-        allow list: if isRequestingOwnFranchiseData(request.query.franchiseId);
+        // Admins can read their own franchise tests
+        allow read: if resource.data.franchiseId == null || isFranchiseAdmin(resource.data.franchiseId);
+
         // Admins can manage their own tests
         allow write: if isSuperAdmin() || (isFranchiseAdmin(request.resource.data.franchiseId) && request.resource.data.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId);
     }
