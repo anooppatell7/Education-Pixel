@@ -67,7 +67,7 @@ import { signOut } from 'firebase/auth';
 import { useRouter, useParams, notFound } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth, useFirestore, useUser } from "@/firebase";
-import { collection, getDocs, updateDoc, doc, query, orderBy, where, Timestamp, getDoc, addDoc, serverTimestamp, writeBatch, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, updateDoc, doc, query, orderBy, where, Timestamp, getDoc, addDoc, serverTimestamp, writeBatch, deleteDoc, setDoc } from "firebase/firestore";
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 
@@ -171,7 +171,38 @@ export default function FranchiseDashboardPage() {
 
     }, [user, isUserLoading, router, firestore, franchiseId, toast]);
 
-    // ... (rest of the functions: handleMarkAsRead, handleRegistrationStatusChange, etc.)
+    const authorizeAndFetch = async () => {
+        if (isUserLoading || !user || !firestore) return;
+        setLoading(true);
+        try {
+            // Re-fetch all data
+            const regQuery = query(collection(firestore, "examRegistrations"), where("franchiseId", "==", franchiseId), orderBy("registeredAt", "desc"));
+            const resultsQuery = query(collection(firestore, "examResults"), where("franchiseId", "==", franchiseId), orderBy("submittedAt", "desc"));
+            const categoriesQuery = query(collection(firestore, "testCategories"), where("franchiseId", "==", franchiseId));
+            const mockTestsQuery = query(collection(firestore, "mockTests"), where("franchiseId", "==", franchiseId));
+
+            const [regSnap, resultsSnap, categoriesSnap, mockTestsSnap] = await Promise.all([
+                getDocs(regQuery),
+                getDocs(resultsQuery),
+                getDocs(categoriesQuery),
+                getDocs(mockTestsQuery)
+            ]);
+
+            const registrationList = regSnap.docs.map(d => ({ id: d.id, ...d.data(), registeredAt: (d.data().registeredAt as Timestamp)?.toDate().toLocaleString() || '' } as ExamRegistration));
+            const resultList = resultsSnap.docs.map(d => ({ id: d.id, ...d.data(), submittedAt: (d.data().submittedAt as Timestamp)?.toDate().toLocaleString() || '' } as ExamResult));
+            const categoriesList = categoriesSnap.docs.map(d => ({ id: d.id, ...d.data() } as TestCategory));
+            const mockTestsList = mockTestsSnap.docs.map(d => ({ id: d.id, ...d.data() } as MockTest));
+            
+            setData({ registrations: registrationList, results: resultList, testCategories: categoriesList, mockTests: mockTestsList, reviews: [] });
+        } catch (error) {
+            console.error("Error re-fetching franchise data:", error);
+            toast({ title: "Error", description: "Could not refresh dashboard data.", variant: "destructive" });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
     const handleMarkAsRead = (id: string) => {
         if (!firestore) return;
         const docRef = doc(firestore, "examRegistrations", id);
@@ -255,7 +286,7 @@ export default function FranchiseDashboardPage() {
     
     const createSlug = (title: string) => {
       if (!title) return '';
-      return title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-');
+      return title.toLowerCase().replace(/[^a-z0-9\\s-]/g, '').trim().replace(/\\s+/g, '-').replace(/-+/g, '-');
     };
 
     const handleFormSubmit = async (e: React.FormEvent) => {
@@ -475,7 +506,6 @@ export default function FranchiseDashboardPage() {
         reg.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || 
         reg.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    const authorizeAndFetch = async () => { /* re-fetch logic from useEffect */ };
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-muted/40">
