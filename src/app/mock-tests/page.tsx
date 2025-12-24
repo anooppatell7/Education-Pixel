@@ -45,11 +45,9 @@ export default function MockTestCategoriesPage() {
             if (!db) return;
             setIsLoading(true);
             try {
-                // Query for categories where franchiseId is null or does not exist.
-                // This ensures we only get "public" categories created by the super admin.
+                // Fetch all test categories, regardless of franchiseId
                 const categoriesQuery = query(
-                    collection(db, "testCategories"),
-                    where("franchiseId", "in", [null, ""])
+                    collection(db, "testCategories")
                 );
                 const querySnapshot = await getDocs(categoriesQuery);
                 const categoryList = querySnapshot.docs
