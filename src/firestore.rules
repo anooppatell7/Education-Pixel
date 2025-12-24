@@ -140,6 +140,7 @@ service cloud.firestore {
         
         // Admins can manage their own categories
         allow write: if isSuperAdmin() || (isFranchiseAdmin(request.resource.data.franchiseId) && request.resource.data.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId);
+        allow delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
     }
      match /mockTests/{testId} {
         // Public can read all published tests
@@ -147,6 +148,7 @@ service cloud.firestore {
 
         // Admins can manage their own tests
         allow write: if isSuperAdmin() || (isFranchiseAdmin(request.resource.data.franchiseId) && request.resource.data.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId);
+        allow delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
     }
     
     // Reviews can be created by anyone, but only read publicly if approved.
