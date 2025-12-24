@@ -72,8 +72,8 @@ service cloud.firestore {
         // A student can read their own registration.
         allow get: if isOwner(userId);
 
-        // Allow authenticated users (like admin) to query the collection
-        allow list: if isAuth();
+        // Allow Super Admin or the correct Franchise Admin to query the collection
+        allow list: if isSuperAdmin() || isFranchiseAdmin(request.query.franchiseId);
     }
     
     // Exam results for students.
@@ -82,11 +82,10 @@ service cloud.firestore {
         allow create: if isAuth();
 
         // Readable by Super Admin, Franchise Admin (for their franchise), and the student who owns the result.
-        // `isAuth()` is added to ensure any logged-in user can potentially read, while the component logic enforces ownership.
         allow read: if isAuth() || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         
-        // Allow any authenticated user to query the collection (needed for profile history)
-        allow list: if isAuth();
+        // Allow Super Admin or the correct Franchise Admin to query the collection
+        allow list: if isSuperAdmin() || isFranchiseAdmin(request.query.franchiseId);
 
         // Only Super Admins can delete results.
         allow delete: if isSuperAdmin();
