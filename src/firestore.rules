@@ -76,8 +76,8 @@ service cloud.firestore {
         // A student can read their own registration.
         allow get: if isOwner(userId);
 
-        // Allow any authenticated user to query the collection (needed for verification)
-        allow list: if isAuth();
+        // Allow franchise admins to query their own registrations
+        allow list: if isSuperAdmin() || (isAuth() && request.query.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId);
     }
     
     // Exam results for students.
@@ -89,7 +89,7 @@ service cloud.firestore {
         allow read: if isAuth() || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         
         // Allow any authenticated user to query the collection (needed for verification)
-        allow list: if isAuth();
+        allow list: if isSuperAdmin() || (isAuth() && request.query.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId);
 
         // Only Super Admins can delete results.
         allow delete: if isSuperAdmin();
@@ -135,9 +135,8 @@ service cloud.firestore {
 
     // Test categories and mock tests are readable by anyone, writable by admin.
     match /testCategories/{categoryId} {
-        // Public can read categories not associated with a franchise
-        // Admins can read their own franchise categories
-        allow read: if resource.data.franchiseId == null || isFranchiseAdmin(resource.data.franchiseId);
+        // Public can read all categories.
+        allow read: if true;
         
         // Admins can manage their own categories
         allow write: if isSuperAdmin() || (isFranchiseAdmin(request.resource.data.franchiseId) && request.resource.data.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId);
