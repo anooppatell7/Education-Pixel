@@ -23,6 +23,10 @@ service cloud.firestore {
                        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId == franchiseId;
     }
     
+    function isRequestingOwnFranchiseData(franchiseId) {
+      return isFranchiseAdmin(franchiseId) && franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId;
+    }
+
     function isOwner(userId) {
       return isAuth() && request.auth.uid == userId;
     }
@@ -67,13 +71,13 @@ service cloud.firestore {
         
         // SuperAdmins can manage all registrations.
         // Franchise Admins can read/update registrations belonging to their franchise.
-        allow read, update: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
+        allow read, update: if isSuperAdmin() || isRequestingOwnFranchiseData(resource.data.franchiseId);
         
         // A student can read their own registration.
         allow get: if isOwner(userId);
 
         // Allow Super Admin or the correct Franchise Admin to query the collection
-        allow list: if isSuperAdmin() || isFranchiseAdmin(request.query.franchiseId);
+        allow list: if isSuperAdmin() || isRequestingOwnFranchiseData(request.query.franchiseId);
     }
     
     // Exam results for students.
@@ -82,10 +86,10 @@ service cloud.firestore {
         allow create: if isAuth();
 
         // Readable by Super Admin, Franchise Admin (for their franchise), and the student who owns the result.
-        allow read: if isAuth() || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
+        allow read: if isAuth() || isSuperAdmin() || isRequestingOwnFranchiseData(resource.data.franchiseId);
         
         // Allow Super Admin or the correct Franchise Admin to query the collection
-        allow list: if isSuperAdmin() || isFranchiseAdmin(request.query.franchiseId);
+        allow list: if isSuperAdmin() || isRequestingOwnFranchiseData(request.query.franchiseId);
 
         // Only Super Admins can delete results.
         allow delete: if isSuperAdmin();
@@ -135,7 +139,7 @@ service cloud.firestore {
         allow read: if resource.data.franchiseId == null;
         // Admins can read their own franchise categories
         allow get: if isFranchiseAdmin(resource.data.franchiseId);
-        allow list: if isFranchiseAdmin(request.query.franchiseId);
+        allow list: if isRequestingOwnFranchiseData(request.query.franchiseId);
         // Admins can manage their own categories
         allow write: if isSuperAdmin() || (isFranchiseAdmin(request.resource.data.franchiseId) && request.resource.data.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId);
     }
@@ -144,7 +148,7 @@ service cloud.firestore {
         allow read: if resource.data.franchiseId == null;
          // Admins can read their own franchise tests
         allow get: if isFranchiseAdmin(resource.data.franchiseId);
-        allow list: if isFranchiseAdmin(request.query.franchiseId);
+        allow list: if isRequestingOwnFranchiseData(request.query.franchiseId);
         // Admins can manage their own tests
         allow write: if isSuperAdmin() || (isFranchiseAdmin(request.resource.data.franchiseId) && request.resource.data.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId);
     }
