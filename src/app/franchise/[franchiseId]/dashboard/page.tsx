@@ -137,7 +137,6 @@ export default function FranchiseDashboardPage() {
                 const categoriesQuery = query(collection(firestore, "testCategories"), where("franchiseId", "==", franchiseId));
                 const mockTestsQuery = query(collection(firestore, "mockTests"), where("franchiseId", "==", franchiseId));
 
-
                 const [regSnap, resultsSnap, categoriesSnap, mockTestsSnap] = await Promise.all([
                     getDocs(regQuery),
                     getDocs(resultsQuery),
@@ -154,7 +153,15 @@ export default function FranchiseDashboardPage() {
 
             } catch (error) {
                 console.error("Error fetching franchise data:", error);
-                toast({ title: "Error", description: "Could not fetch dashboard data.", variant: "destructive" });
+                 if (error instanceof Error && error.message.includes('permission-denied') || error.message.includes('insufficient permissions')) {
+                    const permissionError = new FirestorePermissionError({
+                        path: `franchise-dashboard/${franchiseId}`,
+                        operation: 'list',
+                    } satisfies SecurityRuleContext);
+                    errorEmitter.emit('permission-error', permissionError);
+                } else {
+                    toast({ title: "Error", description: "Could not fetch dashboard data.", variant: "destructive" });
+                }
             } finally {
                 setLoading(false);
             }
