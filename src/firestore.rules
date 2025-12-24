@@ -142,9 +142,8 @@ service cloud.firestore {
         allow write: if isSuperAdmin() || (isFranchiseAdmin(request.resource.data.franchiseId) && request.resource.data.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId);
     }
      match /mockTests/{testId} {
-        // Public can read tests not associated with a franchise
-        // Admins can read their own franchise tests
-        allow read: if resource.data.franchiseId == null || isFranchiseAdmin(resource.data.franchiseId);
+        // Public can read all published tests
+        allow read: if true;
 
         // Admins can manage their own tests
         allow write: if isSuperAdmin() || (isFranchiseAdmin(request.resource.data.franchiseId) && request.resource.data.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId);
