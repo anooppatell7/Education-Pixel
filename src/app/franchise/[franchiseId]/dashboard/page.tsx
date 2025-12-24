@@ -283,6 +283,7 @@ export default function FranchiseDashboardPage() {
                                                 <TableHead>Name</TableHead>
                                                 <TableHead>Course</TableHead>
                                                 <TableHead>Status</TableHead>
+                                                <TableHead>Phone</TableHead>
                                                 <TableHead className="hidden md:table-cell">Registered</TableHead>
                                                 <TableHead className="text-right">Actions</TableHead>
                                             </TableRow>
@@ -297,6 +298,7 @@ export default function FranchiseDashboardPage() {
                                                     </TableCell>
                                                     <TableCell>{reg.course}</TableCell>
                                                     <TableCell><StatusBadge status={reg.status} /></TableCell>
+                                                    <TableCell>{reg.phone}</TableCell>
                                                     <TableCell className="hidden md:table-cell">{reg.registeredAt}</TableCell>
                                                     <TableCell className="text-right">
                                                          <DropdownMenu>
