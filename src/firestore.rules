@@ -29,6 +29,13 @@ service cloud.firestore {
     function isOwner(userId) {
       return isAuth() && request.auth.uid == userId;
     }
+    
+    function isResultOwner(result) {
+      // Check if a registration document exists for the current user, and if its registrationNumber matches the one on the result.
+      // This confirms the person viewing the result is the one who is tied to that registration number.
+      return exists(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)).data.registrationNumber == result.registrationNumber;
+    }
 
     // == CORE DATA ==
 
@@ -36,7 +43,7 @@ service cloud.firestore {
       allow read, write: if isSuperAdmin();
       allow get, update: if isOwner(userId);
       allow create: if true;
-      allow list: if isAuth(); // Changed from true for better security
+      allow list: if isAuth();
     }
     
     match /franchises/{franchiseId} {
@@ -54,14 +61,13 @@ service cloud.firestore {
     match /examRegistrations/{userId} {
         allow create: if isOwner(userId);
         allow read, update: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
-        // Allow franchise admins to also get individual documents, which is needed to resolve UIDs from Reg Numbers
         allow get: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
-        allow list: if isAuth(); // List queries will be filtered on the client/backend
+        allow list: if isAuth(); 
     }
     
     match /examResults/{resultId} {
         allow create: if isAuth();
-        allow read: if isAuth() || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
+        allow read: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId) || isResultOwner(resource.data);
         allow list: if isSuperAdmin() || isFranchiseAdmin(request.query.franchiseId);
         allow delete: if isSuperAdmin();
     }
@@ -99,25 +105,23 @@ service cloud.firestore {
     
     match /testCategories/{categoryId} {
         allow create: if isSuperAdmin() || isFranchiseAdmin(request.resource.data.franchiseId);
-        // Students should be able to read categories of their franchise
-        allow read: if isSuperAdmin() || isStudentInFranchise(resource.data.franchiseId);
+        allow read: if isAuth(); // Simplified: Queries are filtered on the client
         allow update, delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
-        allow list: if isAuth(); // Queries will be filtered on the client
+        allow list: if isAuth();
     }
     
      match /mockTests/{testId} {
         allow create: if isSuperAdmin() || isFranchiseAdmin(request.resource.data.franchiseId);
-        // Students should be able to read mock tests of their franchise
-        allow read: if isSuperAdmin() || isStudentInFranchise(resource.data.franchiseId);
+        allow read: if isAuth(); // Simplified: Queries are filtered on the client
         allow update, delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
-        allow list: if isAuth(); // Queries will be filtered on the client
+        allow list: if isAuth(); 
     }
     
     // Official Student Exams (highly restricted)
     match /studentExams/{examId} {
         allow create: if isSuperAdmin() || isFranchiseAdmin(request.resource.data.franchiseId);
         allow get: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId) || (request.auth.uid in resource.data.allowedStudents);
-        allow list: if isAuth(); // Queries will be filtered on the client
+        allow list: if isAuth();
         allow update, delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
     }
     
