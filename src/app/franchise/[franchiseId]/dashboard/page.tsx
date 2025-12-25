@@ -128,7 +128,7 @@ export default function FranchiseDashboardPage() {
                 router.push('/login');
                 return;
             }
-            const appUserData = userDocSnap.data() as AppUser;
+            const appUserData = {id: userDocSnap.id, ...userDocSnap.data()} as AppUser;
             setAppUser(appUserData);
 
             const franchiseDocRef = doc(firestore, "franchises", franchiseId);
@@ -141,21 +141,28 @@ export default function FranchiseDashboardPage() {
 
             const regQuery = query(collection(firestore, "examRegistrations"), where("franchiseId", "==", franchiseId), orderBy("registeredAt", "desc"));
             const resultsQuery = query(collection(firestore, "examResults"), where("franchiseId", "==", franchiseId), orderBy("submittedAt", "desc"));
-            const categoriesQuery = query(collection(firestore, "testCategories"), where("franchiseId", "==", franchiseId));
+            
+            const franchiseCategoriesQuery = query(collection(firestore, "testCategories"), where("franchiseId", "==", franchiseId));
+            const globalCategoriesQuery = query(collection(firestore, "testCategories"), where("franchiseId", "in", [null, ""]));
+            
             const mockTestsQuery = query(collection(firestore, "mockTests"), where("franchiseId", "==", franchiseId));
             const studentExamsQuery = query(collection(firestore, "studentExams"), where("franchiseId", "==", franchiseId));
 
-            const [regSnap, resultsSnap, categoriesSnap, mockTestsSnap, studentExamsSnap] = await Promise.all([
-                getDocs(regQuery), getDocs(resultsQuery), getDocs(categoriesQuery), getDocs(mockTestsQuery), getDocs(studentExamsQuery)
+            const [regSnap, resultsSnap, franchiseCategoriesSnap, globalCategoriesSnap, mockTestsSnap, studentExamsSnap] = await Promise.all([
+                getDocs(regQuery), getDocs(resultsQuery), getDocs(franchiseCategoriesQuery), getDocs(globalCategoriesQuery), getDocs(mockTestsSnap), getDocs(studentExamsSnap)
             ]);
 
             const registrationList = regSnap.docs.map(d => ({ id: d.id, ...d.data(), registeredAt: (d.data().registeredAt as Timestamp)?.toDate().toLocaleString() || '' } as ExamRegistration));
             const resultList = resultsSnap.docs.map(d => ({ id: d.id, ...d.data(), submittedAt: (d.data().submittedAt as Timestamp)?.toDate().toLocaleString() || '' } as ExamResult));
-            const categoriesList = categoriesSnap.docs.map(d => ({ id: d.id, ...d.data() } as TestCategory));
+            
+            const franchiseCategories = franchiseCategoriesSnap.docs.map(d => ({ id: d.id, ...d.data() } as TestCategory));
+            const globalCategories = globalCategoriesSnap.docs.map(d => ({ id: d.id, ...d.data() } as TestCategory));
+            const combinedCategories = [...franchiseCategories, ...globalCategories];
+
             const mockTestsList = mockTestsSnap.docs.map(d => ({ id: d.id, ...d.data() } as MockTest));
             const studentExamsList = studentExamsSnap.docs.map(d => ({ id: d.id, ...d.data() } as StudentExam));
             
-            setData({ registrations: registrationList, results: resultList, testCategories: categoriesList, mockTests: mockTestsList, studentExams: studentExamsList });
+            setData({ registrations: registrationList, results: resultList, testCategories: combinedCategories, mockTests: mockTestsList, studentExams: studentExamsList });
 
         } catch (error) {
             console.error("Error fetching franchise data:", error);
@@ -281,9 +288,10 @@ export default function FranchiseDashboardPage() {
                 const testDoc = await getDoc(testRef);
                 if (testDoc.exists()) {
                     const testData = testDoc.data() as MockTest;
-                    const newQuestion = { ...dataToSave, id: doc(collection(firestore, 'mock-tests')).id };
+                    const questionData = { questionText: formData.questionText, options: formData.options, correctOption: formData.correctOption, marks: formData.marks, explanation: formData.explanation };
+                    const newQuestion = { ...questionData, id: doc(collection(firestore, 'mock-tests')).id };
                     const updatedQuestions = editingItem
-                        ? testData.questions.map(q => q.id === editingItem.id ? { ...dataToSave, id: editingItem.id } : q)
+                        ? testData.questions.map(q => q.id === editingItem.id ? { ...questionData, id: editingItem.id } : q)
                         : [...(testData.questions || []), newQuestion];
                     await updateDoc(testRef, { questions: updatedQuestions });
                 }
@@ -300,9 +308,10 @@ export default function FranchiseDashboardPage() {
                 const testDoc = await getDoc(testRef);
                 if (testDoc.exists()) {
                     const testData = testDoc.data() as StudentExam;
-                    const newQuestion = { ...dataToSave, id: doc(collection(firestore, 'student-exams')).id };
+                    const questionData = { questionText: formData.questionText, options: formData.options, correctOption: formData.correctOption, marks: formData.marks, explanation: formData.explanation };
+                    const newQuestion = { ...questionData, id: doc(collection(firestore, 'student-exams')).id };
                      const updatedQuestions = editingItem
-                        ? testData.questions.map(q => q.id === editingItem.id ? { ...dataToSave, id: editingItem.id } : q)
+                        ? testData.questions.map(q => q.id === editingItem.id ? { ...questionData, id: editingItem.id } : q)
                         : [...(testData.questions || []), newQuestion];
                     await updateDoc(testRef, { questions: updatedQuestions });
                 }
@@ -361,7 +370,7 @@ export default function FranchiseDashboardPage() {
                         const testRef = doc(firestore, parentCollection, parentIds.testId);
                         const testDoc = await getDoc(testRef);
                         if (testDoc.exists()) {
-                            const testData = testDoc.data() as MockTest;
+                            const testData = testDoc.data() as MockTest; // or StudentExam
                             const updatedQuestions = testData.questions.filter(q => q.id !== id);
                             await updateDoc(testRef, { questions: updatedQuestions });
                         }
@@ -377,7 +386,11 @@ export default function FranchiseDashboardPage() {
             authorizeAndFetch();
         } catch (error) {
             console.error("Delete error:", error);
-            toast({ title: "Error", description: "Failed to delete item.", variant: "destructive" });
+            const permissionError = new FirestorePermissionError({
+                path: `${type}/${id}`,
+                operation: 'delete',
+            });
+            errorEmitter.emit('permission-error', permissionError);
         } finally {
             setDialogOpen(false);
             setItemToDelete(null);
@@ -416,7 +429,7 @@ export default function FranchiseDashboardPage() {
             case 'mock-tests': return (
                 <>
                     <div className="grid gap-2"><Label htmlFor="title">Test Title</Label><Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} /></div>
-                    <div className="grid gap-2"><Label htmlFor="categoryId">Category</Label><Select name="categoryId" value={formData.categoryId || ''} onValueChange={(val) => setFormData({ ...formData, categoryId: val })}><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger><SelectContent>{data.testCategories.map(cat => (<SelectItem key={cat.id} value={cat.id}>{cat.title}</SelectItem>))}</SelectContent></Select></div>
+                    <div className="grid gap-2"><Label htmlFor="categoryId">Category</Label><Select name="categoryId" value={formData.categoryId || ''} onValueChange={(val) => setFormData({ ...formData, categoryId: val })}><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger><SelectContent>{data.testCategories.map(cat => (<SelectItem key={cat.id} value={cat.id}>{cat.title} ({cat.franchiseId ? 'Franchise' : 'Global'})</SelectItem>))}</SelectContent></Select></div>
                     <div className="grid gap-2"><Label htmlFor="description">Description</Label><Textarea id="description" name="description" value={formData.description || ''} onChange={handleFormChange} /></div>
                     <div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label htmlFor="duration">Duration (Minutes)</Label><Input id="duration" name="duration" type="number" value={formData.duration || 0} onChange={handleFormChange} /></div><div className="grid gap-2"><Label htmlFor="totalMarks">Total Marks</Label><Input id="totalMarks" name="totalMarks" type="number" value={formData.totalMarks || 0} onChange={handleFormChange} /></div></div>
                     <div className="flex items-center space-x-2"><Switch id="isPublished" name="isPublished" checked={formData.isPublished || false} onCheckedChange={(checked) => setFormData({...formData, isPublished: checked})} /><Label htmlFor="isPublished">Publish Test</Label></div>
@@ -425,7 +438,7 @@ export default function FranchiseDashboardPage() {
              case 'student-exams': return (
                 <>
                     <div className="grid gap-2"><Label htmlFor="title">Exam Title</Label><Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} placeholder="e.g., DCA Final Exam" /></div>
-                    <div className="grid gap-2"><Label htmlFor="courseName">Course Name</Label><Input id="courseName" name="courseName" value={formData.courseName || ''} onChange={handleFormChange} placeholder="e.g., DCA" /></div>
+                    <div className="grid gap-2"><Label htmlFor="courseName">Course Name (Must match registration)</Label><Input id="courseName" name="courseName" value={formData.courseName || ''} onChange={handleFormChange} placeholder="e.g., DCA" /></div>
                     <div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label htmlFor="duration">Duration (Minutes)</Label><Input id="duration" name="duration" type="number" value={formData.duration || 0} onChange={handleFormChange} /></div><div className="grid gap-2"><Label htmlFor="totalMarks">Total Marks</Label><Input id="totalMarks" name="totalMarks" type="number" value={formData.totalMarks || 0} onChange={handleFormChange} /></div></div>
                     <div className="grid gap-2"><Label htmlFor="allowedStudents">Allowed Students (Registration Numbers)</Label><Textarea id="allowedStudents" name="allowedStudents" value={formData.allowedStudents || ''} onChange={handleFormChange} placeholder="EP-2024-0001, EP-2024-0002" /></div>
                     <div className="flex items-center space-x-2"><Switch id="isPublished" name="isPublished" checked={formData.isPublished || false} onCheckedChange={(checked) => setFormData({...formData, isPublished: checked})} /><Label htmlFor="isPublished">Publish Exam</Label></div>
@@ -455,9 +468,9 @@ export default function FranchiseDashboardPage() {
 
     const filteredRegistrations = data.registrations.filter(reg => reg.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || reg.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const getQuestionType = () => {
-        if (activeTab === 'mock-tests') return 'testQuestion';
-        if (activeTab === 'student-exams') return 'examQuestion';
+    const getQuestionType = (tab: string) => {
+        if (tab === 'mock-tests') return 'testQuestion';
+        if (tab === 'student-exams') return 'examQuestion';
         return 'question';
     }
 
@@ -514,8 +527,12 @@ export default function FranchiseDashboardPage() {
                     </TabsContent>
                     <TabsContent value="test-categories">
                         <Card><CardHeader><CardTitle>Test Categories</CardTitle><CardDescription>Manage categories for your franchise's mock tests. These are for practice.</CardDescription></CardHeader>
-                            <CardContent>{loading ? <p>Loading...</p> : (<Table><TableHeader><TableRow><TableHead>Title</TableHead><TableHead>ID (Slug)</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader><TableBody>
-                                {data.testCategories.map(category => (<TableRow key={category.id}><TableCell className="font-medium flex items-center gap-2">{category.icon && <span className="text-xl">{category.icon}</span>}{category.title}</TableCell><TableCell>{category.id}</TableCell><TableCell className="text-right"><DropdownMenu><DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onClick={() => handleEdit(category)}><Edit className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem><DropdownMenuItem className="text-destructive" onClick={() => openConfirmationDialog('testCategory', category.id)}><Trash className="mr-2 h-4 w-4"/>Delete</DropdownMenuItem></DropdownMenuContent></DropdownMenu></TableCell></TableRow>))}
+                            <CardContent>{loading ? <p>Loading...</p> : (<Table><TableHeader><TableRow><TableHead>Title</TableHead><TableHead>Owner</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader><TableBody>
+                                {data.testCategories.map(category => (<TableRow key={category.id}><TableCell className="font-medium flex items-center gap-2">{category.icon && <span className="text-xl">{category.icon}</span>}{category.title}</TableCell><TableCell><Badge variant={category.franchiseId ? "secondary" : "default"}>{category.franchiseId ? 'Franchise' : 'Global'}</Badge></TableCell><TableCell className="text-right">
+                                    {category.franchiseId === appUser?.franchiseId && (
+                                        <DropdownMenu><DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onClick={() => handleEdit(category)}><Edit className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem><DropdownMenuItem className="text-destructive" onClick={() => openConfirmationDialog('testCategory', category.id)}><Trash className="mr-2 h-4 w-4"/>Delete</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+                                    )}
+                                    </TableCell></TableRow>))}
                             </TableBody></Table>)}</CardContent>
                         </Card>
                     </TabsContent>
@@ -526,7 +543,7 @@ export default function FranchiseDashboardPage() {
                                     <AccordionTrigger className="flex-1 px-4 py-2 hover:no-underline"><div className="flex items-center justify-between w-full"><div><span className="font-semibold text-lg">{test.title}</span><Badge variant="outline" className="ml-2">{test.categoryName || 'Uncategorized'}</Badge></div><div className="flex items-center gap-4 text-sm text-muted-foreground"><span>{test.questions?.length || 0} Questions</span><span>{test.duration} mins</span><Badge variant={test.isPublished ? "default" : "secondary"}>{test.isPublished ? "Published" : "Draft"}</Badge></div></div></AccordionTrigger>
                                     <div className="flex items-center gap-2 pl-2"><Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleEdit(test) }}><Edit className="h-4 w-4 mr-1" /> Edit Test</Button><Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); openConfirmationDialog('mockTest', test.id) }}><Trash className="h-4 w-4 mr-1" /> Delete</Button></div>
                                 </div><AccordionContent className="pl-6 border-l-2 ml-3"><div className="py-4"><h4 className="font-semibold mb-4">Questions</h4><div className="space-y-2">
-                                    {test.questions?.map((q, index) => (<div key={q.id} className="flex justify-between items-center p-3 rounded-md border bg-background"><p className="flex-1 truncate">{index + 1}. {q.questionText}</p><div className="flex items-center gap-2 ml-4"><Button variant="ghost" size="sm" onClick={() => handleEdit(q, { testId: test.id })}><Edit className="h-4 w-4" /></Button><Button variant="ghost" size="sm" className="text-destructive" onClick={() => openConfirmationDialog('testQuestion', q.id, { testId: test.id })}><Trash className="h-4 w-4" /></Button></div></div>))}
+                                    {test.questions?.map((q, index) => (<div key={q.id} className="flex justify-between items-center p-3 rounded-md border bg-background"><p className="flex-1 truncate">{index + 1}. {q.questionText}</p><div className="flex items-center gap-2 ml-4"><Button variant="ghost" size="sm" onClick={() => handleEdit(q, { testId: test.id })}><Edit className="h-4 w-4" /></Button><Button variant="ghost" size="sm" className="text-destructive" onClick={() => openConfirmationDialog(getQuestionType(activeTab), q.id, { testId: test.id })}><Trash className="h-4 w-4" /></Button></div></div>))}
                                     {(!test.questions || test.questions.length === 0) && (<p className="text-muted-foreground text-sm text-center py-4">No questions added yet.</p>)}
                                 </div><Button variant="secondary" size="sm" className="mt-4" onClick={() => handleAddNew({ testId: test.id })}><PlusCircle className="h-4 w-4 mr-2" /> Add Question</Button></div></AccordionContent></AccordionItem>))}
                             </Accordion>)}</CardContent>
@@ -539,7 +556,7 @@ export default function FranchiseDashboardPage() {
                                     <AccordionTrigger className="flex-1 px-4 py-2 hover:no-underline"><div className="flex items-center justify-between w-full"><div><span className="font-semibold text-lg">{exam.title}</span><Badge variant="destructive" className="ml-2">Official Exam</Badge></div><div className="flex items-center gap-4 text-sm text-muted-foreground"><span>{exam.questions?.length || 0} Questions</span><span>{exam.duration} mins</span><Badge variant={exam.isPublished ? "default" : "secondary"}>{exam.isPublished ? "Published" : "Draft"}</Badge></div></div></AccordionTrigger>
                                     <div className="flex items-center gap-2 pl-2"><Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleEdit(exam) }}><Edit className="h-4 w-4 mr-1" /> Edit Exam</Button><Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); openConfirmationDialog('studentExam', exam.id) }}><Trash className="h-4 w-4 mr-1" /> Delete</Button></div>
                                 </div><AccordionContent className="pl-6 border-l-2 ml-3"><div className="py-4"><h4 className="font-semibold mb-4">Questions</h4><div className="space-y-2">
-                                    {exam.questions?.map((q, index) => (<div key={q.id} className="flex justify-between items-center p-3 rounded-md border bg-background"><p className="flex-1 truncate">{index + 1}. {q.questionText}</p><div className="flex items-center gap-2 ml-4"><Button variant="ghost" size="sm" onClick={() => handleEdit(q, { testId: exam.id })}><Edit className="h-4 w-4" /></Button><Button variant="ghost" size="sm" className="text-destructive" onClick={() => openConfirmationDialog('examQuestion', q.id, { testId: exam.id })}><Trash className="h-4 w-4" /></Button></div></div>))}
+                                    {exam.questions?.map((q, index) => (<div key={q.id} className="flex justify-between items-center p-3 rounded-md border bg-background"><p className="flex-1 truncate">{index + 1}. {q.questionText}</p><div className="flex items-center gap-2 ml-4"><Button variant="ghost" size="sm" onClick={() => handleEdit(q, { testId: exam.id })}><Edit className="h-4 w-4" /></Button><Button variant="ghost" size="sm" className="text-destructive" onClick={() => openConfirmationDialog(getQuestionType(activeTab), q.id, { testId: exam.id })}><Trash className="h-4 w-4" /></Button></div></div>))}
                                     {(!exam.questions || exam.questions.length === 0) && (<p className="text-muted-foreground text-sm text-center py-4">No questions added yet.</p>)}
                                 </div><Button variant="secondary" size="sm" className="mt-4" onClick={() => handleAddNew({ testId: exam.id })}><PlusCircle className="h-4 w-4 mr-2" /> Add Question</Button></div></AccordionContent></AccordionItem>))}
                             </Accordion>)}</CardContent>
@@ -552,5 +569,7 @@ export default function FranchiseDashboardPage() {
         </div>
     );
 }
+
+    
 
     
