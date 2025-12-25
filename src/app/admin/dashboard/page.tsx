@@ -94,7 +94,6 @@ export default function AdminDashboardPage() {
     const [testCategories, setTestCategories] = useState<TestCategory[]>([]);
     const [examRegistrations, setExamRegistrations] = useState<ExamRegistration[]>([]);
     const [examResults, setExamResults] = useState<ExamResult[]>([]);
-    const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [youtubePlaylists, setYoutubePlaylists] = useState<YouTubePlaylist[]>([]);
     const [franchises, setFranchises] = useState<Franchise[]>([]);
     const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
@@ -204,11 +203,6 @@ export default function AdminDashboardPage() {
             });
             setExamResults(examResList);
 
-            const certsQuery = query(collection(firestore, "certificates"), orderBy("issueDate", "desc"));
-            const certsSnapshot = await getDocs(certsQuery);
-            const certsList = certsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Certificate));
-            setCertificates(certsList);
-
             const announcementDoc = await getDoc(doc(firestore, "site_settings", "announcement"));
             if (announcementDoc.exists()) {
                 setSiteSettings(announcementDoc.data() as SiteSettings);
@@ -291,7 +285,6 @@ export default function AdminDashboardPage() {
                 case 'testCategory': docRef = doc(firestore, "testCategories", id); break;
                 case 'examRegistration': docRef = doc(firestore, "examRegistrations", id); break;
                 case 'examResult': docRef = doc(firestore, "examResults", id); break;
-                case 'certificate': docRef = doc(firestore, "certificates", id); break;
                 case 'youtubePlaylist': docRef = doc(firestore, "youtubePlaylists", id); break;
                 case 'mockTest':
                     docRef = doc(firestore, "mockTests", id);
@@ -1052,7 +1045,6 @@ export default function AdminDashboardPage() {
                                         {unreadRegistrations > 0 && <Badge className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{unreadRegistrations}</Badge>}
                                     </TabsTrigger>
                                     <TabsTrigger value="exam-results"><FileText className="mr-2 h-4 w-4"/>Exam Results</TabsTrigger>
-                                    <TabsTrigger value="certificates"><Award className="mr-2 h-4 w-4" />Certificates</TabsTrigger>
                                     <TabsTrigger value="enrollments" className="relative">
                                         <FileText className="mr-2 h-4 w-4"/>Enrollments
                                         {unreadEnrollments > 0 && <Badge className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{unreadEnrollments}</Badge>}
@@ -1588,59 +1580,6 @@ export default function AdminDashboardPage() {
                                         <ScrollBar orientation="horizontal" />
                                     </ScrollArea>
                                     }
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                         <TabsContent value="certificates">
-                            <Card className="shadow-lg rounded-lg">
-                                <CardHeader>
-                                    <CardTitle>Issued Certificates</CardTitle>
-                                    <CardDescription>View and manage all auto-generated student certificates.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    {loading ? <p>Loading certificates...</p> : (
-                                        <ScrollArea className="w-full whitespace-nowrap">
-                                            <Table>
-                                                <TableHeader>
-                                                    <TableRow>
-                                                        <TableHead>Certificate ID</TableHead>
-                                                        <TableHead>Student Name</TableHead>
-                                                        <TableHead>Course</TableHead>
-                                                        <TableHead>Issued On</TableHead>
-                                                        <TableHead className="text-right">Actions</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {certificates.map(cert => (
-                                                        <TableRow key={cert.id}>
-                                                            <TableCell className="font-mono">{cert.certificateId}</TableCell>
-                                                            <TableCell>{cert.studentName}</TableCell>
-                                                            <TableCell>{cert.courseName}</TableCell>
-                                                            <TableCell>{cert.issueDate}</TableCell>
-                                                            <TableCell className="text-right">
-                                                                <DropdownMenu>
-                                                                    <DropdownMenuTrigger asChild>
-                                                                        <Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /></Button>
-                                                                    </DropdownMenuTrigger>
-                                                                    <DropdownMenuContent align="end">
-                                                                        <DropdownMenuItem asChild>
-                                                                            <a href={cert.certificateUrl} target="_blank" rel="noopener noreferrer">
-                                                                                <FileText className="mr-2 h-4 w-4" /> View/Download
-                                                                            </a>
-                                                                        </DropdownMenuItem>
-                                                                        <DropdownMenuItem className="text-destructive" onClick={() => openConfirmationDialog('certificate', cert.id)}>
-                                                                            <Trash className="mr-2 h-4 w-4" />Delete
-                                                                        </DropdownMenuItem>
-                                                                    </DropdownMenuContent>
-                                                                </DropdownMenu>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                             </Table>
-                                            <ScrollBar orientation="horizontal" />
-                                        </ScrollArea>
-                                    )}
                                 </CardContent>
                             </Card>
                         </TabsContent>
