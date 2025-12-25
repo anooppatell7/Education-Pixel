@@ -51,7 +51,7 @@ export default function MockTestsByCategoryPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (isUserLoading) return;
+        if (userLoading) return;
         if (!user) {
             router.push(`/login?redirect=/mock-tests/category/${categoryId}`);
             return;
@@ -64,30 +64,36 @@ export default function MockTestsByCategoryPage() {
                 // Fetch user's franchise info
                 const userDocRef = doc(firestore, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
-                if (!userDocSnap.exists()) {
+                
+                let userData;
+                if (userDocSnap.exists()) {
+                    userData = userDocSnap.data() as AppUser;
+                    setAppUser(userData);
+                } else {
+                     // If user doc doesn't exist, they can't see any franchise-specific content
                     notFound();
                     return;
                 }
-                const userData = userDocSnap.data() as AppUser;
-                setAppUser(userData);
 
                 // Fetch category details
                 const categoryRef = doc(firestore, "testCategories", categoryId);
                 const categorySnap = await getDoc(categoryRef);
-                if (categorySnap.exists() && categorySnap.data().franchiseId === userData.franchiseId) {
-                    const categoryData = { id: categorySnap.id, ...categorySnap.data() } as TestCategory;
-                    setCategory(categoryData);
+
+                const categoryData = categorySnap.data() as TestCategory;
+                // A user can see the category if it's global (no franchiseId) or belongs to their franchise
+                if (categorySnap.exists() && (!categoryData.franchiseId || categoryData.franchiseId === userData.franchiseId)) {
+                    setCategory({ id: categorySnap.id, ...categoryData });
                     document.title = `${categoryData.title} Tests - Education Pixel`;
                 } else {
                     notFound();
                     return;
                 }
 
-                // Fetch tests for this category within the same franchise
+                // Fetch tests for this category. Tests should also be either global or franchise-specific.
                 const testsQuery = query(
                     collection(firestore, "mockTests"),
                     where("categoryId", "==", categoryId),
-                    where("franchiseId", "==", userData.franchiseId),
+                    where("franchiseId", "in", [null, "", userData.franchiseId]),
                     where("isPublished", "==", true)
                 );
                 const testsSnapshot = await getDocs(testsQuery);
@@ -102,7 +108,7 @@ export default function MockTestsByCategoryPage() {
         };
         
         fetchData();
-    }, [categoryId, firestore, user, isUserLoading, router]);
+    }, [categoryId, firestore, user, userLoading, router]);
 
     // Fetch results for the current user
     useEffect(() => {
