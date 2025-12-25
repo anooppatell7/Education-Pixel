@@ -3,17 +3,18 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { notFound, useParams, useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useUser } from '@/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
 import { db } from '@/firebase';
-import type { MockTest, TestQuestion, StudentExam } from '@/lib/types';
+import type { MockTest, TestQuestion, StudentExam, ExamResult } from '@/lib/types';
 import { useMockTest } from '@/hooks/use-mock-test';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { ArrowLeft, ArrowRight, Clock, Bookmark, X, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Clock, Bookmark, X, Check, Loader2, FileText, ShieldCheck } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -65,6 +66,7 @@ function MockTestClientComponent({ testId }: { testId: string }) {
 
     const [testData, setTestData] = useState<MockTest | StudentExam | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [existingResult, setExistingResult] = useState<ExamResult | null>(null);
 
     const {
         isInitialized,
@@ -82,7 +84,9 @@ function MockTestClientComponent({ testId }: { testId: string }) {
     } = useMockTest(testId);
 
     useEffect(() => {
-        if (!user && !userLoading) {
+        if (userLoading) return;
+        
+        if (!user) {
             const redirectUrl = isOfficialExam
                 ? `/login?redirect=/exam/start` 
                 : `/login?redirect=/mock-tests/${testId}`;
@@ -90,37 +94,47 @@ function MockTestClientComponent({ testId }: { testId: string }) {
             return;
         }
 
-        const fetchTest = async () => {
+        const fetchTestAndResult = async () => {
             setIsLoading(true);
-            
             const collectionName = isOfficialExam ? "studentExams" : "mockTests";
             const testRef = doc(db, collectionName, testId);
             const testSnap = await getDoc(testRef);
 
-            if (testSnap.exists()) {
-                const data = { id: testSnap.id, ...testSnap.data() } as MockTest | StudentExam;
-                if(data.isPublished) {
-                    setTestData(data);
-                    document.title = `${data.title} - Education Pixel`;
-                } else {
-                    notFound();
-                }
-            } else {
+            if (!testSnap.exists() || !testSnap.data().isPublished) {
                 notFound();
+                return;
             }
+            
+            const data = { id: testSnap.id, ...testSnap.data() } as MockTest | StudentExam;
+            setTestData(data);
+            document.title = `${data.title} - Education Pixel`;
+            
+            // Check for existing result
+            const resultIdentifier = registrationNumber || user.uid;
+            const resultsQuery = query(
+                collection(db, 'examResults'),
+                where('registrationNumber', '==', resultIdentifier),
+                where('testId', '==', testId),
+                orderBy('submittedAt', 'desc'),
+                limit(1)
+            );
+            const resultsSnapshot = await getDocs(resultsQuery);
+
+            if (!resultsSnapshot.empty) {
+                setExistingResult({id: resultsSnapshot.docs[0].id, ...resultsSnapshot.docs[0].data()} as ExamResult);
+            }
+            
             setIsLoading(false);
         };
 
-        if (!userLoading) {
-            fetchTest();
-        }
-    }, [testId, user, userLoading, router, isOfficialExam]);
+        fetchTestAndResult();
+    }, [testId, user, userLoading, router, isOfficialExam, registrationNumber]);
 
     useEffect(() => {
-        if (testData && !isInitialized) {
+        if (testData && !isInitialized && !existingResult) {
             initializeTest(testData.questions.length, testData.duration, registrationNumber);
         }
-    }, [testData, isInitialized, initializeTest, registrationNumber]);
+    }, [testData, isInitialized, initializeTest, registrationNumber, existingResult]);
 
     const handleTestSubmit = useCallback((isAuto: boolean) => {
         if (testData && user) {
@@ -144,13 +158,44 @@ function MockTestClientComponent({ testId }: { testId: string }) {
         return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }, [timeLeft]);
 
-    if (isLoading || userLoading || !isInitialized) {
+    if (isLoading || userLoading) {
         return <TestPageSkeleton />;
     }
 
-    if (!testData || !currentQuestion) {
+    if (existingResult) {
+         return (
+            <div className="bg-secondary min-h-screen flex items-center justify-center">
+                <Card className="w-full max-w-lg text-center shadow-lg rounded-lg">
+                    <CardHeader>
+                        <ShieldCheck className="mx-auto h-16 w-16 text-green-500" />
+                        <CardTitle className="font-headline text-2xl mt-4">Exam Already Completed</CardTitle>
+                        <CardDescription>You have already submitted this exam.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">You can view your performance and results by clicking the button below.</p>
+                    </CardContent>
+                    <CardFooter className="flex flex-col gap-4">
+                        <Button asChild className="w-full">
+                            <Link href={`/exam/result/${existingResult.id}`}>
+                               <FileText className="mr-2 h-4 w-4" /> View Your Result
+                            </Link>
+                        </Button>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href={isOfficialExam ? "/exam" : "/mock-tests"}>
+                                Back to Exams
+                            </Link>
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </div>
+        );
+    }
+    
+    if (!isInitialized || !testData || !currentQuestion) {
+        // This state can be shown if test data is null or still loading after the skeleton
         return <div className="text-center py-10">Test not found or has no questions.</div>;
     }
+
 
     const getQuestionStatus = (index: number) => {
         if (markedForReview.includes(index)) return 'bg-purple-500 hover:bg-purple-600 text-white';
@@ -288,3 +333,5 @@ export default function MockTestPage({ params }: { params: { id: string } }) {
     const { id } = params;
     return <MockTestClientComponent testId={id} />;
 }
+
+    
