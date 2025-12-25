@@ -123,7 +123,6 @@ export default function VerifyCertificatePage() {
                     <CardContent className="space-y-2 text-sm">
                         <p><strong>Student Name:</strong> {verificationResult.studentName}</p>
                         <p><strong>Course / Exam:</strong> {verificationResult.testName}</p>
-                        <p><strong>Score:</strong> {verificationResult.score} / {verificationResult.totalMarks}</p>
                         <p><strong>Date of Exam:</strong> {format(new Date(verificationResult.submittedAt.seconds * 1000), "dd MMMM, yyyy")}</p>
                     </CardContent>
                  </Card>
