@@ -281,6 +281,7 @@ export type Franchise = {
     email: string;
     status: 'active' | 'inactive';
     createdAt: any; // Firestore Timestamp
+    studentCount?: number;
 }
 
 export type User = {
@@ -311,3 +312,4 @@ export type FAQPageSchema = FAQPage;
     
 
     
+

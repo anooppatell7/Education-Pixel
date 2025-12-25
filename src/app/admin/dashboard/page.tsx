@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import React, { useState, useEffect, use } from "react";
-import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database, Youtube, CheckCircle, XCircle, Activity, Building } from "lucide-react";
+import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database, Youtube, CheckCircle, XCircle, Activity, Building, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -119,9 +119,31 @@ export default function AdminDashboardPage() {
         if (!firestore) return;
         setLoading(true);
         try {
+            // Fetch Registrations first to calculate counts
+            const examRegQuery = query(collection(firestore, "examRegistrations"), orderBy("registeredAt", "desc"));
+            const examRegSnapshot = await getDocs(examRegQuery);
+            const examRegList = examRegSnapshot.docs.map(doc => {
+                const data = doc.data();
+                const registeredAt = (data.registeredAt as Timestamp)?.toDate().toLocaleString() || new Date().toLocaleString();
+                return { id: doc.id, ...data, registeredAt, isRead: data.isRead || false } as ExamRegistration;
+            });
+            setExamRegistrations(examRegList);
+
+            // Calculate student counts per franchise
+            const studentCounts: { [key: string]: number } = {};
+            examRegList.forEach(reg => {
+                if (reg.franchiseId) {
+                    studentCounts[reg.franchiseId] = (studentCounts[reg.franchiseId] || 0) + 1;
+                }
+            });
+
             const franchisesCollection = collection(firestore, "franchises");
             const franchiseSnapshot = await getDocs(franchisesCollection);
-            const franchiseList = franchiseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Franchise));
+            const franchiseList = franchiseSnapshot.docs.map(doc => ({ 
+                id: doc.id, 
+                ...doc.data(),
+                studentCount: studentCounts[doc.id] || 0
+            } as Franchise));
             setFranchises(franchiseList);
 
             const activityLogsQuery = query(collection(firestore, "activityLogs"), orderBy("timestamp", "desc"));
@@ -184,15 +206,6 @@ export default function AdminDashboardPage() {
             const mockTestsSnapshot = await getDocs(mockTestsQuery);
             const mockTestsList = mockTestsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MockTest));
             setMockTests(mockTestsList);
-            
-            const examRegQuery = query(collection(firestore, "examRegistrations"), orderBy("registeredAt", "desc"));
-            const examRegSnapshot = await getDocs(examRegQuery);
-            const examRegList = examRegSnapshot.docs.map(doc => {
-                const data = doc.data();
-                const registeredAt = (data.registeredAt as Timestamp)?.toDate().toLocaleString() || new Date().toLocaleString();
-                return { id: doc.id, ...data, registeredAt, isRead: data.isRead || false } as ExamRegistration;
-            });
-            setExamRegistrations(examRegList);
 
             const examResQuery = query(collection(firestore, "examResults"), orderBy("submittedAt", "desc"));
             const examResSnapshot = await getDocs(examResQuery);
@@ -1084,6 +1097,7 @@ export default function AdminDashboardPage() {
                                                     <TableHead>City</TableHead>
                                                     <TableHead>Owner</TableHead>
                                                     <TableHead>Email</TableHead>
+                                                    <TableHead><Users className="h-4 w-4 mr-1 inline-block"/>Total Students</TableHead>
                                                     <TableHead>Status</TableHead>
                                                     <TableHead><span className="sr-only">Actions</span></TableHead>
                                                 </TableRow>
@@ -1095,6 +1109,7 @@ export default function AdminDashboardPage() {
                                                         <TableCell>{franchise.city}</TableCell>
                                                         <TableCell>{franchise.ownerName}</TableCell>
                                                         <TableCell>{franchise.email}</TableCell>
+                                                        <TableCell className="font-semibold text-center">{franchise.studentCount || 0}</TableCell>
                                                         <TableCell><StatusBadge status={franchise.status} /></TableCell>
                                                         <TableCell className="text-right">
                                                             <DropdownMenu>
