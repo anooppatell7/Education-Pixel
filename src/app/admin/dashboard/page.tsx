@@ -3,8 +3,8 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState, useEffect, use } from "react";
-import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database, Youtube, CheckCircle, XCircle, Activity, Building, Users } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database, Youtube, CheckCircle, XCircle, Activity, Building, Users, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -99,6 +99,9 @@ export default function AdminDashboardPage() {
     const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
+    const [registrationSearchTerm, setRegistrationSearchTerm] = useState('');
+    const [registrationCourseFilter, setRegistrationCourseFilter] = useState('all');
+
 
     // Site settings state
     const [siteSettings, setSiteSettings] = useState<SiteSettings>({ id: 'announcement', text: '', link: '', isVisible: false });
@@ -1004,6 +1007,21 @@ export default function AdminDashboardPage() {
 
     const unreadEnrollments = enrollments.filter(e => !e.isRead).length;
     const unreadRegistrations = examRegistrations.filter(r => !r.isRead).length;
+    
+    const registrationCourseOptions = useMemo(() => {
+        const courses = new Set(examRegistrations.map(reg => reg.course));
+        return ['all', ...Array.from(courses)];
+    }, [examRegistrations]);
+
+    const filteredRegistrations = useMemo(() => {
+        return examRegistrations.filter(reg => {
+            const matchesCourse = registrationCourseFilter === 'all' || reg.course === registrationCourseFilter;
+            const matchesSearch = registrationSearchTerm === '' || 
+                                  reg.fullName.toLowerCase().includes(registrationSearchTerm.toLowerCase()) ||
+                                  reg.registrationNumber.toLowerCase().includes(registrationSearchTerm.toLowerCase());
+            return matchesCourse && matchesSearch;
+        });
+    }, [examRegistrations, registrationCourseFilter, registrationSearchTerm]);
 
     const StatusBadge = ({ status }: { status: 'Pending' | 'Approved' | 'Rejected' | 'active' | 'inactive' }) => {
         const statusConfig = {
@@ -1479,10 +1497,33 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                          <TabsContent value="exam-registrations">
-                            <Card className="shadow-lg rounded-lg">
+                             <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Student Registrations</CardTitle>
                                     <CardDescription>View and manage student registrations for official exams.</CardDescription>
+                                    <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                                        <div className="relative flex-1">
+                                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                            <Input 
+                                                placeholder="Search by name or reg. no..." 
+                                                className="pl-8 w-full"
+                                                value={registrationSearchTerm}
+                                                onChange={(e) => setRegistrationSearchTerm(e.target.value)} 
+                                            />
+                                        </div>
+                                        <Select value={registrationCourseFilter} onValueChange={setRegistrationCourseFilter}>
+                                            <SelectTrigger className="w-full sm:w-[200px]">
+                                                <SelectValue placeholder="Filter by course..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {registrationCourseOptions.map(course => (
+                                                    <SelectItem key={course} value={course}>
+                                                        {course === 'all' ? 'All Courses' : course}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
                                     {loading ? <p>Loading registrations...</p> :
@@ -1500,7 +1541,7 @@ export default function AdminDashboardPage() {
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {examRegistrations.map(reg => (
+                                                {filteredRegistrations.map(reg => (
                                                     <TableRow key={reg.id} onClick={() => !reg.isRead && handleMarkAsRead('examRegistrations', reg.id)} className={cn(!reg.isRead && "bg-blue-50 hover:bg-blue-100/80")}>
                                                         <TableCell className="font-mono">{reg.registrationNumber}</TableCell>
                                                         <TableCell className="font-medium flex items-center gap-2">

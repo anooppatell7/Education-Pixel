@@ -1,8 +1,9 @@
 
+
 "use client";
 
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { LogOut, MoreHorizontal, CheckCircle, XCircle, FileText, UserCheck, Star, Award, Search, Eye, PlusCircle, BookCopy, ListTodo, Edit, Trash, Users, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -93,6 +94,7 @@ export default function FranchiseDashboardPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const { toast } = useToast();
     const [activeTab, setActiveTab] = useState('registrations');
+    const [courseFilter, setCourseFilter] = useState('all');
 
     // Form and Dialog states
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -472,7 +474,20 @@ export default function FranchiseDashboardPage() {
         return <Badge className={cn('text-xs font-semibold', statusConfig[status])} variant="outline">{status}</Badge>;
     };
 
-    const filteredRegistrations = data.registrations.filter(reg => reg.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || reg.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase()));
+    const courseOptions = useMemo(() => {
+        const courses = new Set(data.registrations.map(reg => reg.course));
+        return ['all', ...Array.from(courses)];
+    }, [data.registrations]);
+
+    const filteredRegistrations = useMemo(() => {
+        return data.registrations.filter(reg => {
+            const matchesCourse = courseFilter === 'all' || reg.course === courseFilter;
+            const matchesSearch = searchTerm === '' || 
+                                  reg.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                  reg.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesCourse && matchesSearch;
+        });
+    }, [data.registrations, courseFilter, searchTerm]);
 
     const getQuestionType = (tab: string) => {
         if (tab === 'mock-tests') return 'testQuestion';
@@ -515,7 +530,34 @@ export default function FranchiseDashboardPage() {
                         </div>
                     </div>
                     <TabsContent value="registrations">
-                        <Card><CardHeader><CardTitle>Student Registrations</CardTitle><CardDescription>Manage and approve new student applications for your franchise.</CardDescription><div className="relative mt-4"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Search students by name or reg. no..." className="pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /></div></CardHeader>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Student Registrations</CardTitle>
+                                <CardDescription>Manage and approve new student applications for your franchise.</CardDescription>
+                                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                                    <div className="relative flex-1">
+                                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                            placeholder="Search by name or reg. no..." 
+                                            className="pl-8 w-full"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)} 
+                                        />
+                                    </div>
+                                    <Select value={courseFilter} onValueChange={setCourseFilter}>
+                                        <SelectTrigger className="w-full sm:w-[180px]">
+                                            <SelectValue placeholder="Filter by course" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {courseOptions.map(course => (
+                                                <SelectItem key={course} value={course}>
+                                                    {course === 'all' ? 'All Courses' : course}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </CardHeader>
                             <CardContent>{loading ? <p>Loading registrations...</p> : (<ScrollArea className="w-full whitespace-nowrap"><Table><TableHeader><TableRow><TableHead>Reg. No</TableHead><TableHead>Name</TableHead><TableHead>Course</TableHead><TableHead>Status</TableHead><TableHead>Phone</TableHead><TableHead className="hidden md:table-cell">Registered</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader><TableBody>
                                 {filteredRegistrations.map(reg => (<TableRow key={reg.id} onClick={() => !reg.isRead && handleMarkAsRead(reg.id)} className={cn(!reg.isRead && "bg-blue-50 hover:bg-blue-100/80")}>
                                     <TableCell className="font-mono">{reg.registrationNumber}</TableCell><TableCell className="font-medium flex items-center gap-2">{!reg.isRead && <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>}{reg.fullName}</TableCell><TableCell>{reg.course}</TableCell><TableCell><StatusBadge status={reg.status} /></TableCell><TableCell>{reg.phone}</TableCell><TableCell className="hidden md:table-cell">{reg.registeredAt}</TableCell>
