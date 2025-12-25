@@ -228,6 +228,8 @@ export type ExamRegistration = {
   dob: string;
   gender: 'Male' | 'Female' | 'Other';
   course: string;
+  courseDuration: string;
+  photoUrl: string;
   address: string;
   city: string;
   state: string;
@@ -312,4 +314,3 @@ export type FAQPageSchema = FAQPage;
     
 
     
-

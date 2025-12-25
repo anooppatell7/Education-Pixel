@@ -180,7 +180,7 @@ export default function ProfilePage() {
              };
             await updateDoc(docRef, dataToUpdate);
             setRegistration(dataToUpdate as ExamRegistration);
-            setIsEditing(false);
+setIsEditing(false);
             toast({ title: "Success", description: "Your profile has been updated." });
         } catch (error) {
             console.error("Error updating profile:", error);
@@ -227,7 +227,7 @@ export default function ProfilePage() {
 
             const certDataForPdf = {
                 ...result,
-                testName: registration.course, // Use the registered course name
+                registration, // Pass the whole registration object
                 certificateId: result.certificateId, // Use the stored ID
                 issueDate: issueDate.toISOString(),
                 examDate: examDateObj.toISOString(),
@@ -242,7 +242,7 @@ export default function ProfilePage() {
             a.href = url;
             a.download = `Certificate-${result.studentName}-${registration.course.replace(/ /g, '_')}.pdf`;
             document.body.appendChild(a);
-            a.click();
+a.click();
             
             // Clean up
             a.remove();
@@ -309,6 +309,7 @@ export default function ProfilePage() {
                     <CardHeader className="bg-card p-8 border-b">
                          <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
                             <Avatar className="w-28 h-28 text-4xl border-4 border-primary/10 shadow-md">
+                                <AvatarImage src={registration.photoUrl} alt={registration.fullName} />
                                 <AvatarFallback className="bg-primary/20 text-primary font-semibold">{getInitials(registration.fullName)}</AvatarFallback>
                             </Avatar>
                             <div>
@@ -356,6 +357,10 @@ export default function ProfilePage() {
                                      <div className="grid gap-2">
                                         <Label>Course (Locked)</Label>
                                         <Input value={registration.course} disabled />
+                                    </div>
+                                    <div className="grid gap-2 md:col-span-2">
+                                        <Label htmlFor="photoUrl">Photo URL</Label>
+                                        <Input id="photoUrl" name="photoUrl" value={formData.photoUrl || ''} onChange={handleFormChange} />
                                     </div>
                                 </div>
                                 <div className="flex justify-end gap-4 mt-6">

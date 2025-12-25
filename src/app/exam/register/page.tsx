@@ -40,6 +40,8 @@ const formSchema = z.object({
   dob: z.date({ required_error: "Date of birth is required." }),
   gender: z.enum(['Male', 'Female', 'Other']),
   course: z.string().min(1, "Please select a course."),
+  courseDuration: z.string().min(2, "Please enter course duration."),
+  photoUrl: z.string().url("Please enter a valid URL for your photo."),
   address: z.string().min(5, "Address must be at least 5 characters."),
   city: z.string().min(2, "City is required."),
   state: z.string().min(2, "State is required."),
@@ -128,6 +130,8 @@ export default function ExamRegistrationPage() {
             state: 'Uttar Pradesh',
             pinCode: '',
             course: '',
+            courseDuration: '',
+            photoUrl: '',
         }
     });
 
@@ -373,6 +377,28 @@ export default function ExamRegistrationPage() {
                                                             <SelectItem value="Other">Other</SelectItem>
                                                         </SelectContent>
                                                     </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                         <FormField
+                                            control={form.control}
+                                            name="courseDuration"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Course Duration</FormLabel>
+                                                    <FormControl><Input placeholder="e.g., 12 Months" {...field} /></FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                         <FormField
+                                            control={form.control}
+                                            name="photoUrl"
+                                            render={({ field }) => (
+                                                <FormItem className="md:col-span-2">
+                                                    <FormLabel>Photo URL</FormLabel>
+                                                    <FormControl><Input type="url" placeholder="https://example.com/your-photo.jpg" {...field} /></FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
