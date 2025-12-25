@@ -11,6 +11,7 @@ import { useUser, useFirestore } from "@/firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import SectionDivider from "@/components/section-divider";
+import { useRouter } from "next/navigation";
 
 function TestsLoadingSkeleton() {
     return (
@@ -36,6 +37,7 @@ function TestsLoadingSkeleton() {
 export default function StudentExamPage() {
     const { user, isLoading: userLoading } = useUser();
     const firestore = useFirestore();
+    const router = useRouter();
 
     const [studentExams, setStudentExams] = useState<StudentExam[]>([]);
     const [userResults, setUserResults] = useState<ExamResult[]>([]);
@@ -70,7 +72,7 @@ export default function StudentExamPage() {
                     return;
                 }
 
-                // Fetch exams from studentExams collection where the user's UID is in the allowedStudents array
+                // Corrected Query: Fetch exams from `studentExams` collection
                 const examsQuery = query(
                     collection(firestore, "studentExams"),
                     where("franchiseId", "==", regData.franchiseId),
@@ -89,7 +91,7 @@ export default function StudentExamPage() {
         };
         
         fetchData();
-    }, [user, userLoading, firestore]);
+    }, [user, userLoading, firestore, router]);
 
     useEffect(() => {
         const fetchUserResults = async () => {
@@ -175,6 +177,10 @@ export default function StudentExamPage() {
                     {studentExams.map((exam) => {
                         const hasAttempted = latestResultsMap.has(exam.id);
                         const result = latestResultsMap.get(exam.id);
+                        const startExamUrl = user 
+                            ? `/mock-tests/${exam.id}?regNo=${registration.registrationNumber}&studentName=${registration.fullName}`
+                            : `/login?redirect=/exam`;
+
 
                         return (
                             <Card key={exam.id} className="flex flex-col shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-background border-t-4 border-t-accent rounded-lg">
@@ -203,7 +209,7 @@ export default function StudentExamPage() {
                                         </Button>
                                     ) : (
                                         <Button asChild className="w-full">
-                                            <Link href={user ? `/exam/start`: `/login?redirect=/exam`}>
+                                            <Link href={startExamUrl}>
                                                 Start Exam <ArrowRight className="ml-2 h-4 w-4" />
                                             </Link>
                                         </Button>
