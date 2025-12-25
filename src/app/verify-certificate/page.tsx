@@ -31,6 +31,9 @@ export default function VerifyCertificatePage() {
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      certificateId: '',
+    },
   });
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {

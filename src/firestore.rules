@@ -60,15 +60,15 @@ service cloud.firestore {
     
     match /examRegistrations/{userId} {
         allow create: if isOwner(userId);
-        allow read, update: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         allow get: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
+        allow read, update: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         allow list: if isAuth(); 
     }
     
     match /examResults/{resultId} {
         allow create: if isAuth();
         allow read: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId) || isResultOwner(resource.data);
-        allow list: if isSuperAdmin() || isFranchiseAdmin(request.query.franchiseId);
+        allow list: if true; // Allow public queries for certificate verification
         allow delete: if isSuperAdmin();
     }
     
