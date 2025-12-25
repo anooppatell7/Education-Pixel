@@ -227,6 +227,7 @@ export default function ProfilePage() {
 
             const certDataForPdf = {
                 ...result,
+                testName: registration.course, // Use the registered course name
                 certificateId: result.certificateId, // Use the stored ID
                 issueDate: issueDate.toISOString(),
                 examDate: examDateObj.toISOString(),
@@ -239,7 +240,7 @@ export default function ProfilePage() {
             const url = window.URL.createObjectURL(pdfBlob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Certificate-${result.studentName}-${result.testName.replace(/ /g, '_')}.pdf`;
+            a.download = `Certificate-${result.studentName}-${registration.course.replace(/ /g, '_')}.pdf`;
             document.body.appendChild(a);
             a.click();
             
