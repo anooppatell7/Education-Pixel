@@ -354,5 +354,4 @@ export default function ExamResultPage() {
             </div>
         </div>
     );
-
-    
+}
