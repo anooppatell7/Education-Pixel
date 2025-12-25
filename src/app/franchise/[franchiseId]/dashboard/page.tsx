@@ -61,7 +61,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Switch } from "@/components/ui/switch";
 import Logo from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
-import type { ExamRegistration, ExamResult, Franchise, TestCategory, MockTest, User as AppUser, TestQuestion } from "@/lib/types";
+import type { ExamRegistration, ExamResult, Franchise, TestCategory, MockTest, User as AppUser, TestQuestion, StudentExam } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { signOut } from 'firebase/auth';
 import { useRouter, useParams, notFound } from "next/navigation";
@@ -70,8 +70,6 @@ import { useAuth, useFirestore, useUser } from "@/firebase";
 import { collection, getDocs, updateDoc, doc, query, orderBy, where, Timestamp, getDoc, addDoc, serverTimestamp, writeBatch, deleteDoc, setDoc } from "firebase/firestore";
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-
-type StudentExam = Omit<MockTest, 'categoryId' | 'categoryName'> & { allowedStudents?: string[], courseName?: string };
 
 type DashboardData = {
     registrations: ExamRegistration[];
@@ -149,7 +147,12 @@ export default function FranchiseDashboardPage() {
             const studentExamsQuery = query(collection(firestore, "studentExams"), where("franchiseId", "==", franchiseId));
 
             const [regSnap, resultsSnap, franchiseCategoriesSnap, globalCategoriesSnap, mockTestsSnap, studentExamsSnap] = await Promise.all([
-                getDocs(regQuery), getDocs(resultsQuery), getDocs(franchiseCategoriesQuery), getDocs(globalCategoriesQuery), getDocs(mockTestsSnap), getDocs(studentExamsSnap)
+                getDocs(regQuery), 
+                getDocs(resultsQuery), 
+                getDocs(franchiseCategoriesQuery), 
+                getDocs(globalCategoriesQuery),
+                getDocs(mockTestsQuery),
+                getDocs(studentExamsSnap)
             ]);
 
             const registrationList = regSnap.docs.map(d => ({ id: d.id, ...d.data(), registeredAt: (d.data().registeredAt as Timestamp)?.toDate().toLocaleString() || '' } as ExamRegistration));
@@ -283,19 +286,25 @@ export default function FranchiseDashboardPage() {
             if (!docId) { toast({ title: "Error", description: "Category must have a title.", variant: "destructive" }); return; }
             dataToSave.slug = docId;
         } else if (activeTab === 'mock-tests') {
-            if (formParentIds?.testId) { // This is a question for a mock test
+            if (formParentIds?.testId) { 
                 const testRef = doc(firestore, "mockTests", formParentIds.testId);
                 const testDoc = await getDoc(testRef);
                 if (testDoc.exists()) {
                     const testData = testDoc.data() as MockTest;
-                    const questionData = { questionText: formData.questionText, options: formData.options, correctOption: formData.correctOption, marks: formData.marks, explanation: formData.explanation };
+                    const questionData = {
+                        questionText: formData.questionText,
+                        options: formData.options,
+                        correctOption: Number(formData.correctOption),
+                        marks: Number(formData.marks) || 1,
+                        explanation: formData.explanation || ''
+                    };
                     const newQuestion = { ...questionData, id: doc(collection(firestore, 'mock-tests')).id };
                     const updatedQuestions = editingItem
                         ? testData.questions.map(q => q.id === editingItem.id ? { ...questionData, id: editingItem.id } : q)
                         : [...(testData.questions || []), newQuestion];
                     await updateDoc(testRef, { questions: updatedQuestions });
                 }
-            } else { // This is a mock test
+            } else {
                 collectionName = 'mockTests';
                 const category = data.testCategories.find(c => c.id === dataToSave.categoryId);
                 dataToSave.categoryName = category?.title || '';
@@ -303,21 +312,27 @@ export default function FranchiseDashboardPage() {
                 if (!editingItem) dataToSave.questions = [];
             }
         } else if (activeTab === 'student-exams') {
-            if (formParentIds?.testId) { // This is a question for a student exam
+            if (formParentIds?.testId) {
                 const testRef = doc(firestore, "studentExams", formParentIds.testId);
                 const testDoc = await getDoc(testRef);
                 if (testDoc.exists()) {
                     const testData = testDoc.data() as StudentExam;
-                    const questionData = { questionText: formData.questionText, options: formData.options, correctOption: formData.correctOption, marks: formData.marks, explanation: formData.explanation };
-                    const newQuestion = { ...questionData, id: doc(collection(firestore, 'student-exams')).id };
+                    const questionData = {
+                        questionText: formData.questionText,
+                        options: formData.options,
+                        correctOption: Number(formData.correctOption),
+                        marks: Number(formData.marks) || 1,
+                        explanation: formData.explanation || ''
+                    };
+                    const newQuestion = { ...questionData, id: doc(collection(firestore, 'studentExams')).id };
                      const updatedQuestions = editingItem
                         ? testData.questions.map(q => q.id === editingItem.id ? { ...questionData, id: editingItem.id } : q)
                         : [...(testData.questions || []), newQuestion];
                     await updateDoc(testRef, { questions: updatedQuestions });
                 }
-            } else { // This is a student exam
+            } else { 
                 collectionName = 'studentExams';
-                dataToSave.allowedStudents = dataToSave.allowedStudents.split(',').map((s: string) => s.trim()).filter(Boolean);
+                dataToSave.allowedStudents = (formData.allowedStudents || '').split(',').map((s: string) => s.trim()).filter(Boolean);
                 if (!editingItem) dataToSave.questions = [];
             }
         }
@@ -569,7 +584,3 @@ export default function FranchiseDashboardPage() {
         </div>
     );
 }
-
-    
-
-    
