@@ -69,7 +69,7 @@ export default function About() {
             <Card className="overflow-hidden shadow-2xl rounded-xl border-t-4 border-t-accent">
               <CardContent className="p-0">
                 <Image
-                  src="https://picsum.photos/seed/mtech-about/800/600"
+                  src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766673710/Gemini_Generated_Image_9mx1f9mx1f9mx1f9_nfqa1p.png"
                   alt="Students collaborating at Education Pixel"
                   data-ai-hint="collaboration students"
                   width={800}
