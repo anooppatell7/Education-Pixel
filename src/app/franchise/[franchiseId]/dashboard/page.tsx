@@ -284,7 +284,7 @@ export default function FranchiseDashboardPage() {
             collectionName = 'testCategories';
             docId = editingItem?.id || createSlug(dataToSave.title);
             if (!docId) { toast({ title: "Error", description: "Category must have a title.", variant: "destructive" }); return; }
-            dataToSave.slug = docId;
+            dataToSave.id = docId;
         } else if (activeTab === 'mock-tests' || activeTab === 'student-exams') {
             const isStudentExam = activeTab === 'student-exams';
             const parentCollection = isStudentExam ? 'studentExams' : 'mockTests';
@@ -310,7 +310,15 @@ export default function FranchiseDashboardPage() {
             } else { 
                 collectionName = parentCollection;
                 if (isStudentExam) {
-                   dataToSave.allowedStudents = (formData.allowedStudents || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+                   const regNumbers = (formData.allowedStudents || '').split(',').map((s: string) => s.trim().toUpperCase()).filter(Boolean);
+                   if (regNumbers.length > 0) {
+                        const regQuery = query(collection(firestore, "examRegistrations"), where("registrationNumber", "in", regNumbers));
+                        const regSnap = await getDocs(regQuery);
+                        const studentUids = regSnap.docs.map(d => d.id);
+                        dataToSave.allowedStudents = studentUids;
+                   } else {
+                        dataToSave.allowedStudents = [];
+                   }
                 } else {
                     const category = data.testCategories.find(c => c.id === dataToSave.categoryId);
                     dataToSave.categoryName = category?.title || '';
@@ -438,7 +446,7 @@ export default function FranchiseDashboardPage() {
                     <div className="grid gap-2"><Label htmlFor="title">Exam Title</Label><Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} placeholder="e.g., DCA Final Exam" /></div>
                     <div className="grid gap-2"><Label htmlFor="courseName">Course Name (Must match registration)</Label><Input id="courseName" name="courseName" value={formData.courseName || ''} onChange={handleFormChange} placeholder="e.g., DCA" /></div>
                     <div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label htmlFor="duration">Duration (Minutes)</Label><Input id="duration" name="duration" type="number" value={formData.duration || 0} onChange={handleFormChange} /></div><div className="grid gap-2"><Label htmlFor="totalMarks">Total Marks</Label><Input id="totalMarks" name="totalMarks" type="number" value={formData.totalMarks || 0} onChange={handleFormChange} /></div></div>
-                    <div className="grid gap-2"><Label htmlFor="allowedStudents">Allowed Students (Registration Numbers)</Label><Textarea id="allowedStudents" name="allowedStudents" value={formData.allowedStudents || ''} onChange={handleFormChange} placeholder="EP-2024-0001, EP-2024-0002" /></div>
+                    <div className="grid gap-2"><Label htmlFor="allowedStudents">Allowed Students (Registration Numbers, comma-separated)</Label><Textarea id="allowedStudents" name="allowedStudents" value={formData.allowedStudents || ''} onChange={handleFormChange} placeholder="EP-2024-0001, EP-2024-0002" /></div>
                     <div className="flex items-center space-x-2"><Switch id="isPublished" name="isPublished" checked={formData.isPublished || false} onCheckedChange={(checked) => setFormData({...formData, isPublished: checked})} /><Label htmlFor="isPublished">Publish Exam</Label></div>
                 </>
             );

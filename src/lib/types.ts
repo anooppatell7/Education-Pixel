@@ -150,7 +150,10 @@ export type TestCategory = {
     title: string;
     description: string;
     icon: string; // e.g., an emoji or a lucide-icon name
-    franchiseId?: string;
+    franchiseId?: string | null;
+    city?: string;
+    createdBy?: string;
+    createdAt?: any;
 };
 
 export type TestQuestion = {
@@ -172,8 +175,27 @@ export type MockTest = {
     isPublished: boolean;
     categoryId: string;
     categoryName: string;
-    franchiseId?: string;
+    franchiseId?: string | null;
+    city?: string;
+    accessType?: 'free';
+    createdBy?: string;
+    createdAt?: any;
 };
+
+export type StudentExam = {
+  id: string;
+  title: string;
+  courseName: string;
+  duration: number; // in minutes
+  totalMarks: number;
+  questions: TestQuestion[];
+  isPublished: boolean;
+  franchiseId: string;
+  city: string;
+  allowedStudents: string[]; // Array of student UIDs
+  createdBy: string;
+  createdAt: any;
+}
 
 export type TestResponse = {
     questionId: string;
@@ -288,3 +310,4 @@ export type FAQPageSchema = FAQPage;
     
 
     
+

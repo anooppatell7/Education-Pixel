@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from "react";
@@ -7,7 +6,7 @@ import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ListChecks, Clock, ArrowRight, BarChart, ChevronLeft, ShieldAlert, BadgeInfo } from "lucide-react";
-import type { MockTest, ExamResult, ExamRegistration } from "@/lib/types";
+import type { MockTest, ExamResult, ExamRegistration, StudentExam } from "@/lib/types";
 import { useUser, useFirestore } from "@/firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,7 +37,7 @@ export default function StudentExamPage() {
     const { user, isLoading: userLoading } = useUser();
     const firestore = useFirestore();
 
-    const [studentExams, setStudentExams] = useState<MockTest[]>([]);
+    const [studentExams, setStudentExams] = useState<StudentExam[]>([]);
     const [userResults, setUserResults] = useState<ExamResult[]>([]);
     const [registration, setRegistration] = useState<ExamRegistration | null>(null);
     
@@ -46,7 +45,10 @@ export default function StudentExamPage() {
 
     useEffect(() => {
         if (userLoading) return;
-        if (!user || !firestore) return;
+        if (!user || !firestore) {
+             router.push('/login?redirect=/exam');
+            return;
+        }
 
         const fetchData = async () => {
             setIsLoading(true);
@@ -68,14 +70,15 @@ export default function StudentExamPage() {
                     return;
                 }
 
-                // Fetch from studentExams collection
+                // Fetch exams from studentExams collection where the user's UID is in the allowedStudents array
                 const examsQuery = query(
                     collection(firestore, "studentExams"),
                     where("franchiseId", "==", regData.franchiseId),
-                    where("allowedStudents", "array-contains", user.uid)
+                    where("allowedStudents", "array-contains", user.uid),
+                    where("isPublished", "==", true)
                 );
                 const examsSnapshot = await getDocs(examsQuery);
-                const examList = examsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MockTest));
+                const examList = examsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as StudentExam));
                 setStudentExams(examList);
 
             } catch (error) {
@@ -177,7 +180,7 @@ export default function StudentExamPage() {
                             <Card key={exam.id} className="flex flex-col shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-background border-t-4 border-t-accent rounded-lg">
                                 <CardHeader>
                                     <CardTitle className="font-headline text-xl text-primary">{exam.title}</CardTitle>
-                                    <CardDescription className="line-clamp-3 h-[60px]">{exam.description}</CardDescription>
+                                    <CardDescription className="line-clamp-3 h-[60px]">Official exam for {exam.courseName} candidates.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="flex-grow">
                                     <div className="flex justify-between text-sm text-muted-foreground">
