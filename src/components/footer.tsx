@@ -97,6 +97,11 @@ export default function Footer() {
             </div>
           <div className="text-sm text-center sm:text-right">
             <span>&copy; {new Date().getFullYear()} Education Pixel. All Rights Reserved.</span>
+            <div className="mt-2">
+                <a href="https://www.instagram.com/veloxlaunch" target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-accent transition-colors">
+                    Powered by VeloxLaunch
+                </a>
+            </div>
           </div>
         </div>
       </div>
