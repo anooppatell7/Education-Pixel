@@ -1,13 +1,14 @@
 
+
 'use client';
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, notFound } from 'next/navigation';
+import { useParams, notFound, useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Clock, ArrowRight, BarChart, ChevronLeft } from "lucide-react";
-import type { MockTest, TestResult, TestCategory, ExamResult } from "@/lib/types";
+import { ListChecks, Clock, ArrowRight, BarChart, ChevronLeft, ShieldQuestion } from "lucide-react";
+import type { MockTest, TestResult, TestCategory, ExamResult, User as AppUser } from "@/lib/types";
 import { useUser, useFirestore } from "@/firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -40,25 +41,41 @@ export default function MockTestsByCategoryPage() {
     
     const { user, isLoading: userLoading } = useUser();
     const firestore = useFirestore();
+    const router = useRouter();
 
     const [category, setCategory] = useState<TestCategory | null>(null);
     const [mockTests, setMockTests] = useState<MockTest[]>([]);
     const [userResults, setUserResults] = useState<ExamResult[]>([]);
+    const [appUser, setAppUser] = useState<AppUser | null>(null);
     
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!categoryId) return;
+        if (isUserLoading) return;
+        if (!user) {
+            router.push(`/login?redirect=/mock-tests/category/${categoryId}`);
+            return;
+        }
 
         const fetchData = async () => {
             if (!firestore) return;
             setIsLoading(true);
             try {
+                // Fetch user's franchise info
+                const userDocRef = doc(firestore, "users", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (!userDocSnap.exists()) {
+                    notFound();
+                    return;
+                }
+                const userData = userDocSnap.data() as AppUser;
+                setAppUser(userData);
+
                 // Fetch category details
                 const categoryRef = doc(firestore, "testCategories", categoryId);
                 const categorySnap = await getDoc(categoryRef);
-                if (categorySnap.exists()) {
-                    const categoryData = { id: categorySnap.id, ...categorySnap.data() } as TestCategory
+                if (categorySnap.exists() && categorySnap.data().franchiseId === userData.franchiseId) {
+                    const categoryData = { id: categorySnap.id, ...categorySnap.data() } as TestCategory;
                     setCategory(categoryData);
                     document.title = `${categoryData.title} Tests - Education Pixel`;
                 } else {
@@ -66,10 +83,11 @@ export default function MockTestsByCategoryPage() {
                     return;
                 }
 
-                // Fetch tests for this category
+                // Fetch tests for this category within the same franchise
                 const testsQuery = query(
                     collection(firestore, "mockTests"),
                     where("categoryId", "==", categoryId),
+                    where("franchiseId", "==", userData.franchiseId),
                     where("isPublished", "==", true)
                 );
                 const testsSnapshot = await getDocs(testsQuery);
@@ -84,7 +102,7 @@ export default function MockTestsByCategoryPage() {
         };
         
         fetchData();
-    }, [categoryId, firestore]);
+    }, [categoryId, firestore, user, isUserLoading, router]);
 
     // Fetch results for the current user
     useEffect(() => {
@@ -99,7 +117,7 @@ export default function MockTestsByCategoryPage() {
             try {
                 const resultsQuery = query(
                     collection(firestore, 'examResults'),
-                    where('registrationNumber', '==', user.uid), // Using UID for practice tests
+                    where('registrationNumber', '==', user.uid),
                     where('testId', 'in', testIds)
                 );
                 const resultsSnapshot = await getDocs(resultsQuery);
@@ -211,8 +229,9 @@ export default function MockTestsByCategoryPage() {
                     ) : (
                         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                             <CardContent className="p-12 text-center text-muted-foreground">
-                                <p className="text-lg">No mock tests are available in this category yet.</p>
-                                <p className="mt-2 text-sm">Please check back later for new practice tests.</p>
+                                <ShieldQuestion className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+                                <p className="text-lg font-semibold">No Mock Tests Found</p>
+                                <p className="mt-2 text-sm">There are no mock tests available in this category for your franchise yet.</p>
                             </CardContent>
                         </Card>
                     )}

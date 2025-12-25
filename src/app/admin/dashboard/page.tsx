@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import React, { useState, useEffect, use } from "react";
-import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database, Youtube, CheckCircle, XCircle, Activity } from "lucide-react";
+import { PlusCircle, MoreHorizontal, LogOut, Trash, Edit, Settings, FileText, MessageSquare, Briefcase, Link2, Megaphone, Star, Upload, BookOpen, Layers, ChevronDown, ListTodo, BookCopy, UserCheck, Award, Tv, Database, Youtube, CheckCircle, XCircle, Activity, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -68,19 +68,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Logo from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, MockTest, TestQuestion, TestCategory, ExamRegistration, ExamResult, Certificate, PopupSettings, YouTubePlaylist, Franchise, ActivityLog } from "@/lib/types";
+import type { Course, BlogPost, Resource, Enrollment, ContactSubmission, InternalLink, SiteSettings, Review, MockTest, TestQuestion, TestCategory, ExamRegistration, ExamResult, Certificate, PopupSettings, YouTubePlaylist, Franchise, ActivityLog, User as AppUser } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { signOut, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import coursesData from "@/lib/data/courses.json";
-import type { Metadata } from 'next';
 import { useAuth, useFirestore, useUser } from "@/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, setDoc, Timestamp, where, arrayUnion, arrayRemove, getDoc, writeBatch, serverTimestamp } from "firebase/firestore";
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-
-
 
 type ItemType = 'courses' | 'blog' | 'guidance' | 'resources' | 'settings' | 'enrollments' | 'contacts' | 'internal-links' | 'site-settings' | 'reviews' | 'mockTest' | 'testQuestion' | 'testCategory' | 'examRegistration' | 'examResult' | 'certificate' | 'youtubePlaylist' | 'franchise' | 'activityLog';
 
@@ -111,13 +107,10 @@ export default function AdminDashboardPage() {
 
 
     useEffect(() => {
-        // Wait until user loading is finished
         if (!isUserLoading) {
             if (!user) {
-                // If no user, redirect to login
                 router.push('/login');
             } else if (firestore) {
-                // If there is a user and firestore is available, fetch data
                 fetchData();
             }
         }
@@ -127,13 +120,11 @@ export default function AdminDashboardPage() {
         if (!firestore) return;
         setLoading(true);
         try {
-            // Franchises
             const franchisesCollection = collection(firestore, "franchises");
             const franchiseSnapshot = await getDocs(franchisesCollection);
             const franchiseList = franchiseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Franchise));
             setFranchises(franchiseList);
 
-            // Activity Logs
             const activityLogsQuery = query(collection(firestore, "activityLogs"), orderBy("timestamp", "desc"));
             const activityLogsSnapshot = await getDocs(activityLogsQuery);
             const activityLogList = activityLogsSnapshot.docs.map(doc => {
@@ -143,25 +134,21 @@ export default function AdminDashboardPage() {
             });
             setActivityLogs(activityLogList);
 
-            // Courses
             const coursesCollection = collection(firestore, "courses");
             const courseSnapshot = await getDocs(coursesCollection);
             const courseList = courseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
             setCourses(courseList);
             
-             // YouTube Playlists
             const youtubePlaylistsQuery = query(collection(firestore, "youtubePlaylists"));
             const youtubePlaylistsSnapshot = await getDocs(youtubePlaylistsQuery);
             const youtubePlaylistsList = youtubePlaylistsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as YouTubePlaylist));
             setYoutubePlaylists(youtubePlaylistsList);
 
-            // Resources
             const resourcesCollection = collection(firestore, "resources");
             const resourceSnapshot = await getDocs(resourcesCollection);
             const resourceList = resourceSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Resource));
             setResources(resourceList);
 
-            // Enrollments
             const enrollmentsQuery = query(collection(firestore, "enrollments"), orderBy("submittedAt", "desc"));
             const enrollmentSnapshot = await getDocs(enrollmentsQuery);
             const enrollmentList = enrollmentSnapshot.docs.map(doc => {
@@ -171,7 +158,6 @@ export default function AdminDashboardPage() {
             });
             setEnrollments(enrollmentList);
             
-            // Contacts
             const contactsQuery = query(collection(firestore, "contacts"), orderBy("submittedAt", "desc"));
             const contactSnapshot = await getDocs(contactsQuery);
             const contactList = contactSnapshot.docs.map(doc => {
@@ -181,7 +167,6 @@ export default function AdminDashboardPage() {
             });
             setContacts(contactList);
 
-            // Reviews
             const reviewsQuery = query(collection(firestore, "reviews"), orderBy("submittedAt", "desc"));
             const reviewsSnapshot = await getDocs(reviewsQuery);
             const reviewList = reviewsSnapshot.docs.map(doc => {
@@ -191,20 +176,16 @@ export default function AdminDashboardPage() {
             });
             setReviews(reviewList);
             
-            // Test Categories
             const categoriesQuery = query(collection(firestore, "testCategories"));
             const categoriesSnapshot = await getDocs(categoriesQuery);
             const categoriesList = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TestCategory));
             setTestCategories(categoriesList);
 
-
-            // Mock Tests
             const mockTestsQuery = query(collection(firestore, "mockTests"));
             const mockTestsSnapshot = await getDocs(mockTestsQuery);
             const mockTestsList = mockTestsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MockTest));
             setMockTests(mockTestsList);
             
-            // Exam Registrations
             const examRegQuery = query(collection(firestore, "examRegistrations"), orderBy("registeredAt", "desc"));
             const examRegSnapshot = await getDocs(examRegQuery);
             const examRegList = examRegSnapshot.docs.map(doc => {
@@ -214,7 +195,6 @@ export default function AdminDashboardPage() {
             });
             setExamRegistrations(examRegList);
 
-            // Exam Results
             const examResQuery = query(collection(firestore, "examResults"), orderBy("submittedAt", "desc"));
             const examResSnapshot = await getDocs(examResQuery);
             const examResList = examResSnapshot.docs.map(doc => {
@@ -224,14 +204,11 @@ export default function AdminDashboardPage() {
             });
             setExamResults(examResList);
 
-            // Certificates
             const certsQuery = query(collection(firestore, "certificates"), orderBy("issueDate", "desc"));
             const certsSnapshot = await getDocs(certsQuery);
             const certsList = certsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Certificate));
             setCertificates(certsList);
 
-
-            // Site Settings
             const announcementDoc = await getDoc(doc(firestore, "site_settings", "announcement"));
             if (announcementDoc.exists()) {
                 setSiteSettings(announcementDoc.data() as SiteSettings);
@@ -240,7 +217,6 @@ export default function AdminDashboardPage() {
             if (popupDoc.exists()) {
                 setPopupSettings(popupDoc.data() as PopupSettings);
             }
-
 
         } catch (error) {
             console.error("Error fetching data: ", error);
@@ -319,13 +295,6 @@ export default function AdminDashboardPage() {
                 case 'youtubePlaylist': docRef = doc(firestore, "youtubePlaylists", id); break;
                 case 'mockTest':
                     docRef = doc(firestore, "mockTests", id);
-                    // Special handling for associated test results (consider if this needs permission error handling too)
-                    const resultsQuery = query(collection(firestore, "testResults"), where("testId", "==", id));
-                    getDocs(resultsQuery).then(resultsSnapshot => {
-                        const batch = writeBatch(firestore);
-                        resultsSnapshot.docs.forEach(resultDoc => batch.delete(resultDoc.ref));
-                        batch.commit();
-                    });
                     break;
                 case 'testQuestion':
                     if (parentIds?.testId) {
@@ -436,10 +405,10 @@ export default function AdminDashboardPage() {
       if (!title) return '';
       return title
         .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '') // remove non-alphanumeric characters
+        .replace(/[^a-z0-9\s-]/g, '') 
         .trim()
-        .replace(/\s+/g, '-') // replace spaces with hyphens
-        .replace(/-+/g, '-'); // remove consecutive hyphens
+        .replace(/\s+/g, '-') 
+        .replace(/-+/g, '-');
     };
 
     const convertToDirectDownloadLink = (url: string): string => {
@@ -450,62 +419,44 @@ export default function AdminDashboardPage() {
             const fileId = match[1];
             return `https://drive.google.com/uc?export=download&id=${fileId}`;
         }
-        return url; // Return original URL if it doesn't match
+        return url; 
     };
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!firestore) return;
+        if (!firestore || !user) return;
         
-        let collectionRef: any;
+        let collectionName: 'courses' | 'resources' | 'youtubePlaylists' | 'testCategories' | 'mockTests' | null = null;
         let dataToSave = { ...formData };
         let docId: string | undefined = (editingItem as any)?.id;
         
-        // Cleanup data before saving
         delete dataToSave.id;
+
+        const isEditing = !!editingItem;
         
         if (activeTab === 'franchises') {
-            collectionRef = collection(firestore, "franchises");
+            const collectionRef = collection(firestore, "franchises");
             dataToSave.createdAt = editingItem?.createdAt || serverTimestamp();
             
-            if (!editingItem) { // Creating a new franchise
+            if (!editingItem) {
                 const batch = writeBatch(firestore);
-                const newFranchiseRef = doc(collectionRef); // Let Firestore generate ID for the franchise
-        
-                // Set the franchise document
+                const newFranchiseRef = doc(collectionRef);
                 batch.set(newFranchiseRef, dataToSave);
-        
-                // Create a corresponding user document for the franchise admin
-                // Check if a user with this email already exists
                 const userQuery = query(collection(firestore, "users"), where("email", "==", dataToSave.email));
                 const userSnap = await getDocs(userQuery);
                 
                 if (userSnap.empty) {
-                    // No user exists, create a placeholder document that will be claimed on signup
-                    // Note: We don't know the UID yet, so we can't create the final doc.
-                    // Instead, we will store franchise-admin emails in a separate collection or within franchise doc itself.
-                    // For this simple model, we'll create a user doc with an auto-generated ID.
                     const userDocRef = doc(collection(firestore, "users"));
                     batch.set(userDocRef, {
-                        name: dataToSave.ownerName,
-                        email: dataToSave.email,
-                        role: "franchiseAdmin",
-                        franchiseId: newFranchiseRef.id,
-                        city: dataToSave.city,
-                        createdAt: serverTimestamp()
+                        name: dataToSave.ownerName, email: dataToSave.email, role: "franchiseAdmin", franchiseId: newFranchiseRef.id, city: dataToSave.city, createdAt: serverTimestamp()
                     });
                 } else {
-                    // User already exists (maybe they were a student), update their role.
                     const existingUserRef = userSnap.docs[0].ref;
-                    batch.update(existingUserRef, {
-                        role: "franchiseAdmin",
-                        franchiseId: newFranchiseRef.id
-                    });
+                    batch.update(existingUserRef, { role: "franchiseAdmin", franchiseId: newFranchiseRef.id });
                 }
-        
                 await batch.commit();
-                toast({ title: "Success", description: "Franchise created successfully. The owner can now sign up with their email." });
-            } else { // Editing an existing franchise
+                toast({ title: "Success", description: "Franchise created successfully." });
+            } else {
                  const franchiseRef = doc(collectionRef, docId);
                 await updateDoc(franchiseRef, dataToSave);
                 toast({ title: "Success", description: "Franchise updated successfully." });
@@ -513,29 +464,31 @@ export default function AdminDashboardPage() {
         
             fetchData();
             handleCloseForm();
-            return; // Exit function after handling franchise
+            return;
         
         } else if (activeTab === 'courses') {
-            collectionRef = collection(firestore, "courses");
+            collectionName = 'courses';
             dataToSave.image = dataToSave.image || "https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png";
             dataToSave.actualPrice = String(dataToSave.actualPrice || '');
             dataToSave.discountPrice = String(dataToSave.discountPrice || '');
             dataToSave.isFeatured = !!dataToSave.isFeatured;
         } else if (activeTab === 'resources') {
-            collectionRef = collection(firestore, "resources");
+            collectionName = 'resources';
             if (dataToSave.fileUrl) {
                 dataToSave.fileUrl = convertToDirectDownloadLink(dataToSave.fileUrl);
             }
         } else if (activeTab === 'youtube') {
-            collectionRef = collection(firestore, "youtubePlaylists");
+            collectionName = 'youtubePlaylists';
         } else if (activeTab === 'test-categories') {
-             collectionRef = collection(firestore, "testCategories");
-             docId = (editingItem as any)?.id || dataToSave.id; // Use existing id or form id
-             if (!docId) { // For new categories, generate from title
-                 docId = createSlug(dataToSave.title);
-                 if (!docId) { toast({title: "Error", description: "Category must have a title.", variant: "destructive"}); return; }
+             collectionName = 'testCategories';
+             if (!isEditing) {
+                dataToSave.franchiseId = null; 
+                dataToSave.createdBy = user.uid;
+                dataToSave.createdAt = serverTimestamp();
              }
-             dataToSave.id = docId; // Make sure the ID is saved within the document
+             docId = editingItem?.id || createSlug(dataToSave.title);
+             if (!docId) { toast({title: "Error", description: "Category must have a title.", variant: "destructive"}); return; }
+             dataToSave.id = docId;
         } else if (activeTab === 'mock-tests') {
             if(formParentIds?.testId) { // It's a question
                 const testRef = doc(firestore, "mockTests", formParentIds.testId);
@@ -549,7 +502,7 @@ export default function AdminDashboardPage() {
                             testData.questions[questionIndex] = { ...dataToSave, id: docId };
                         }
                     } else { // Adding a new question
-                        dataToSave.id = doc(collection(firestore, 'mock-tests')).id; // Generate a unique ID
+                        dataToSave.id = doc(collection(firestore, 'mock-tests')).id;
                         testData.questions = [...(testData.questions || []), dataToSave];
                     }
                 }
@@ -565,65 +518,45 @@ export default function AdminDashboardPage() {
                 });
                 return;
             } else { // It's a test
-                collectionRef = collection(firestore, "mockTests");
-                if(!editingItem) {
+                collectionName = 'mockTests';
+                if(!isEditing) {
                     dataToSave.questions = [];
+                    dataToSave.franchiseId = null;
+                    dataToSave.createdBy = user.uid;
+                    dataToSave.createdAt = serverTimestamp();
                 }
                 const category = testCategories.find(c => c.id === dataToSave.categoryId);
                 dataToSave.categoryName = category?.title || '';
             }
         }
+        if (!collectionName) return;
 
-        const operation: 'update' | 'create' = (editingItem && docId) ? 'update' : 'create';
+        const operation: 'update' | 'create' = isEditing ? 'update' : 'create';
         let docRef: any;
 
-        if (operation === 'create') {
-            if (activeTab === 'test-categories' && docId) {
-                docRef = doc(collectionRef, docId);
-                dataToSave.id = docId;
-                setDoc(docRef, dataToSave).then(() => {
-                    toast({ title: "Success", description: "Data saved successfully." });
-                    fetchData(); handleCloseForm();
-                }).catch(async (serverError) => {
-                    const permissionError = new FirestorePermissionError({
-                        path: docRef.path, operation: 'create', requestResourceData: dataToSave,
-                    } satisfies SecurityRuleContext);
-                    errorEmitter.emit('permission-error', permissionError);
-                });
-            } else {
-                addDoc(collectionRef, dataToSave).then(() => {
-                    toast({ title: "Success", description: "Data saved successfully." });
-                    fetchData(); handleCloseForm();
-                }).catch(async (serverError) => {
-                    const permissionError = new FirestorePermissionError({
-                        path: collectionRef.path, operation: 'create', requestResourceData: dataToSave,
-                    } satisfies SecurityRuleContext);
-                    errorEmitter.emit('permission-error', permissionError);
-                });
+        try {
+            if (operation === 'create') {
+                 if (activeTab === 'test-categories' && docId) {
+                    docRef = doc(firestore, collectionName, docId);
+                    await setDoc(docRef, dataToSave);
+                } else {
+                    docRef = await addDoc(collection(firestore, collectionName), dataToSave);
+                }
+            } else if (operation === 'update' && docId) {
+                docRef = doc(firestore, collectionName, docId);
+                 if (activeTab === 'test-categories') {
+                    await setDoc(docRef, dataToSave);
+                 } else {
+                    await updateDoc(docRef, dataToSave);
+                 }
             }
-        } else if (operation === 'update' && docId) {
-            docRef = doc(collectionRef, docId);
-            if (['test-categories'].includes(activeTab)) {
-                setDoc(docRef, dataToSave).then(() => {
-                    toast({ title: "Success", description: "Data saved successfully." });
-                    fetchData(); handleCloseForm();
-                }).catch(async (serverError) => {
-                    const permissionError = new FirestorePermissionError({
-                        path: docRef.path, operation: 'update', requestResourceData: dataToSave,
-                    } satisfies SecurityRuleContext);
-                    errorEmitter.emit('permission-error', permissionError);
-                });
-            } else {
-                updateDoc(docRef, dataToSave).then(() => {
-                    toast({ title: "Success", description: "Data saved successfully." });
-                    fetchData(); handleCloseForm();
-                }).catch(async (serverError) => {
-                    const permissionError = new FirestorePermissionError({
-                        path: docRef.path, operation: 'update', requestResourceData: dataToSave,
-                    } satisfies SecurityRuleContext);
-                    errorEmitter.emit('permission-error', permissionError);
-                });
-            }
+            toast({ title: "Success", description: "Data saved successfully." });
+            fetchData(); handleCloseForm();
+        } catch (serverError) {
+             const permissionError = new FirestorePermissionError({
+                path: docRef?.path || collection(firestore, collectionName).path, operation: operation, requestResourceData: dataToSave,
+            } satisfies SecurityRuleContext);
+            errorEmitter.emit('permission-error', permissionError);
         }
     };
 
@@ -760,17 +693,14 @@ export default function AdminDashboardPage() {
         }
         
         try {
-            // Re-authenticate the user before making sensitive changes
             const credential = EmailAuthProvider.credential(user.email, currentPassword);
             await reauthenticateWithCredential(user, credential);
 
-            // Update email if a new one is provided
             if (newEmail && newEmail !== user.email) {
                 await updateEmail(user, newEmail);
                 toast({ title: "Success", description: "Email updated successfully." });
             }
 
-            // Update password if a new one is provided
             if (newPassword) {
                 await updatePassword(user, newPassword);
                 toast({ title: "Success", description: "Password updated successfully." });
@@ -806,48 +736,6 @@ export default function AdminDashboardPage() {
             }
             console.error("Error updating credentials:", error);
             toast({ title: "Error", description: errorMessage, variant: "destructive" });
-        }
-    };
-
-    const handleUploadAllContent = async () => {
-        if (!firestore) {
-            toast({ title: "Error", description: "Database not initialized.", variant: "destructive" });
-            return;
-        }
-        if (!confirm("Are you sure you want to upload all learning course content? This will overwrite existing data in the 'learningCourses' collection based on their IDs.")) {
-            return;
-        }
-        
-        try {
-            const batch = writeBatch(firestore);
-
-            // Upload Learning Courses from courses.json
-            for (const course of coursesData) {
-                const courseRef = doc(firestore, "learningCourses", course.id);
-                const courseDocData = { ...course };
-                delete (courseDocData as any).modules;
-                batch.set(courseRef, courseDocData);
-
-                for (const module of course.modules) {
-                    const moduleRef = doc(firestore, "learningCourses", course.id, "modules", module.id);
-                    const moduleDocData = { ...module };
-                    delete (moduleDocData as any).lessons;
-                    batch.set(moduleRef, moduleDocData);
-
-                    for (const lesson of module.lessons) {
-                        const lessonRef = doc(firestore, "learningCourses", course.id, "modules", module.id, "lessons", lesson.id);
-                        batch.set(lessonRef, lesson);
-                    }
-                }
-            }
-
-            await batch.commit();
-            toast({ title: "Success", description: "All learning course content has been uploaded to Firestore." });
-            await fetchData(); // Refresh data in the dashboard
-
-        } catch (error) {
-            console.error("Error uploading content:", error);
-            toast({ title: "Error", description: "Could not upload content to Firestore.", variant: "destructive" });
         }
     };
 
@@ -1001,7 +889,8 @@ export default function AdminDashboardPage() {
                 <>
                     <div className="grid gap-2">
                         <Label htmlFor="id">Category ID (Slug)</Label>
-                        <Input id="id" name="id" value={formData.id || ''} onChange={handleFormChange} disabled={!!editingItem} placeholder="e.g., ms-word"/>
+                        <Input id="id" name="id" value={formData.id || ''} onChange={handleFormChange} disabled={!!editingItem} placeholder="e.g., ms-word. Will be auto-generated."/>
+                        <p className="text-xs text-muted-foreground">Create a category called 'Student Exam' with ID 'student-exam' for registered student exams.</p>
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="title">Title</Label>
@@ -1127,6 +1016,11 @@ export default function AdminDashboardPage() {
             </Badge>
         );
     };
+
+    const getFranchiseName = (franchiseId: string | null) => {
+        if (!franchiseId) return 'Global';
+        return franchises.find(f => f.id === franchiseId)?.name || 'Unknown';
+    }
 
 
     return (
@@ -1407,7 +1301,7 @@ export default function AdminDashboardPage() {
                             <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Test Categories</CardTitle>
-                                    <CardDescription>Manage the categories for your mock tests. Create a category called "Student Exam" for registered student exams.</CardDescription>
+                                    <CardDescription>Manage categories for mock tests. Create a category called 'Student Exam' with ID 'student-exam' for registered student exams.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     {loading ? <p>Loading categories...</p> :
@@ -1417,6 +1311,7 @@ export default function AdminDashboardPage() {
                                                 <TableRow>
                                                     <TableHead>Title</TableHead>
                                                     <TableHead>ID (Slug)</TableHead>
+                                                    <TableHead>Owner</TableHead>
                                                     <TableHead>
                                                         <span className="sr-only">Actions</span>
                                                     </TableHead>
@@ -1430,6 +1325,11 @@ export default function AdminDashboardPage() {
                                                            {category.title}
                                                         </TableCell>
                                                         <TableCell>{category.id}</TableCell>
+                                                        <TableCell>
+                                                            <Badge variant={!category.franchiseId ? 'default' : 'secondary'}>
+                                                                {getFranchiseName(category.franchiseId)}
+                                                            </Badge>
+                                                        </TableCell>
                                                         <TableCell className="text-right">
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild>
@@ -1474,6 +1374,7 @@ export default function AdminDashboardPage() {
                                                                   <Badge variant="outline" className="ml-2">{test.categoryName || 'Uncategorized'}</Badge>
                                                                 </div>
                                                                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                                                    <Badge variant={!test.franchiseId ? 'default' : 'secondary'}>{getFranchiseName(test.franchiseId)}</Badge>
                                                                     <span>{test.questions?.length || 0} Questions</span>
                                                                     <span>{test.duration} mins</span>
                                                                     <Badge variant={test.isPublished ? "default" : "secondary"}>
@@ -1586,7 +1487,7 @@ export default function AdminDashboardPage() {
                                                     <TableHead>Name</TableHead>
                                                     <TableHead>Course</TableHead>
                                                     <TableHead>Status</TableHead>
-                                                    <TableHead className="hidden md:table-cell">Phone</TableHead>
+                                                    <TableHead>Franchise</TableHead>
                                                     <TableHead className="hidden md:table-cell">Registered</TableHead>
                                                     <TableHead className="text-right">Actions</TableHead>
                                                 </TableRow>
@@ -1603,7 +1504,7 @@ export default function AdminDashboardPage() {
                                                         <TableCell>
                                                             <StatusBadge status={reg.status} />
                                                         </TableCell>
-                                                        <TableCell className="hidden md:table-cell">{reg.phone}</TableCell>
+                                                        <TableCell>{getFranchiseName(reg.franchiseId)}</TableCell>
                                                         <TableCell className="hidden md:table-cell">{reg.registeredAt}</TableCell>
                                                         <TableCell className="text-right">
                                                             <DropdownMenu>
@@ -1650,6 +1551,7 @@ export default function AdminDashboardPage() {
                                                     <TableHead>Reg. No</TableHead>
                                                     <TableHead>Student Name</TableHead>
                                                     <TableHead>Test Name</TableHead>
+                                                    <TableHead>Franchise</TableHead>
                                                     <TableHead>Score</TableHead>
                                                     <TableHead>Submitted</TableHead>
                                                     <TableHead className="text-right">Actions</TableHead>
@@ -1661,6 +1563,7 @@ export default function AdminDashboardPage() {
                                                         <TableCell className="font-mono">{res.registrationNumber}</TableCell>
                                                         <TableCell className="font-medium">{res.studentName}</TableCell>
                                                         <TableCell>{res.testName}</TableCell>
+                                                        <TableCell>{getFranchiseName(res.franchiseId)}</TableCell>
                                                         <TableCell>{res.score}/{res.totalMarks}</TableCell>
                                                         <TableCell>{res.submittedAt}</TableCell>
                                                         <TableCell className="text-right">
@@ -1992,7 +1895,7 @@ export default function AdminDashboardPage() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete this item and all its sub-items (modules, lessons, or questions).
+                            This action cannot be undone. This will permanently delete this item.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -2026,11 +1929,3 @@ export default function AdminDashboardPage() {
         </>
     );
 }
-
-    
-
-    
-
-    
-
-    

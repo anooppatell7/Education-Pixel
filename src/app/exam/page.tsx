@@ -1,17 +1,16 @@
 
+
 'use client';
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, notFound } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ListChecks, Clock, ArrowRight, BarChart, ChevronLeft, ShieldAlert, BadgeInfo } from "lucide-react";
-import type { MockTest, TestResult, TestCategory, ExamResult, ExamRegistration } from "@/lib/types";
+import type { MockTest, ExamResult, ExamRegistration } from "@/lib/types";
 import { useUser, useFirestore } from "@/firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
-import { db } from "@/lib/firebase";
 import SectionDivider from "@/components/section-divider";
 
 function TestsLoadingSkeleton() {
@@ -39,7 +38,7 @@ export default function StudentExamPage() {
     const { user, isLoading: userLoading } = useUser();
     const firestore = useFirestore();
 
-    const [mockTests, setMockTests] = useState<MockTest[]>([]);
+    const [studentExams, setStudentExams] = useState<MockTest[]>([]);
     const [userResults, setUserResults] = useState<ExamResult[]>([]);
     const [registration, setRegistration] = useState<ExamRegistration | null>(null);
     
@@ -47,13 +46,12 @@ export default function StudentExamPage() {
 
     useEffect(() => {
         if (userLoading) return;
-        if (!user) return; // This page should be protected
+        if (!user || !firestore) return;
 
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                 // 1. Fetch user's registration details first
-                const regRef = doc(db, 'examRegistrations', user.uid);
+                const regRef = doc(firestore, 'examRegistrations', user.uid);
                 const regSnap = await getDoc(regRef);
 
                 if (!regSnap.exists()) {
@@ -65,48 +63,43 @@ export default function StudentExamPage() {
                 const regData = { id: regSnap.id, ...regSnap.data() } as ExamRegistration;
                 setRegistration(regData);
 
-                // If not approved, no need to fetch exams.
                 if (!regData.isApproved) {
                     setIsLoading(false);
                     return;
                 }
 
-                // 2. Fetch tests that match the user's registered course
-                const testsQuery = query(
-                    collection(db, "mockTests"),
-                    where("categoryName", "==", "Student Exam"),
-                    where("isPublished", "==", true),
-                    where("title", "==", regData.course) // <-- This is the new restriction
+                // Fetch from studentExams collection
+                const examsQuery = query(
+                    collection(firestore, "studentExams"),
+                    where("franchiseId", "==", regData.franchiseId),
+                    where("allowedStudents", "array-contains", user.uid)
                 );
-                const testsSnapshot = await getDocs(testsQuery);
-                const testList = testsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MockTest));
-                setMockTests(testList);
+                const examsSnapshot = await getDocs(examsQuery);
+                const examList = examsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MockTest));
+                setStudentExams(examList);
 
             } catch (error) {
-                console.error("Failed to fetch mock tests:", error);
+                console.error("Failed to fetch student exams:", error);
             } finally {
                 setIsLoading(false);
             }
         };
         
         fetchData();
-    }, [user, userLoading]);
+    }, [user, userLoading, firestore]);
 
-    // Fetch results for the current user
     useEffect(() => {
         const fetchUserResults = async () => {
-            if (!user || !firestore || mockTests.length === 0 || !registration) {
-                return;
-            };
+            if (!user || !firestore || studentExams.length === 0 || !registration) return;
 
-            const testIds = mockTests.map(t => t.id);
-            if (testIds.length === 0) return;
+            const examIds = studentExams.map(t => t.id);
+            if (examIds.length === 0) return;
 
             try {
                 const resultsQuery = query(
                     collection(firestore, 'examResults'),
                     where('registrationNumber', '==', registration.registrationNumber),
-                    where('testId', 'in', testIds)
+                    where('testId', 'in', examIds)
                 );
                 const resultsSnapshot = await getDocs(resultsQuery);
                 let results = resultsSnapshot.docs.map(doc => {
@@ -125,7 +118,7 @@ export default function StudentExamPage() {
         if (!userLoading && !isLoading) {
             fetchUserResults();
         }
-    }, [user, userLoading, firestore, isLoading, mockTests, registration]);
+    }, [user, userLoading, firestore, isLoading, studentExams, registration]);
     
     const latestResultsMap = new Map<string, ExamResult>();
     userResults.forEach(result => {
@@ -173,28 +166,28 @@ export default function StudentExamPage() {
             )
         }
 
-        if (mockTests.length > 0) {
+        if (studentExams.length > 0) {
             return (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {mockTests.map((test) => {
-                        const hasAttempted = latestResultsMap.has(test.id);
-                        const result = latestResultsMap.get(test.id);
+                    {studentExams.map((exam) => {
+                        const hasAttempted = latestResultsMap.has(exam.id);
+                        const result = latestResultsMap.get(exam.id);
 
                         return (
-                            <Card key={test.id} className="flex flex-col shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-background border-t-4 border-t-accent rounded-lg">
+                            <Card key={exam.id} className="flex flex-col shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-background border-t-4 border-t-accent rounded-lg">
                                 <CardHeader>
-                                    <CardTitle className="font-headline text-xl text-primary">{test.title}</CardTitle>
-                                    <CardDescription className="line-clamp-3 h-[60px]">{test.description}</CardDescription>
+                                    <CardTitle className="font-headline text-xl text-primary">{exam.title}</CardTitle>
+                                    <CardDescription className="line-clamp-3 h-[60px]">{exam.description}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="flex-grow">
                                     <div className="flex justify-between text-sm text-muted-foreground">
                                         <div className="flex items-center gap-2">
                                             <ListChecks className="h-4 w-4" />
-                                            <span>{test.questions?.length || 0} Questions</span>
+                                            <span>{exam.questions?.length || 0} Questions</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Clock className="h-4 w-4" />
-                                            <span>{test.duration} minutes</span>
+                                            <span>{exam.duration} minutes</span>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -223,7 +216,7 @@ export default function StudentExamPage() {
         return (
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
                 <CardContent className="p-12 text-center text-muted-foreground">
-                    <p className="text-lg">No official exams are available for your course right now.</p>
+                    <p className="text-lg">No official exams are available for you right now.</p>
                     <p className="mt-2 text-sm">Please check back later.</p>
                 </CardContent>
             </Card>
@@ -240,7 +233,7 @@ export default function StudentExamPage() {
                     }
                     {pageLoading ? <Skeleton className="h-6 w-1/2 mx-auto mt-4" /> :
                       <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-50">
-                          These are the official exams available for your registered course.
+                          These are the official exams assigned to you.
                       </p>
                     }
                 </div>
