@@ -116,7 +116,7 @@ service cloud.firestore {
     // Official Student Exams (highly restricted)
     match /studentExams/{examId} {
         allow create: if isSuperAdmin() || isFranchiseAdmin(request.resource.data.franchiseId);
-        allow read: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId) || (request.auth.uid in resource.data.allowedStudents);
+        allow get: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId) || (request.auth.uid in resource.data.allowedStudents);
         allow list: if isAuth(); // Queries will be filtered on the client
         allow update, delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
     }
