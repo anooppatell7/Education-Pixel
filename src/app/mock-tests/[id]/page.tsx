@@ -6,7 +6,7 @@ import { notFound, useParams, useRouter, useSearchParams } from 'next/navigation
 import { useUser } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase';
-import type { MockTest, TestQuestion } from '@/lib/types';
+import type { MockTest, TestQuestion, StudentExam } from '@/lib/types';
 import { useMockTest } from '@/hooks/use-mock-test';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -63,7 +63,7 @@ function MockTestClientComponent({ testId }: { testId: string }) {
     const isOfficialExam = !!registrationNumber;
 
 
-    const [testData, setTestData] = useState<MockTest | null>(null);
+    const [testData, setTestData] = useState<MockTest | StudentExam | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const {
@@ -82,9 +82,8 @@ function MockTestClientComponent({ testId }: { testId: string }) {
     } = useMockTest(testId);
 
     useEffect(() => {
-        // Any user (registered or not) must be logged in to attempt any test
         if (!user && !userLoading) {
-            const redirectUrl = registrationNumber 
+            const redirectUrl = isOfficialExam
                 ? `/login?redirect=/exam/start` 
                 : `/login?redirect=/mock-tests/${testId}`;
             router.push(redirectUrl);
@@ -93,11 +92,13 @@ function MockTestClientComponent({ testId }: { testId: string }) {
 
         const fetchTest = async () => {
             setIsLoading(true);
-            const testRef = doc(db, "mockTests", testId);
+            
+            const collectionName = isOfficialExam ? "studentExams" : "mockTests";
+            const testRef = doc(db, collectionName, testId);
             const testSnap = await getDoc(testRef);
 
             if (testSnap.exists()) {
-                const data = { id: testSnap.id, ...testSnap.data() } as MockTest;
+                const data = { id: testSnap.id, ...testSnap.data() } as MockTest | StudentExam;
                 if(data.isPublished) {
                     setTestData(data);
                     document.title = `${data.title} - Education Pixel`;
@@ -110,8 +111,10 @@ function MockTestClientComponent({ testId }: { testId: string }) {
             setIsLoading(false);
         };
 
-        fetchTest();
-    }, [testId, user, userLoading, router, registrationNumber]);
+        if (!userLoading) {
+            fetchTest();
+        }
+    }, [testId, user, userLoading, router, isOfficialExam]);
 
     useEffect(() => {
         if (testData && !isInitialized) {
@@ -285,5 +288,3 @@ export default function MockTestPage({ params }: { params: { id: string } }) {
     const { id } = params;
     return <MockTestClientComponent testId={id} />;
 }
-
-    
