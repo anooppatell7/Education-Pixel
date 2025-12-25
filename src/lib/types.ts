@@ -245,6 +245,7 @@ export type ExamResult = {
   studentName: string;
   testId: string;
   testName: string;
+  courseName: string;
   franchiseId: string;
   score: number;
   totalMarks: number;
@@ -310,4 +311,3 @@ export type FAQPageSchema = FAQPage;
     
 
     
-

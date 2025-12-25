@@ -8,7 +8,7 @@ import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.share
 import { User } from 'firebase/auth';
 import { useFirestore } from '@/firebase';
 import { doc, getDocs, query, collection, where, runTransaction, serverTimestamp, getDoc, addDoc } from "firebase/firestore";
-import type { MockTest, TestQuestion, TestResponse, TestResult, ExamResult, ExamRegistration, Certificate } from '@/lib/types';
+import type { MockTest, TestQuestion, TestResponse, TestResult, ExamResult, ExamRegistration, Certificate, StudentExam } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { getStorage, ref, uploadString, getDownloadURL } from "firebase/storage";
 import { generateCertificatePdf } from '@/lib/certificate-generator';
@@ -122,7 +122,7 @@ export const useMockTest = (testId: string) => {
     const handleSubmit = useCallback(async (
         isAutoSubmit: boolean, 
         router: AppRouterInstance, 
-        testData: MockTest,
+        testData: MockTest | StudentExam,
         user: User,
         registrationNumber: string | null,
         studentName: string | null
@@ -141,6 +141,7 @@ export const useMockTest = (testId: string) => {
         let finalRegistrationNumber = registrationNumber;
         let finalStudentName = studentName;
         let finalFranchiseId = '';
+        let finalCourseName = testData.title; // Default to test title
 
         try {
             if (isOfficialExam && registrationNumber) {
@@ -151,6 +152,7 @@ export const useMockTest = (testId: string) => {
                     const regData = regSnap.docs[0].data() as ExamRegistration;
                     finalStudentName = regData.fullName;
                     finalFranchiseId = regData.franchiseId;
+                    finalCourseName = regData.course; // Use the registered course name
                  }
             } else {
                 finalRegistrationNumber = user.uid;
@@ -213,6 +215,7 @@ export const useMockTest = (testId: string) => {
                 studentName: finalStudentName,
                 testId: testData.id,
                 testName: testData.title,
+                courseName: finalCourseName,
                 franchiseId: finalFranchiseId,
                 score,
                 totalMarks: testData.totalMarks,
