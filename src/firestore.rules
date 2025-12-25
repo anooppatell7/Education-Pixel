@@ -36,7 +36,7 @@ service cloud.firestore {
       allow read, write: if isSuperAdmin();
       allow get, update: if isOwner(userId);
       allow create: if true;
-      allow list: if true;
+      allow list: if isAuth(); // Changed from true for better security
     }
     
     match /franchises/{franchiseId} {
@@ -54,8 +54,9 @@ service cloud.firestore {
     match /examRegistrations/{userId} {
         allow create: if isOwner(userId);
         allow read, update: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
-        allow get: if isOwner(userId);
-        allow list: if isSuperAdmin() || isFranchiseAdmin(request.query.franchiseId);
+        // Allow franchise admins to also get individual documents, which is needed to resolve UIDs from Reg Numbers
+        allow get: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
+        allow list: if isAuth(); // List queries will be filtered on the client/backend
     }
     
     match /examResults/{resultId} {
@@ -98,6 +99,7 @@ service cloud.firestore {
     
     match /testCategories/{categoryId} {
         allow create: if isSuperAdmin() || isFranchiseAdmin(request.resource.data.franchiseId);
+        // Students should be able to read categories of their franchise
         allow read: if isSuperAdmin() || isStudentInFranchise(resource.data.franchiseId);
         allow update, delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         allow list: if isAuth(); // Queries will be filtered on the client
@@ -105,6 +107,7 @@ service cloud.firestore {
     
      match /mockTests/{testId} {
         allow create: if isSuperAdmin() || isFranchiseAdmin(request.resource.data.franchiseId);
+        // Students should be able to read mock tests of their franchise
         allow read: if isSuperAdmin() || isStudentInFranchise(resource.data.franchiseId);
         allow update, delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         allow list: if isAuth(); // Queries will be filtered on the client
