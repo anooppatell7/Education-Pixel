@@ -9,7 +9,7 @@ import { doc, getDoc, collection, query, where, getDocs, limit, orderBy } from '
 import { db } from '@/firebase';
 import type { MockTest, TestQuestion, StudentExam, ExamResult } from '@/lib/types';
 import { useMockTest } from '@/hooks/use-mock-test';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
