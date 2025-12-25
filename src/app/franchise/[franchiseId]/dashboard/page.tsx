@@ -152,7 +152,7 @@ export default function FranchiseDashboardPage() {
                 getDocs(franchiseCategoriesQuery), 
                 getDocs(globalCategoriesQuery),
                 getDocs(mockTestsQuery),
-                getDocs(studentExamsSnap)
+                getDocs(studentExamsQuery)
             ]);
 
             const registrationList = regSnap.docs.map(d => ({ id: d.id, ...d.data(), registeredAt: (d.data().registeredAt as Timestamp)?.toDate().toLocaleString() || '' } as ExamRegistration));
@@ -285,12 +285,15 @@ export default function FranchiseDashboardPage() {
             docId = editingItem?.id || createSlug(dataToSave.title);
             if (!docId) { toast({ title: "Error", description: "Category must have a title.", variant: "destructive" }); return; }
             dataToSave.slug = docId;
-        } else if (activeTab === 'mock-tests') {
+        } else if (activeTab === 'mock-tests' || activeTab === 'student-exams') {
+            const isStudentExam = activeTab === 'student-exams';
+            const parentCollection = isStudentExam ? 'studentExams' : 'mockTests';
+
             if (formParentIds?.testId) { 
-                const testRef = doc(firestore, "mockTests", formParentIds.testId);
+                const testRef = doc(firestore, parentCollection, formParentIds.testId);
                 const testDoc = await getDoc(testRef);
                 if (testDoc.exists()) {
-                    const testData = testDoc.data() as MockTest;
+                    const testData = testDoc.data() as MockTest | StudentExam;
                     const questionData = {
                         questionText: formData.questionText,
                         options: formData.options,
@@ -298,41 +301,21 @@ export default function FranchiseDashboardPage() {
                         marks: Number(formData.marks) || 1,
                         explanation: formData.explanation || ''
                     };
-                    const newQuestion = { ...questionData, id: doc(collection(firestore, 'mock-tests')).id };
+                    const newQuestion = { ...questionData, id: doc(collection(firestore, parentCollection)).id };
                     const updatedQuestions = editingItem
                         ? testData.questions.map(q => q.id === editingItem.id ? { ...questionData, id: editingItem.id } : q)
                         : [...(testData.questions || []), newQuestion];
                     await updateDoc(testRef, { questions: updatedQuestions });
                 }
-            } else {
-                collectionName = 'mockTests';
-                const category = data.testCategories.find(c => c.id === dataToSave.categoryId);
-                dataToSave.categoryName = category?.title || '';
-                dataToSave.accessType = "free";
-                if (!editingItem) dataToSave.questions = [];
-            }
-        } else if (activeTab === 'student-exams') {
-            if (formParentIds?.testId) {
-                const testRef = doc(firestore, "studentExams", formParentIds.testId);
-                const testDoc = await getDoc(testRef);
-                if (testDoc.exists()) {
-                    const testData = testDoc.data() as StudentExam;
-                    const questionData = {
-                        questionText: formData.questionText,
-                        options: formData.options,
-                        correctOption: Number(formData.correctOption),
-                        marks: Number(formData.marks) || 1,
-                        explanation: formData.explanation || ''
-                    };
-                    const newQuestion = { ...questionData, id: doc(collection(firestore, 'studentExams')).id };
-                     const updatedQuestions = editingItem
-                        ? testData.questions.map(q => q.id === editingItem.id ? { ...questionData, id: editingItem.id } : q)
-                        : [...(testData.questions || []), newQuestion];
-                    await updateDoc(testRef, { questions: updatedQuestions });
-                }
             } else { 
-                collectionName = 'studentExams';
-                dataToSave.allowedStudents = (formData.allowedStudents || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+                collectionName = parentCollection;
+                if (isStudentExam) {
+                   dataToSave.allowedStudents = (formData.allowedStudents || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+                } else {
+                    const category = data.testCategories.find(c => c.id === dataToSave.categoryId);
+                    dataToSave.categoryName = category?.title || '';
+                    dataToSave.accessType = "free";
+                }
                 if (!editingItem) dataToSave.questions = [];
             }
         }
