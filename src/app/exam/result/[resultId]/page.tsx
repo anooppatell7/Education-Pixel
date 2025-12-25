@@ -6,7 +6,7 @@ import { useParams, notFound, useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
 import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { db } from '@/firebase';
-import type { MockTest, ExamResult as ExamResultType, ExamRegistration, User as AppUser } from '@/lib/types';
+import type { MockTest, ExamResult as ExamResultType, ExamRegistration, User as AppUser, StudentExam } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { BarChart, Clock, Target, Check, X, ShieldQuestion, HelpCircle, Award, Loader2 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -54,13 +54,12 @@ export default function ExamResultPage() {
     const router = useRouter();
 
     const [result, setResult] = useState<ExamResultType | null>(null);
-    const [test, setTest] = useState<MockTest | null>(null);
+    const [test, setTest] = useState<MockTest | StudentExam | null>(null);
     const [rank, setRank] = useState<number | null>(null);
     const [isRankLoading, setIsRankLoading] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
-    const [isOfficialExam, setIsOfficialExam] = useState(false);
-
+    
     useEffect(() => {
         if (!resultId) return;
 
@@ -78,8 +77,7 @@ export default function ExamResultPage() {
             setResult(resultData);
             document.title = `Result: ${resultData.testName} - Education Pixel`;
             
-            const officialExam = resultData.registrationNumber.startsWith('EP-');
-            setIsOfficialExam(officialExam);
+            const isOfficialExam = resultData.registrationNumber.startsWith('EP-');
 
             if (user) {
                 const superAdminEmails = ["admin@educationpixel.com", "anooppbh8@gmail.com", "ashishkumargiri51@gmail.com"];
@@ -88,34 +86,30 @@ export default function ExamResultPage() {
                 if (isSuperAdmin) {
                     setIsAuthorized(true);
                 } else {
-                    // Fetch user's role from the 'users' collection
                     const userDocRef = doc(db, "users", user.uid);
                     const userDocSnap = await getDoc(userDocRef);
 
                     if (userDocSnap.exists()) {
                         const appUser = userDocSnap.data() as AppUser;
                         
-                        // Check if the user is a franchise admin for the result's franchise
                         if (appUser.role === 'franchiseAdmin' && appUser.franchiseId === resultData.franchiseId) {
                             setIsAuthorized(true);
                         } 
-                        // Check if the student owns the result
-                        else if (officialExam) {
-                            const registrationQuery = query(collection(db, "examRegistrations"), where("registrationNumber", "==", resultData.registrationNumber), limit(1));
-                            const registrationSnapshot = await getDocs(registrationQuery);
-                            if (!registrationSnapshot.empty && registrationSnapshot.docs[0].id === user.uid) {
-                                setIsAuthorized(true);
+                        else if (resultData.registrationNumber.startsWith('EP-')) {
+                            const regDocRef = doc(db, 'examRegistrations', user.uid);
+                            const regDocSnap = await getDoc(regDocRef);
+                            if(regDocSnap.exists() && regDocSnap.data().registrationNumber === resultData.registrationNumber) {
+                               setIsAuthorized(true);
                             } else {
-                                setIsAuthorized(false);
+                               setIsAuthorized(false);
                             }
-                        } else if (resultData.registrationNumber === user.uid) {
+                        } else if (resultData.registrationNumber === user.uid) { // For non-official mock tests
                             setIsAuthorized(true);
                         } else {
                              setIsAuthorized(false);
                         }
                     } else {
-                        // User doc doesn't exist, might be a regular student who doesn't have a role doc yet
-                        if (!officialExam && resultData.registrationNumber === user.uid) {
+                        if (!isOfficialExam && resultData.registrationNumber === user.uid) {
                             setIsAuthorized(true);
                         } else {
                             setIsAuthorized(false);
@@ -125,11 +119,13 @@ export default function ExamResultPage() {
             } else if (!userLoading) {
                  setIsAuthorized(false);
             }
-
-            const testRef = doc(db, 'mockTests', resultData.testId);
+            
+            const collectionName = isOfficialExam ? "studentExams" : "mockTests";
+            const testRef = doc(db, collectionName, resultData.testId);
             const testSnap = await getDoc(testRef);
+
             if (testSnap.exists()) {
-                setTest({ id: testSnap.id, ...testSnap.data() } as MockTest);
+                setTest({ id: testSnap.id, ...testSnap.data() } as MockTest | StudentExam);
             } else {
                  console.error("Associated test not found!");
             }
@@ -213,7 +209,7 @@ export default function ExamResultPage() {
 
     const getQuestionById = (id: string) => test.questions.find(q => q.id === id);
     
-    const pageTitle = isOfficialExam ? 'Exam Result' : 'Test Result';
+    const pageTitle = result.registrationNumber.startsWith('EP-') ? 'Exam Result' : 'Test Result';
 
     return (
         <div className="bg-background">
@@ -358,4 +354,5 @@ export default function ExamResultPage() {
             </div>
         </div>
     );
-}
+
+    
