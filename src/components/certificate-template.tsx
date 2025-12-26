@@ -67,16 +67,10 @@ export default function CertificateTemplate(data: CertificateData) {
         mainBody: {
             textAlign: 'center', marginTop: '10px', flexGrow: 1
         },
-        certBannerText: {
-            fontSize: '36px',
-            fontWeight: 'bold',
-            color: '#213967',
-            letterSpacing: '4px',
-            margin: '15px 0',
-            fontFamily: 'serif',
-            borderTop: '2px solid #a94442',
-            borderBottom: '2px solid #a94442',
-            padding: '5px 0',
+        certImage: {
+            width: '250px',
+            height: 'auto',
+            margin: '15px auto',
         },
         
         studentInfo: {
@@ -137,7 +131,11 @@ export default function CertificateTemplate(data: CertificateData) {
                 </div>
 
                 <div style={styles.mainBody}>
-                    <h2 style={styles.certBannerText}>CERTIFICATE OF COMPLETION</h2>
+                     <img 
+                        src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766732021/certificate_xtyqd5.png" 
+                        style={styles.certImage} 
+                        alt="Certificate Emblem" 
+                    />
                     <div style={styles.studentInfo}>
                         <p>We are much pleased to honour Mr./Ms./Mrs : <span style={{fontWeight: 'bold'}}>{data.studentName}</span></p>
                         <p>Son/Daughter/Wife Mr. : <span style={{fontWeight: 'bold'}}>{data.registration.fatherName}</span></p>
