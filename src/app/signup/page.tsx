@@ -25,7 +25,6 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [city, setCity] = useState('');
   const [franchises, setFranchises] = useState<Franchise[]>([]);
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -45,67 +44,14 @@ export default function SignupPage() {
             const q = query(collection(db, "franchises"), where("status", "==", "active"));
             const querySnapshot = await getDocs(q);
             const franchiseList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Franchise));
-
-             if (franchiseList.length > 0) {
-                 setFranchises(franchiseList);
-            } else {
-                // Fallback for development if no active franchises are in the DB
-                const fallbackFranchises = [
-                    { id: 'fb_patti', name: 'Education Pixel Patti', city: 'Patti', district: 'Pratapgarh', ownerName: 'Admin', email: 'patti@ep.com', status: 'active', createdAt: new Date() },
-                    { id: 'fb_kunda', name: 'Education Pixel Kunda', city: 'Kunda', district: 'Pratapgarh', ownerName: 'Admin', email: 'kunda@ep.com', status: 'active', createdAt: new Date() },
-                    { id: 'fb_pratapgarh', name: 'Education Pixel Pratapgarh', city: 'Pratapgarh', district: 'Pratapgarh', ownerName: 'Admin', email: 'pratapgarh@ep.com', status: 'active', createdAt: new Date() },
-                ] as Franchise[];
-                setFranchises(fallbackFranchises);
-            }
+            setFranchises(franchiseList);
         } catch (error) {
             console.error("Error fetching franchises:", error);
-             // Set fallback on error as well
-             const fallbackFranchises = [
-                { id: 'fb_patti', name: 'Education Pixel Patti', city: 'Patti', district: 'Pratapgarh', ownerName: 'Admin', email: 'patti@ep.com', status: 'active', createdAt: new Date() },
-                { id: 'fb_kunda', name: 'Education Pixel Kunda', city: 'Kunda', district: 'Pratapgarh', ownerName: 'Admin', email: 'kunda@ep.com', status: 'active', createdAt: new Date() },
-                { id: 'fb_pratapgarh', name: 'Education Pixel Pratapgarh', city: 'Pratapgarh', district: 'Pratapgarh', ownerName: 'Admin', email: 'pratapgarh@ep.com', status: 'active', createdAt: new Date() },
-            ] as Franchise[];
-            setFranchises(fallbackFranchises);
         }
     }
     fetchFranchises();
   }, [db]);
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
-    }
-  };
-
-  const uploadImage = async (): Promise<string | null> => {
-    if (!imageFile) return null;
-
-    const formData = new FormData();
-    formData.append('file', imageFile);
-    formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
-
-    try {
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Image upload failed');
-      }
-
-      const data = await response.json();
-      return data.secure_url;
-    } catch (error) {
-      console.error("Cloudinary Upload Error:", error);
-      toast({
-        title: "Image Upload Failed",
-        description: "Could not upload your profile picture. Please try again or continue without it.",
-        variant: "destructive",
-      });
-      return null;
-    }
-  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,14 +75,12 @@ export default function SignupPage() {
     }
 
     try {
-      const photoUrl = await uploadImage();
-
       // 1. Create Firebase Auth user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const authUser = userCredential.user;
       
-      // 2. Update Auth profile display name and photo
-      await updateProfile(authUser, { displayName: name, photoURL: photoUrl });
+      // 2. Update Auth profile display name
+      await updateProfile(authUser, { displayName: name });
       
       // 3. Determine user role and franchise details
       const userQuery = query(collection(db, "users"), where("email", "==", email));
@@ -177,18 +121,14 @@ export default function SignupPage() {
         city: city,
         franchiseId: franchiseId,
         createdAt: serverTimestamp(),
-        photoUrl: photoUrl || null,
       };
       
       if (isPreExistingFranchiseAdmin) {
-        // If a franchise admin was pre-registered, update their doc
         await updateDoc(userSnap.docs[0].ref, {
           id: authUser.uid, // Link the doc to the new auth UID
           name,
-          photoUrl: photoUrl || null,
         });
       } else {
-         // This handles new students and creates their document.
          await setDoc(userDocRef, userData);
       }
       
@@ -299,15 +239,6 @@ export default function SignupPage() {
                       </SelectContent>
                   </Select>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="photo">Profile Photo</Label>
-                <Input
-                  id="photo"
-                  type="file"
-                  accept="image/png, image/jpeg"
-                  onChange={handleFileChange}
-                />
-              </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...</> : 'Sign Up'}
               </Button>
@@ -324,3 +255,5 @@ export default function SignupPage() {
     </>
   );
 }
+
+    

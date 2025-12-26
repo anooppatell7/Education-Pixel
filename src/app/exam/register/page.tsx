@@ -41,7 +41,7 @@ const formSchema = z.object({
   gender: z.enum(['Male', 'Female', 'Other']),
   course: z.string().min(1, "Please select a course."),
   courseDuration: z.string().min(2, "Please enter course duration."),
-  photoUrl: z.string().url({ message: "Photo is required for registration." }).min(1, "Photo is required."),
+  photoUrl: z.string().min(1, "Photo is required for registration."),
   address: z.string().min(5, "Address must be at least 5 characters."),
   city: z.string().min(2, "City is required."),
   state: z.string().min(2, "State is required."),
@@ -123,6 +123,8 @@ export default function ExamRegistrationPage() {
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
           setImageFile(e.target.files[0]);
+          // Set a placeholder value to satisfy the zod schema, the real URL comes after upload
+          form.setValue('photoUrl', e.target.files[0].name); 
         }
     };
 
@@ -176,13 +178,16 @@ export default function ExamRegistrationPage() {
             toast({ title: "Error", description: "You must be logged in to register.", variant: "destructive" });
             return;
         }
+        
+        if (!imageFile) {
+            toast({ title: "Photo Required", description: "Please upload your passport size photo.", variant: "destructive"});
+            return;
+        }
+
         setIsLoading(true);
 
         try {
-            let finalPhotoUrl = data.photoUrl;
-            if (imageFile && !finalPhotoUrl) {
-                finalPhotoUrl = await uploadImage();
-            }
+            const finalPhotoUrl = await uploadImage();
 
             if (!finalPhotoUrl) {
                  throw new Error("Photo is required and could not be uploaded.");
@@ -528,3 +533,5 @@ export default function ExamRegistrationPage() {
         </>
     );
 }
+
+    
