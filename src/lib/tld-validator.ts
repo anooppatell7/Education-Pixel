@@ -4,9 +4,9 @@
 const VALID_TLDS = new Set([
   'com', 'org', 'net', 'edu', 'gov', 'mil', 'int',
   'io', 'ai', 'co', 'app', 'dev', 'tech', 'info', 'biz', 'name', 'pro',
-  'in', 'us', 'uk', 'ca', 'au', 'de', 'fr', 'jp', 'cn', 'ru',
-  'online', 'site', 'website', 'space', 'store', 'xyz', 'club', 'design',
-  'me', 'tv', 'academy', 'agency', 'art', 'blog', 'build', 'capital', 'cards',
+  'in', 'us', 'uk', 'ca', 'au', 'de', 'fr', 'jp', 'cn', 'ru', 'nl', 'eu', 'br', 'it', 'es', 'ch', 'se', 'no', 'fi',
+  'online', 'site', 'website', 'space', 'store', 'xyz', 'club', 'design', 'shop', 'blog',
+  'me', 'tv', 'academy', 'agency', 'art', 'build', 'capital', 'cards',
   'care', 'cash', 'center', 'chat', 'city', 'cloud', 'coach', 'codes',
   'community', 'company', 'computer', 'construction', 'consulting', 'contractors',
   'credit', 'data', 'dating', 'deals', 'degree', 'delivery', 'democrat',
@@ -21,19 +21,18 @@ const VALID_TLDS = new Set([
   'hockey', 'holdings', 'holiday', 'home', 'hospital', 'house', 'how', 'immo',
   'immobilien', 'industries', 'ink', 'institute', 'insure', 'international',
   'investments', 'irish', 'jetzt', 'jewelry', 'jobs', 'joy', 'kim', 'kitchen',
-
   'land', 'law', 'lawyer', 'lease', 'legal', 'life', 'lighting', 'limited',
   'limo', 'live', 'llc', 'loan', 'loans', 'lol', 'lotto', 'love', 'ltd', 'luxury',
   'maison', 'management', 'market', 'marketing', 'mba', 'media', 'memorial',
   'men', 'menu', 'moda', 'money', 'mortgage', 'movie', 'music', 'network',
   'news', 'ninja', 'one', 'ong', 'onl', 'ooo', 'organic', 'partners', 'parts',
   'party', 'pet', 'phd', 'photo', 'photography', 'photos', 'pics', 'pictures',
-  'pizza', 'place', 'plus', 'poker', 'porn', 'press', 'productions', 'promo',
+  'pizza', 'place', 'plus', 'poker', 'press', 'productions', 'promo',
   'properties', 'property', 'protection', 'pub', 'quebec', 'racing', 'radio',
   'recipes', 'red', 'rehab', 'reit', 'rent', 'rentals', 'repair', 'report',
   'republican', 'rest', 'restaurant', 'review', 'reviews', 'rich', 'rip',
   'rocks', 'rodeo', 'run', 'sale', 'save', 'school', 'science', 'secure',
-  'security', 'services', 'sexy', 'shoes', 'shop', 'shopping', 'show', 'singles',
+  'security', 'services', 'shoes', 'shopping', 'show', 'singles',
   'soccer', 'social', 'software', 'solar', 'solutions', 'soy', 'studio', 'style',
   'sucks', 'supplies', 'supply', 'support', 'surf', 'surgery', 'systems', 'tax',
   'taxi', 'team', 'technology', 'tennis', 'theater', 'tickets', 'tips', 'tires',
@@ -46,9 +45,12 @@ const VALID_TLDS = new Set([
 
 export function isValidTLD(email: string): boolean {
     if (!email.includes('@') || !email.includes('.')) {
-        return true; // Let the base zod email validator handle this
+        return true; // Let the base zod email validator handle no-@ or no-dot cases
     }
     const parts = email.split('.');
+    if (parts.length < 2) {
+        return false; // Not a valid email structure if there's no TLD part
+    }
     const tld = parts[parts.length - 1].toLowerCase();
     
     // Check if the TLD is purely alphabetic and has at least 2 characters

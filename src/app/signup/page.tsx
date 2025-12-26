@@ -15,6 +15,7 @@ import Head from "next/head";
 import { doc, setDoc, getDocs, collection, query, where, serverTimestamp, addDoc } from "firebase/firestore";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Franchise } from "@/lib/types";
+import { isValidTLD } from "@/lib/tld-validator";
 
 
 export default function SignupPage() {
@@ -80,6 +81,11 @@ export default function SignupPage() {
     }
     if (password.length < 6) {
         toast({ title: "Error", description: "Password must be at least 6 characters long.", variant: "destructive" });
+        setIsLoading(false);
+        return;
+    }
+     if (!isValidTLD(email)) {
+        toast({ title: "Invalid Email", description: "The email address must have a valid domain (e.g., .com, .in).", variant: "destructive" });
         setIsLoading(false);
         return;
     }
