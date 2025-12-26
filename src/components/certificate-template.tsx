@@ -11,7 +11,6 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   percentage: number;
   grade: string;
   logoUrl: string;
-  certBannerUrl: string;
   studentPhotoUrl: string;
 }
 
@@ -68,7 +67,17 @@ export default function CertificateTemplate(data: CertificateData) {
         mainBody: {
             textAlign: 'center', marginTop: '10px', flexGrow: 1
         },
-        certBanner: { width: '250px', margin: '5px 0' },
+        certBannerText: {
+            fontSize: '36px',
+            fontWeight: 'bold',
+            color: '#213967',
+            letterSpacing: '4px',
+            margin: '15px 0',
+            fontFamily: 'serif',
+            borderTop: '2px solid #a94442',
+            borderBottom: '2px solid #a94442',
+            padding: '5px 0',
+        },
         
         studentInfo: {
             textAlign: 'left', fontSize: '15px', lineHeight: 1.9, width: '100%',
@@ -128,7 +137,7 @@ export default function CertificateTemplate(data: CertificateData) {
                 </div>
 
                 <div style={styles.mainBody}>
-                    <img src={data.certBannerUrl} style={styles.certBanner} alt="Certificate Banner"/>
+                    <h2 style={styles.certBannerText}>CERTIFICATE OF COMPLETION</h2>
                     <div style={styles.studentInfo}>
                         <p>We are much pleased to honour Mr./Ms./Mrs : <span style={{fontWeight: 'bold'}}>{data.studentName}</span></p>
                         <p>Son/Daughter/Wife Mr. : <span style={{fontWeight: 'bold'}}>{data.registration.fatherName}</span></p>
@@ -151,12 +160,12 @@ export default function CertificateTemplate(data: CertificateData) {
 
                 <div style={styles.footerSection}>
                     <div style={styles.signatureBlock}>
-                         <div style={{height: '40px'}}>{/* Spacer for signature */}</div>
+                         <div style={{height: '40px'}}></div>
                         <div style={styles.signatureLine}></div>
                         <p style={{margin: 0}}>Verified By</p>
                     </div>
                     <div style={styles.signatureBlock}>
-                        <div style={{height: '40px'}}>{/* Spacer for signature */}</div>
+                        <div style={{height: '40px'}}></div>
                         <div style={styles.signatureLine}></div>
                         <p style={{margin: 0}}>Authorised Signature</p>
                     </div>

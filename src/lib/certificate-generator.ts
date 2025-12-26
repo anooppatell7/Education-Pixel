@@ -20,13 +20,12 @@ const A4_WIDTH = 1123;
 const A4_HEIGHT = 794;
 
 async function getCertificateImages(photoUrl: string) {
-  const [logo, certBanner, studentPhoto] = await Promise.all([
+  const [logo, studentPhoto] = await Promise.all([
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"),
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766861218/cert-banner_yjy2f7.png"),
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Fallback if photo fails
   ]);
 
-  return { logo, certBanner, studentPhoto };
+  return { logo, studentPhoto };
 }
 
 const getGrade = (percentage: number) => {
@@ -39,7 +38,7 @@ const getGrade = (percentage: number) => {
 
 export async function generateCertificatePdf(data: CertificateData): Promise<Blob> {
   try {
-    const { logo, certBanner, studentPhoto } = await getCertificateImages(data.registration.photoUrl);
+    const { logo, studentPhoto } = await getCertificateImages(data.registration.photoUrl);
     
     const grade = getGrade(data.percentage);
 
@@ -47,7 +46,6 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
       ...data,
       grade,
       logoUrl: logo,
-      certBannerUrl: certBanner,
       studentPhotoUrl: studentPhoto,
     };
     
