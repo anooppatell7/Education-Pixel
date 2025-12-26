@@ -14,21 +14,23 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   issueDate: string;
   examDate: string;
   percentage: number;
+  grade: string;
+  logoUrl: string;
+  studentPhotoUrl: string;
+  certificateImageUrl: string;
 }
 
 const A4_WIDTH = 1123;
 const A4_HEIGHT = 794;
 
 async function getCertificateImages(photoUrl: string) {
-  const [logo, studentPhoto, certificateImage, verifiedStamp, signature] = await Promise.all([
+  const [logo, studentPhoto, certificateImage] = await Promise.all([
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"),
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Fallback if photo fails
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766732021/certificate_xtyqd5.png"),
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766897931/verified-stamp_l6v8ay.png"),
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766898144/auth-sign_tnywjp.png"),
   ]);
 
-  return { logo, studentPhoto, certificateImage, verifiedStamp, signature };
+  return { logo, studentPhoto, certificateImage };
 }
 
 const getGrade = (percentage: number) => {
@@ -41,7 +43,7 @@ const getGrade = (percentage: number) => {
 
 export async function generateCertificatePdf(data: CertificateData): Promise<Blob> {
   try {
-    const { logo, studentPhoto, certificateImage, verifiedStamp, signature } = await getCertificateImages(data.registration.photoUrl);
+    const { logo, studentPhoto, certificateImage } = await getCertificateImages(data.registration.photoUrl);
     
     const grade = getGrade(data.percentage);
 
@@ -51,8 +53,6 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
       logoUrl: logo,
       studentPhotoUrl: studentPhoto,
       certificateImageUrl: certificateImage,
-      verifiedStampUrl: verifiedStamp,
-      signatureUrl: signature,
     };
     
     const container = document.createElement("div");

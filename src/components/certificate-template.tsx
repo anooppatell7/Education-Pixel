@@ -13,8 +13,6 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   logoUrl: string;
   studentPhotoUrl: string;
   certificateImageUrl: string;
-  verifiedStampUrl: string;
-  signatureUrl: string;
 }
 
 export default function CertificateTemplate(data: CertificateData) {
@@ -108,13 +106,7 @@ export default function CertificateTemplate(data: CertificateData) {
         signatureLine: {
             borderBottom: '1px solid black', paddingBottom: '30px', marginBottom: '5px' 
         },
-        verifiedStamp: {
-            position: 'absolute', width: '80px', height: '80px', bottom: '50px', left: '0'
-        },
-         signatureImg: {
-            position: 'absolute', width: '120px', height: 'auto', bottom: '50px', right: '0'
-        },
-
+        
         gradingBar: {
             backgroundColor: '#c00000', color: 'white', fontSize: '11px', fontWeight: 'bold',
             textAlign: 'center', padding: '3px', width: '100%', margin: '15px 0'
@@ -186,14 +178,14 @@ export default function CertificateTemplate(data: CertificateData) {
 
                 <div style={styles.footerSection}>
                     <div style={styles.signatureBlock}>
-                        <div style={{...styles.signatureLine, position: 'relative'}}>
-                           <img src={data.verifiedStampUrl} style={styles.verifiedStamp} alt="Verified Stamp" />
+                        <div style={styles.signatureLine}>
+                           {/* Verified Stamp Image Removed */}
                         </div>
                         <p style={{margin: 0}}>Verified By</p>
                     </div>
                     <div style={styles.signatureBlock}>
-                        <div style={{...styles.signatureLine, position: 'relative'}}>
-                            <img src={data.signatureUrl} style={styles.signatureImg} alt="Signature"/>
+                        <div style={styles.signatureLine}>
+                            {/* Signature Image Removed */}
                         </div>
                         <p style={{margin: 0}}>Authorised Signature</p>
                     </div>
