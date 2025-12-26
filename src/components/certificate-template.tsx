@@ -136,9 +136,6 @@ export default function CertificateTemplate(data: CertificateData) {
                     <div style={styles.instituteDetails}>
                         <h1 style={styles.instituteName}>EDUCATION PIXEL</h1>
                         <p style={styles.tagline}>Learn focus & Grow</p>
-                        <p style={styles.subHeading}>Run under: AROGYA JEEVAN SOCIAL HEALTHCARE FOUNDATION</p>
-                        <p style={styles.subHeading}>Reg by: Ministry of Corporate Affairs (Govt. of India)</p>
-                        <p style={styles.subHeading}>Regd. NITI Aayog Unique ID: UP/2022/0304937 (AN ISO 9001:2015 Certified)</p>
                     </div>
                 </div>
 
@@ -179,13 +176,11 @@ export default function CertificateTemplate(data: CertificateData) {
                 <div style={styles.footerSection}>
                     <div style={styles.signatureBlock}>
                         <div style={styles.signatureLine}>
-                           {/* Verified Stamp Image Removed */}
                         </div>
                         <p style={{margin: 0}}>Verified By</p>
                     </div>
                     <div style={styles.signatureBlock}>
                         <div style={styles.signatureLine}>
-                            {/* Signature Image Removed */}
                         </div>
                         <p style={{margin: 0}}>Authorised Signature</p>
                     </div>
