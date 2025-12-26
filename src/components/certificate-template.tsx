@@ -70,7 +70,6 @@ export default function CertificateTemplate(data: CertificateData) {
         },
         instituteName: { fontSize: '48px', fontWeight: 'bold', fontFamily: '"Times New Roman", serif', letterSpacing: '2px', lineHeight: 1 },
         tagline: { fontSize: '24px', fontWeight: 'bold', fontFamily: '"Brush Script MT", cursive', margin: '5px 0', color: '#0070c0' },
-        subHeading: { fontSize: '10px', margin: 0, lineHeight: '1.2', color: '#000', fontWeight: 'bold' },
 
         regAndPhotoSection: {
             display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '15px'
@@ -79,17 +78,21 @@ export default function CertificateTemplate(data: CertificateData) {
         studentPhoto: { width: '100px', height: '120px', border: '3px solid #000', objectFit: 'cover' },
         
         mainBody: {
-            textAlign: 'center', marginTop: '5px', flexGrow: 1,
+            textAlign: 'center',
+            marginTop: '-5px', // Move the whole block up
+            flexGrow: 1,
         },
         certificateImage: {
-             width: '250px',
+             width: '200px', // Slightly smaller
              height: 'auto',
-             margin: '0 auto 5px auto',
+             margin: '0 auto',
         },
         
         studentInfo: {
-            textAlign: 'left', fontSize: '16px', lineHeight: 1.6, width: '100%',
-            marginTop: '10px', fontFamily: '"Times New Roman", serif'
+            textAlign: 'left', fontSize: '16px', lineHeight: 1.5, // Tighter line height
+            width: '100%',
+            marginTop: '5px', // Reduced margin
+            fontFamily: '"Times New Roman", serif'
         },
         detailRow: {
             display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '5px',
@@ -98,7 +101,8 @@ export default function CertificateTemplate(data: CertificateData) {
 
         footerSection: {
             display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end',
-            width: '100%', padding: '10px 0 0 0', marginTop: 'auto'
+            width: '100%', padding: '5px 0 0 0', // Reduced padding
+            marginTop: 'auto'
         },
         signatureBlock: {
             textAlign: 'center', width: '200px', fontSize: '14px', fontWeight: 'bold' 
@@ -109,7 +113,7 @@ export default function CertificateTemplate(data: CertificateData) {
         
         gradingBar: {
             backgroundColor: '#c00000', color: 'white', fontSize: '11px', fontWeight: 'bold',
-            textAlign: 'center', padding: '3px', width: '100%', margin: '15px 0'
+            textAlign: 'center', padding: '3px', width: '100%', marginTop: '10px'
         },
         
         footerBar: {
