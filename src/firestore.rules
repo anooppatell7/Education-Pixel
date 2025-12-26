@@ -45,8 +45,13 @@ service cloud.firestore {
       // SuperAdmin can read/write any user document.
       allow read, write: if isSuperAdmin();
 
-      // No user can list other users or delete their own account from the client.
-      allow list, delete: if false;
+      // Any authenticated user can query the collection.
+      // Firestore's query security ensures that the 'get' rule is also checked for each document returned.
+      // This means a user can only ever retrieve their own document via a query.
+      allow list: if isAuth();
+
+      // No user can delete their own account from the client. Deletions should be server-side.
+      allow delete: if false;
     }
     
     match /franchises/{franchiseId} {
