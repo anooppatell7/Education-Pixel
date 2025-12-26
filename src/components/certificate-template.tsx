@@ -9,6 +9,7 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   issueDate: string;
   examDate: string;
   percentage: number;
+  grade: string;
   logoUrl: string;
   certBannerUrl: string;
   qrUrl: string;
@@ -17,16 +18,6 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
 }
 
 export default function CertificateTemplate(data: CertificateData) {
-
-    const getGrade = (percentage: number) => {
-        if (percentage >= 75) return 'A';
-        if (percentage >= 60) return 'B';
-        if (percentage >= 50) return 'C';
-        return 'D';
-    };
-
-    const grade = getGrade(data.percentage);
-
     const styles: { [key: string]: React.CSSProperties } = {
         page: {
             width: '1123px',
@@ -35,146 +26,168 @@ export default function CertificateTemplate(data: CertificateData) {
             fontFamily: '"Arial", sans-serif',
             color: '#000',
             position: 'relative',
-            backgroundColor: '#fff',
+            backgroundColor: '#fff1e1', // Light cream background
             overflow: 'hidden',
         },
-        borderTop: { position: 'absolute', top: 0, left: 0, width: '100%', height: '55px', backgroundColor: '#9a2526' },
-        borderBottom: { position: 'absolute', bottom: 0, left: 0, width: '100%', height: '55px', backgroundColor: '#9a2526' },
-        borderLeft: { position: 'absolute', top: 0, left: 0, width: '55px', height: '100%', backgroundColor: '#213967' },
-        borderRight: { position: 'absolute', top: 0, right: 0, width: '55px', height: '100%', backgroundColor: '#213967' },
-        
-        content: {
-            position: 'absolute',
-            top: '55px', left: '55px', right: '55px', bottom: '55px',
-            border: '2px solid #9a2526',
-            padding: '15px'
+        borderLeft: {
+            position: 'absolute', top: 0, left: 0, width: '40px', height: '100%', 
+            background: 'linear-gradient(to bottom, #7b2a2a, #a94442)',
         },
-        innerBorder: {
-            width: '100%', height: '100%',
-            border: '1px solid #213967',
-            position: 'relative',
+        borderRight: {
+            position: 'absolute', top: 0, right: 0, width: '40px', height: '100%',
+            background: 'linear-gradient(to bottom, #7b2a2a, #a94442)',
+        },
+        curveLeft: {
+            position: 'absolute', left: '40px', top: '0', height: '100%', width: '100px'
+        },
+        curveRight: {
+            position: 'absolute', right: '40px', top: '0', height: '100%', width: '100px', transform: 'scaleX(-1)'
+        },
+        content: {
+            padding: '20px 160px',
+            height: '100%',
             display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            flexDirection: 'column'
         },
         header: {
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            padding: '15px 25px 0 25px',
-            boxSizing: 'border-box'
+            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+            paddingBottom: '10px', borderBottom: '2px solid #a94442'
         },
-        logo: { width: '100px', height: '100px', borderRadius: '50%', border: '2px solid #213967' },
+        logo: { width: '100px', height: '100px' },
         instituteDetails: {
-            textAlign: 'center',
-            color: '#9a2526',
+            textAlign: 'center', color: '#9a2526', flexGrow: 1, padding: '0 20px'
         },
-        instituteName: { fontSize: '42px', fontWeight: 'bold', margin: '5px 0', fontFamily: 'serif' },
-        subHeading: { fontSize: '11px', margin: 0 },
-        studentPhoto: { width: '100px', height: '120px', border: '3px solid #213967', objectFit: 'cover'},
-        regDetails: {
-            position: 'absolute',
-            top: '150px',
-            left: '40px',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            lineHeight: 1.6
+        instituteName: { fontSize: '44px', fontWeight: 'bold', fontFamily: 'serif', letterSpacing: '2px' },
+        tagline: { fontSize: '16px', fontWeight: 'bold', fontStyle: 'italic', margin: '5px 0' },
+        subHeading: { fontSize: '9px', margin: 0, lineHeight: '1.2' },
+        
+        infoAndPhoto: {
+            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '10px'
         },
-        certificateBanner: { width: '250px', margin: '20px 0 15px 0'},
+        regDetails: { fontSize: '14px', fontWeight: 'bold', lineHeight: 1.8 },
+        studentPhoto: { width: '100px', height: '120px', border: '3px solid #213967', objectFit: 'cover' },
+        
         mainBody: {
-            width: '90%',
-            textAlign: 'left',
-            fontSize: '15px',
-            lineHeight: 1.8,
-            marginTop: '25px',
+            textAlign: 'center', marginTop: '10px', flexGrow: 1
+        },
+        certBanner: { width: '250px', margin: '5px 0' },
+        
+        studentInfo: {
+            textAlign: 'left', fontSize: '15px', lineHeight: 1.9, width: '100%',
+            marginTop: '20px'
         },
         detailRow: {
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-            marginTop: '8px'
+            display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '5px',
+            fontSize: '14px', fontWeight: 'bold'
         },
+
         footerSection: {
-            position: 'absolute',
-            bottom: '20px',
-            left: '25px',
-            right: '25px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
+            width: '100%', padding: '10px 0 0 0', borderTop: '2px solid #a94442'
         },
-        qrCode: { width: '100px', height: '100px' },
-        signatureBlock: { textAlign: 'center', width: '200px' },
-        footerLogos: { width: '350px', marginTop: '10px' },
-        bold: { fontWeight: 'bold' }
+        qrCodeSection: { textAlign: 'center' },
+        qrCode: { width: '80px', height: '80px' },
+        signatureBlock: { textAlign: 'center', width: '180px', fontSize: '14px', fontWeight: 'bold' },
+        signatureLine: { borderBottom: '1px solid black', paddingBottom: '30px', marginBottom: '5px' },
+        
+        gradingBar: {
+            backgroundColor: '#d9534f', color: 'white', fontSize: '10px', fontWeight: 'bold',
+            textAlign: 'center', padding: '3px', borderRadius: '5px', width: '100%', margin: '10px 0 5px 0'
+        },
+        
+        footerLogos: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', width: '100%', marginTop: '5px' },
+        footerLogoImg: { height: '30px' },
+        
+        footerBar: {
+            position: 'absolute', bottom: 0, left: 0, width: '100%',
+            backgroundColor: '#213967', color: 'white', textAlign: 'center',
+            fontSize: '11px', padding: '5px 0'
+        }
     };
     
+    // Admission Date can be null if not available, fallback to exam date
+    const admissionDate = data.registration.registeredAt?.toDate ? format(data.registration.registeredAt.toDate(), 'dd-MM-yyyy') : format(new Date(data.examDate), 'dd-MM-yyyy');
+
     return (
         <div style={styles.page}>
-            <div style={styles.borderTop}></div>
-            <div style={styles.borderBottom}></div>
             <div style={styles.borderLeft}></div>
             <div style={styles.borderRight}></div>
+            <img src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766898495/cert-curve-left_jwqfxq.png" style={styles.curveLeft} alt="Decorative Curve"/>
+            <img src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766898495/cert-curve-left_jwqfxq.png" style={styles.curveRight} alt="Decorative Curve"/>
 
             <div style={styles.content}>
-                <div style={styles.innerBorder}>
-                    <div style={styles.header}>
-                        <img src={data.logoUrl} style={styles.logo} alt="Institute Logo" />
-                        <div style={styles.instituteDetails}>
-                            <h1 style={styles.instituteName}>EDUCATION PIXEL</h1>
-                            <p style={styles.subHeading}>Run under: AROGYA JEEVAN SOCIAL HEALTHCARE FOUNDATION</p>
-                            <p style={styles.subHeading}>Reg by: Ministry of Corporate Affairs (Govt. of India)</p>
-                            <p style={styles.subHeading}>Regd. NITI Aayog Unique ID: BR/2022/0304937 (AN ISO 9001:2015 Certified)</p>
-                        </div>
-                        <img src={data.studentPhotoUrl} style={styles.studentPhoto} alt="Student Photo" />
+                <div style={styles.header}>
+                    <img src={data.logoUrl} style={styles.logo} alt="Institute Logo" />
+                    <div style={styles.instituteDetails}>
+                        <h1 style={styles.instituteName}>EDUCATION PIXEL</h1>
+                        <p style={styles.tagline}>Learn focus & Grow</p>
+                        <p style={styles.subHeading}>Run under: AROGYA JEEVAN SOCIAL HEALTHCARE FOUNDATION</p>
+                        <p style={styles.subHeading}>Reg by: Ministry of Corporate Affairs (Govt. of India)</p>
+                        <p style={styles.subHeading}>Regd. NITI Aayog Unique ID: UP/2022/0304937 (AN ISO 9001:2015 Certified)</p>
                     </div>
+                </div>
 
+                <div style={styles.infoAndPhoto}>
                     <div style={styles.regDetails}>
                         <p>Regd. No. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {data.registration.registrationNumber}</p>
                         <p>Certificate No. : {data.certificateId}</p>
                     </div>
+                    <img src={data.studentPhotoUrl} style={styles.studentPhoto} alt="Student Photo" />
+                </div>
 
-                    <img src={data.certBannerUrl} style={styles.certificateBanner} alt="Certificate Banner"/>
-                    
-                    <div style={styles.mainBody}>
-                        <p>We are much pleased to honour Mr./Ms./Mrs: <span style={styles.bold}>{data.studentName}</span></p>
-                        <p>Son/Daughter/Wife Mr. : <span style={styles.bold}>{data.registration.fatherName}</span></p>
-                        <p>Has successfully completed a course of : <span style={styles.bold}>{data.courseName}</span></p>
+                <div style={styles.mainBody}>
+                    <img src={data.certBannerUrl} style={styles.certBanner} alt="Certificate Banner"/>
+                    <div style={styles.studentInfo}>
+                        <p>We are much pleased to honour Mr./Ms./Mrs : <span style={{fontWeight: 'bold'}}>{data.studentName}</span></p>
+                        <p>Son/Daughter/Wife Mr. : <span style={{fontWeight: 'bold'}}>{data.registration.fatherName}</span></p>
+                        <p>Has successfully completed a course of : <span style={{fontWeight: 'bold'}}>{data.courseName.toUpperCase()}</span></p>
                         
                         <div style={styles.detailRow}>
-                            <span>Course Duration : <span style={styles.bold}>{data.registration.courseDuration}</span></span>
-                            <span>Grade Awarded : <span style={styles.bold}>{grade}</span></span>
-                            <span>D.O.B. : <span style={styles.bold}>{format(parseISO(data.registration.dob), 'dd-MM-yyyy')}</span></span>
+                            <span>Course Duration : {data.registration.courseDuration}</span>
+                            <span>Grade Awarded : {data.grade}</span>
+                            <span>D.O.B. : {format(parseISO(data.registration.dob), 'dd-MM-yyyy')}</span>
                         </div>
                         
-                        <p style={{marginTop: '8px'}}>Center : <span style={styles.bold}>EDUCATION PIXEL ONLINE TRAINING PLATFORM, PRATAPGARH</span></p>
+                        <p style={{marginTop: '5px', fontWeight: 'bold'}}>Center : EDUCATION PIXEL ONLINE TRAINING PLATFORM, PRATAPGARH</p>
 
                         <div style={styles.detailRow}>
-                            <span>Date of Admission: <span style={styles.bold}>{format(data.registration.registeredAt.toDate(), 'dd-MM-yyyy')}</span></span>
-                            <span>Date of Issue: <span style={styles.bold}>{format(new Date(data.issueDate), 'dd-MM-yyyy')}</span></span>
+                            <span>Date of Admission: {admissionDate}</span>
+                            <span>Date of Issue: {format(new Date(data.issueDate), 'dd-MM-yyyy')}</span>
                         </div>
                     </div>
+                </div>
 
-                    <div style={styles.footerSection}>
-                        <div style={{textAlign: 'center'}}>
-                            <img src={data.qrUrl} style={styles.qrCode} alt="QR Code" />
-                            <p style={{fontSize: '10px', fontWeight: 'bold'}}>Scan to Verify</p>
-                        </div>
-                        <div style={styles.signatureBlock}>
-                            <p style={{borderBottom: '1px solid black', paddingBottom: '30px', marginBottom: '5px'}}>&nbsp;</p>
-                            <p style={{margin: 0, fontWeight: 'bold'}}>Verified By</p>
-                        </div>
-                        <div style={styles.signatureBlock}>
-                            <p style={{borderBottom: '1px solid black', paddingBottom: '30px', marginBottom: '5px'}}>&nbsp;</p>
-                            <p style={{margin: 0, fontWeight: 'bold'}}>Authorised Signature</p>
-                        </div>
+                <div style={styles.footerSection}>
+                    <div style={styles.qrCodeSection}>
+                        <img src={data.qrUrl} style={styles.qrCode} alt="QR Code" />
+                        <p style={{fontSize: '10px', fontWeight: 'bold', margin: 0}}>Scan to Verify</p>
                     </div>
+                    <div style={styles.signatureBlock}>
+                         <div style={{height: '40px'}}>{/* Spacer for signature */}</div>
+                        <div style={styles.signatureLine}></div>
+                        <p style={{margin: 0}}>Verified By</p>
+                    </div>
+                    <div style={styles.signatureBlock}>
+                        <div style={{height: '40px'}}>{/* Spacer for signature */}</div>
+                        <div style={styles.signatureLine}></div>
+                        <p style={{margin: 0}}>Authorised Signature</p>
+                    </div>
+                </div>
 
-                    <img src={data.footerLogosUrl} style={{ position: 'absolute', bottom: '60px', right: '150px', width: '250px'}} alt="Footer Logos" />
+                <div style={styles.gradingBar}>
+                    Assessment Grading: A-Excellent (75% Above), B-Good (60%), C-Satisfactory (50%), D-Defaulter
+                </div>
+
+                <div style={styles.footerLogos}>
+                    <img src={data.footerLogosUrl} style={{ width: '350px'}} alt="Footer Logos" />
                 </div>
             </div>
+
+             <div style={styles.footerBar}>
+                 Regional Office : Bawali Mode, House Number 421 Year, Ward No 15, Near S.S. Dairy, Behror, Alwar, Rajasthan, India, 301701
+                 <br />
+                 www.educationpixel.com | info@educationpixel.com
+             </div>
         </div>
     );
 }

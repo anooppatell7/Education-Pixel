@@ -24,19 +24,30 @@ async function getCertificateImages(photoUrl: string) {
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"),
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766861218/cert-banner_yjy2f7.png"),
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766861619/qr-code_yp1vln.png"),
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766861217/footer-logos_pumkfg.png"),
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766897368/footer-logos-new_l1iizj.png"),
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1766862838/placeholder-user_f38a5k.png"), // Fallback if photo fails
   ]);
 
   return { logo, certBanner, qr, footerLogos, studentPhoto };
 }
 
+const getGrade = (percentage: number) => {
+    if (percentage >= 75) return 'A';
+    if (percentage >= 60) return 'B';
+    if (percentage >= 50) return 'C';
+    return 'D';
+};
+
+
 export async function generateCertificatePdf(data: CertificateData): Promise<Blob> {
   try {
     const { logo, certBanner, qr, footerLogos, studentPhoto } = await getCertificateImages(data.registration.photoUrl);
     
+    const grade = getGrade(data.percentage);
+
     const finalData = {
       ...data,
+      grade,
       logoUrl: logo,
       certBannerUrl: certBanner,
       qrUrl: qr,
@@ -54,9 +65,10 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
     const staticMarkup = renderToStaticMarkup(CertificateTemplate(finalData));
     container.innerHTML = staticMarkup;
     
+    // Wait for fonts and images to load
     await new Promise<void>((resolve) => {
       document.fonts.ready.then(() => {
-        setTimeout(resolve, 500); 
+        setTimeout(resolve, 1000); // Increased timeout for better rendering
       });
     });
 
@@ -66,6 +78,10 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
       allowTaint: true,
       backgroundColor: null,
       imageTimeout: 0,
+      width: A4_WIDTH,
+      height: A4_HEIGHT,
+      windowWidth: A4_WIDTH,
+      windowHeight: A4_HEIGHT,
     });
 
     const imgData = canvas.toDataURL("image/png", 1.0);
