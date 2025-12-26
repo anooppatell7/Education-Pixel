@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser, db } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Head from "next/head";
-import { doc, setDoc, getDocs, collection, query, where, serverTimestamp, addDoc } from "firebase/firestore";
+import { doc, setDoc, getDocs, collection, query, where, serverTimestamp, addDoc, updateDoc } from "firebase/firestore";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Franchise } from "@/lib/types";
 import { isValidTLD } from "@/lib/tld-validator";
@@ -97,14 +97,13 @@ export default function SignupPage() {
 
       let role = "student";
       let franchiseId: string | null = null;
-      let existingUserDocRef = null;
+      let isPreRegisteredFranchiseAdmin = !userSnap.empty;
 
-      if (!userSnap.empty) {
+      if (isPre-registeredFranchiseAdmin) {
         // This email is pre-registered as a franchise admin
         const franchiseAdminData = userSnap.docs[0].data();
         role = "franchiseAdmin";
         franchiseId = franchiseAdminData.franchiseId;
-        existingUserDocRef = userSnap.docs[0].ref;
       } else {
         // This is a regular student signup
         const selectedFranchise = franchises.find(f => f.city === city);
@@ -130,18 +129,21 @@ export default function SignupPage() {
       await updateProfile(authUser, { displayName: name });
       
       // 3. Create or Update user document in Firestore
-      if (existingUserDocRef) {
-          // Update the pre-existing franchise admin document with the new UID
-          const newDocRef = doc(db, "users", authUser.uid);
-          await setDoc(newDocRef, { ...userSnap.docs[0].data(), name, id: authUser.uid });
-          // Optionally delete the old document if it was using a different ID
-          if (existingUserDocRef.id !== authUser.uid) {
-             // await deleteDoc(existingUserDocRef); 
-             // Be careful with this; for now, let's just update. The new doc is keyed by UID.
-          }
+      const userDocRef = doc(db, "users", authUser.uid);
+
+      if (isPre-registeredFranchiseAdmin) {
+          // If the admin was pre-registered, update their doc with the new UID, if necessary.
+          // This logic assumes the pre-registered doc might have a different ID.
+          // A safer pattern is to always use the auth UID as the document ID.
+          // We will set the document with the new auth UID.
+          const preRegisteredData = userSnap.docs[0].data();
+          await setDoc(userDocRef, {
+            ...preRegisteredData,
+            id: authUser.uid, // Ensure the doc has the correct UID
+            name: name, // Update name from form
+          });
       } else {
           // Create a new document for a student
-          const userDocRef = doc(db, "users", authUser.uid);
           await setDoc(userDocRef, {
             id: authUser.uid,
             name: name,
@@ -157,7 +159,7 @@ export default function SignupPage() {
       await addDoc(collection(db, "activityLogs"), {
           userId: authUser.uid,
           franchiseId: franchiseId,
-          action: role === 'franchiseAdmin' ? "FRANCHISE_ADMIN_SIGNED_UP" : "STUDENT_REGISTERED",
+          action: role === 'franchiseAdmin' ? "FRANCHISE_ADMIN_SIGNED_UP" : "STUDENT_SIGNED_UP",
           timestamp: serverTimestamp()
       });
       
@@ -184,6 +186,9 @@ export default function SignupPage() {
             break;
           case 'auth/weak-password':
              errorMessage = 'The password is too weak.';
+             break;
+           case 'permission-denied':
+             errorMessage = 'You do not have permission to perform this action. Please check security rules.';
              break;
           default:
             errorMessage = 'Failed to create an account. Please try again.';
@@ -280,5 +285,3 @@ export default function SignupPage() {
     </>
   );
 }
-
-    
