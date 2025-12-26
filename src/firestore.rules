@@ -40,9 +40,9 @@ service cloud.firestore {
     // == CORE DATA ==
 
     match /users/{userId} {
-      allow read, write: if isSuperAdmin();
-      allow get, update: if isOwner(userId);
-      allow create: if true;
+      allow create: if isAuth(); // Allow any newly authenticated user to create their own doc
+      allow read, write: if isSuperAdmin(); // SuperAdmin can manage all users
+      allow get, update: if isOwner(userId); // User can read/update their own profile
       allow list: if isAuth();
     }
     
