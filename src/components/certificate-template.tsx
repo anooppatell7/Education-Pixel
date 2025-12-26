@@ -12,6 +12,11 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   grade: string;
   logoUrl: string;
   studentPhotoUrl: string;
+  qrCodeUrl: string;
+  certificateImageUrl: string;
+  verifiedStampUrl: string;
+  signatureUrl: string;
+  footerLogosUrl: string;
 }
 
 export default function CertificateTemplate(data: CertificateData) {
@@ -20,95 +25,130 @@ export default function CertificateTemplate(data: CertificateData) {
             width: '1123px',
             height: '794px',
             boxSizing: 'border-box',
-            fontFamily: '"Arial", sans-serif',
+            fontFamily: '"Calibri", "Arial", sans-serif',
             color: '#000',
             position: 'relative',
-            backgroundColor: '#fff1e1', // Light cream background
+            backgroundColor: '#fff',
             overflow: 'hidden',
+            padding: '25px',
         },
-        borderLeft: {
-            position: 'absolute', top: 0, left: 0, width: '40px', height: '100%', 
-            background: 'linear-gradient(to bottom, #7b2a2a, #a94442)',
+        border: {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            boxSizing: 'border-box',
+            border: '2px solid #b08c54',
         },
-        borderRight: {
-            position: 'absolute', top: 0, right: 0, width: '40px', height: '100%',
-            background: 'linear-gradient(to bottom, #7b2a2a, #a94442)',
+        backgroundWatermark: {
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            opacity: 0.08,
+            width: '400px',
+            height: 'auto',
+            zIndex: 0,
         },
-        curveLeft: {
-            position: 'absolute', left: '40px', top: '0', height: '100%', width: '100px'
+        curveTopLeft: {
+            position: 'absolute', top: '0', left: '0', height: '200px', width: 'auto', zIndex: 2
         },
-        curveRight: {
-            position: 'absolute', right: '40px', top: '0', height: '100%', width: '100px', transform: 'scaleX(-1)'
+        curveBottomRight: {
+            position: 'absolute', bottom: '0', right: '0', height: '250px', width: 'auto', zIndex: 2
         },
         content: {
-            padding: '20px 160px',
+            position: 'relative',
+            zIndex: 1,
+            padding: '20px 40px',
             height: '100%',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
         },
         header: {
-            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-            paddingBottom: '10px', borderBottom: '2px solid #a94442'
+            display: 'flex', alignItems: 'center', gap: '20px',
         },
-        logo: { width: '100px', height: '100px' },
+        logo: { width: '100px', height: '100px', border: '3px solid #000', borderRadius: '50%' },
         instituteDetails: {
-            textAlign: 'center', color: '#9a2526', flexGrow: 1, padding: '0 20px'
+            textAlign: 'center', color: '#c00000', flexGrow: 1, padding: '0 20px'
         },
-        instituteName: { fontSize: '44px', fontWeight: 'bold', fontFamily: 'serif', letterSpacing: '2px' },
-        tagline: { fontSize: '16px', fontWeight: 'bold', fontStyle: 'italic', margin: '5px 0' },
-        subHeading: { fontSize: '9px', margin: 0, lineHeight: '1.2' },
-        
-        infoAndPhoto: {
-            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '10px'
+        instituteName: { fontSize: '48px', fontWeight: 'bold', fontFamily: '"Times New Roman", serif', letterSpacing: '2px', lineHeight: 1 },
+        tagline: { fontSize: '24px', fontWeight: 'bold', fontFamily: '"Brush Script MT", cursive', margin: '5px 0', color: '#0070c0' },
+        subHeading: { fontSize: '10px', margin: 0, lineHeight: '1.2', color: '#000', fontWeight: 'bold' },
+
+        regAndPhotoSection: {
+            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '15px'
         },
-        regDetails: { fontSize: '14px', fontWeight: 'bold', lineHeight: 1.8 },
-        studentPhoto: { width: '100px', height: '120px', border: '3px solid #213967', objectFit: 'cover' },
+        regDetails: { fontSize: '15px', fontWeight: 'bold', lineHeight: 1.8, color: '#000' },
+        studentPhoto: { width: '100px', height: '120px', border: '3px solid #000', objectFit: 'cover' },
         
         mainBody: {
-            textAlign: 'center', marginTop: '10px', flexGrow: 1
+            textAlign: 'center', marginTop: '5px', flexGrow: 1,
         },
-        certImage: {
-            width: '250px',
-            height: 'auto',
-            margin: '15px auto',
+        certificateImage: {
+             width: '250px',
+             height: 'auto',
+             margin: '0 auto 5px auto',
         },
         
         studentInfo: {
-            textAlign: 'left', fontSize: '15px', lineHeight: 1.9, width: '100%',
-            marginTop: '20px'
+            textAlign: 'left', fontSize: '16px', lineHeight: 1.6, width: '100%',
+            marginTop: '10px', fontFamily: '"Times New Roman", serif'
         },
         detailRow: {
             display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '5px',
-            fontSize: '14px', fontWeight: 'bold'
+            fontSize: '15px', fontWeight: 'bold'
         },
 
         footerSection: {
-            display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end',
-            width: '100%', padding: '10px 0 0 0', borderTop: '2px solid #a94442', marginTop: 'auto'
+            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
+            width: '100%', padding: '10px 0 0 0', marginTop: 'auto'
         },
-        signatureBlock: { textAlign: 'center', width: '180px', fontSize: '14px', fontWeight: 'bold' },
-        signatureLine: { borderBottom: '1px solid black', paddingBottom: '30px', marginBottom: '5px' },
-        
+        qrCodeBlock: {
+            textAlign: 'center',
+            width: '120px'
+        },
+        qrCode: {
+            width: '100px', height: '100px', margin: '0 auto'
+        },
+        signatureBlock: {
+            textAlign: 'center', width: '200px', fontSize: '14px', fontWeight: 'bold' 
+        },
+        signatureLine: {
+            borderBottom: '1px solid black', paddingBottom: '30px', marginBottom: '5px' 
+        },
+        verifiedStamp: {
+            position: 'absolute', width: '80px', height: '80px', bottom: '50px', left: '0'
+        },
+         signatureImg: {
+            position: 'absolute', width: '120px', height: 'auto', bottom: '50px', right: '0'
+        },
+
         gradingBar: {
-            backgroundColor: '#d9534f', color: 'white', fontSize: '10px', fontWeight: 'bold',
-            textAlign: 'center', padding: '3px', borderRadius: '5px', width: '100%', margin: '15px 0'
+            backgroundColor: '#c00000', color: 'white', fontSize: '11px', fontWeight: 'bold',
+            textAlign: 'center', padding: '3px', width: '100%', margin: '15px 0'
         },
         
         footerBar: {
-            position: 'absolute', bottom: 0, left: 0, width: '100%',
-            backgroundColor: '#213967', color: 'white', textAlign: 'center',
-            fontSize: '11px', padding: '5px 0'
-        }
+            position: 'absolute', bottom: '25px', left: '25px', right: '25px',
+            borderTop: '2px solid #b08c54',
+            paddingTop: '5px',
+            textAlign: 'center',
+            fontSize: '11px',
+        },
+        footerLogos: {
+             height: '40px', width: 'auto', margin: '5px auto 0 auto'
+        },
     };
     
     const admissionDate = data.registration.registeredAt?.toDate ? format(data.registration.registeredAt.toDate(), 'dd-MM-yyyy') : format(new Date(data.examDate), 'dd-MM-yyyy');
 
     return (
         <div style={styles.page}>
-            <div style={styles.borderLeft}></div>
-            <div style={styles.borderRight}></div>
-            <img src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766898495/cert-curve-left_jwqfxq.png" style={styles.curveLeft} alt="Decorative Curve"/>
-            <img src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766898495/cert-curve-left_jwqfxq.png" style={styles.curveRight} alt="Decorative Curve"/>
+            <div style={styles.border}></div>
+            <img style={styles.backgroundWatermark} src={data.logoUrl} alt="Watermark"/>
+            <img style={styles.curveTopLeft} src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766898495/cert-curve-left_jwqfxq.png" alt="Decorative Curve"/>
+            <img style={styles.curveBottomRight} src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766898495/cert-curve-right_eywnp1.png" alt="Decorative Curve"/>
 
             <div style={styles.content}>
                 <div style={styles.header}>
@@ -122,24 +162,24 @@ export default function CertificateTemplate(data: CertificateData) {
                     </div>
                 </div>
 
-                <div style={styles.infoAndPhoto}>
+                <div style={styles.regAndPhotoSection}>
                     <div style={styles.regDetails}>
                         <p>Regd. No. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {data.registration.registrationNumber}</p>
                         <p>Certificate No. : {data.certificateId}</p>
                     </div>
-                    <img src={data.studentPhotoUrl} style={styles.studentPhoto} alt="Student Photo" />
+                    <img src={data.studentPhotoUrl} style={styles.studentPhoto} alt="Student" />
                 </div>
 
                 <div style={styles.mainBody}>
                      <img 
-                        src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766732021/certificate_xtyqd5.png" 
-                        style={styles.certImage} 
+                        src={data.certificateImageUrl}
+                        style={styles.certificateImage} 
                         alt="Certificate Emblem" 
                     />
                     <div style={styles.studentInfo}>
-                        <p>We are much pleased to honour Mr./Ms./Mrs : <span style={{fontWeight: 'bold'}}>{data.studentName}</span></p>
-                        <p>Son/Daughter/Wife Mr. : <span style={{fontWeight: 'bold'}}>{data.registration.fatherName}</span></p>
-                        <p>Has successfully completed a course of : <span style={{fontWeight: 'bold'}}>{data.courseName.toUpperCase()}</span></p>
+                        <p>We are much pleased to honour Mr./Ms./Mrs : <span style={{fontWeight: 'bold', display: 'inline-block', marginLeft: '10px'}}>{data.studentName}</span></p>
+                        <p>Son/Daughter/Wife Mr. : <span style={{fontWeight: 'bold', display: 'inline-block', marginLeft: '10px'}}>{data.registration.fatherName}</span></p>
+                        <p>Has successfully completed a course of : <span style={{fontWeight: 'bold', display: 'inline-block', marginLeft: '10px'}}>{data.courseName.toUpperCase()}</span></p>
                         
                         <div style={styles.detailRow}>
                             <span>Course Duration : {data.registration.courseDuration}</span>
@@ -157,25 +197,30 @@ export default function CertificateTemplate(data: CertificateData) {
                 </div>
 
                 <div style={styles.footerSection}>
+                    <div style={styles.qrCodeBlock}>
+                         <img src={data.qrCodeUrl} style={styles.qrCode} alt="QR Code" />
+                        <p style={{margin: '0', fontSize: '12px', fontWeight: 'bold'}}>Scan to Verify</p>
+                    </div>
                     <div style={styles.signatureBlock}>
-                         <div style={{height: '40px'}}></div>
-                        <div style={styles.signatureLine}></div>
+                        <div style={{...styles.signatureLine, position: 'relative'}}>
+                           <img src={data.verifiedStampUrl} style={styles.verifiedStamp} alt="Verified Stamp" />
+                        </div>
                         <p style={{margin: 0}}>Verified By</p>
                     </div>
                     <div style={styles.signatureBlock}>
-                        <div style={{height: '40px'}}></div>
-                        <div style={styles.signatureLine}></div>
+                        <div style={{...styles.signatureLine, position: 'relative'}}>
+                            <img src={data.signatureUrl} style={styles.signatureImg} alt="Signature"/>
+                        </div>
                         <p style={{margin: 0}}>Authorised Signature</p>
                     </div>
                 </div>
 
                 <div style={styles.gradingBar}>
-                    Assessment Grading: A-Excellent (75% Above), B-Good (60%), C-Satisfactory (50%), D-Defaulter
+                    Assessment Grading: A-Excellent (75% Above), B-Good (60%-74%), C-Satisfactory (50%-59%), D-Unsatisfactory
                 </div>
-
             </div>
-
              <div style={styles.footerBar}>
+                 <img src={data.footerLogosUrl} alt="Govt Logos" style={styles.footerLogos}/>
                  Regional Office : Bawali Mode, House Number 421 Year, Ward No 15, Near S.S. Dairy, Behror, Alwar, Rajasthan, India, 301701
                  <br />
                  www.educationpixel.com | info@educationpixel.com
