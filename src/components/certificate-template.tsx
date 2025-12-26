@@ -12,11 +12,9 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   grade: string;
   logoUrl: string;
   studentPhotoUrl: string;
-  qrCodeUrl: string;
   certificateImageUrl: string;
   verifiedStampUrl: string;
   signatureUrl: string;
-  footerLogosUrl: string;
 }
 
 export default function CertificateTemplate(data: CertificateData) {
@@ -101,15 +99,8 @@ export default function CertificateTemplate(data: CertificateData) {
         },
 
         footerSection: {
-            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
+            display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end',
             width: '100%', padding: '10px 0 0 0', marginTop: 'auto'
-        },
-        qrCodeBlock: {
-            textAlign: 'center',
-            width: '120px'
-        },
-        qrCode: {
-            width: '100px', height: '100px', margin: '0 auto'
         },
         signatureBlock: {
             textAlign: 'center', width: '200px', fontSize: '14px', fontWeight: 'bold' 
@@ -135,9 +126,6 @@ export default function CertificateTemplate(data: CertificateData) {
             paddingTop: '5px',
             textAlign: 'center',
             fontSize: '11px',
-        },
-        footerLogos: {
-             height: '40px', width: 'auto', margin: '5px auto 0 auto'
         },
     };
     
@@ -197,10 +185,6 @@ export default function CertificateTemplate(data: CertificateData) {
                 </div>
 
                 <div style={styles.footerSection}>
-                    <div style={styles.qrCodeBlock}>
-                         <img src={data.qrCodeUrl} style={styles.qrCode} alt="QR Code" />
-                        <p style={{margin: '0', fontSize: '12px', fontWeight: 'bold'}}>Scan to Verify</p>
-                    </div>
                     <div style={styles.signatureBlock}>
                         <div style={{...styles.signatureLine, position: 'relative'}}>
                            <img src={data.verifiedStampUrl} style={styles.verifiedStamp} alt="Verified Stamp" />
@@ -220,7 +204,6 @@ export default function CertificateTemplate(data: CertificateData) {
                 </div>
             </div>
              <div style={styles.footerBar}>
-                 <img src={data.footerLogosUrl} alt="Govt Logos" style={styles.footerLogos}/>
                  Regional Office : Bawali Mode, House Number 421 Year, Ward No 15, Near S.S. Dairy, Behror, Alwar, Rajasthan, India, 301701
                  <br />
                  www.educationpixel.com | info@educationpixel.com

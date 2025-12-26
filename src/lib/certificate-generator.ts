@@ -20,17 +20,15 @@ const A4_WIDTH = 1123;
 const A4_HEIGHT = 794;
 
 async function getCertificateImages(photoUrl: string) {
-  const [logo, studentPhoto, qrCode, certificateImage, verifiedStamp, signature, footerLogos] = await Promise.all([
+  const [logo, studentPhoto, certificateImage, verifiedStamp, signature] = await Promise.all([
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"),
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Fallback if photo fails
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766861619/qr-code_yp1vln.png"),
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766732021/certificate_xtyqd5.png"),
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766897931/verified-stamp_l6v8ay.png"),
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766898144/auth-sign_tnywjp.png"),
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766897368/footer-logos-new_l1iizj.png"),
   ]);
 
-  return { logo, studentPhoto, qrCode, certificateImage, verifiedStamp, signature, footerLogos };
+  return { logo, studentPhoto, certificateImage, verifiedStamp, signature };
 }
 
 const getGrade = (percentage: number) => {
@@ -43,7 +41,7 @@ const getGrade = (percentage: number) => {
 
 export async function generateCertificatePdf(data: CertificateData): Promise<Blob> {
   try {
-    const { logo, studentPhoto, qrCode, certificateImage, verifiedStamp, signature, footerLogos } = await getCertificateImages(data.registration.photoUrl);
+    const { logo, studentPhoto, certificateImage, verifiedStamp, signature } = await getCertificateImages(data.registration.photoUrl);
     
     const grade = getGrade(data.percentage);
 
@@ -52,11 +50,9 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
       grade,
       logoUrl: logo,
       studentPhotoUrl: studentPhoto,
-      qrCodeUrl: qrCode,
       certificateImageUrl: certificateImage,
       verifiedStampUrl: verifiedStamp,
       signatureUrl: signature,
-      footerLogosUrl: footerLogos
     };
     
     const container = document.createElement("div");
