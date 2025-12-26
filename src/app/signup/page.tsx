@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser, db } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Head from "next/head";
-import { doc, setDoc, getDocs, collection, query, where, serverTimestamp, addDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDocs, collection, query, where, serverTimestamp, updateDoc } from "firebase/firestore";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Franchise } from "@/lib/types";
 import { isValidTLD } from "@/lib/tld-validator";
@@ -44,7 +44,7 @@ export default function SignupPage() {
             const querySnapshot = await getDocs(q);
             const franchiseList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Franchise));
 
-            if (franchiseList.length > 0) {
+             if (franchiseList.length > 0) {
                  setFranchises(franchiseList);
             } else {
                 // Fallback for development if no active franchises are in the DB
@@ -57,7 +57,7 @@ export default function SignupPage() {
             }
         } catch (error) {
             console.error("Error fetching franchises:", error);
-            // Set fallback on error as well
+             // Set fallback on error as well
              const fallbackFranchises = [
                 { id: 'fb_patti', name: 'Education Pixel Patti', city: 'Patti', district: 'Pratapgarh', ownerName: 'Admin', email: 'patti@ep.com', status: 'active', createdAt: new Date() },
                 { id: 'fb_kunda', name: 'Education Pixel Kunda', city: 'Kunda', district: 'Pratapgarh', ownerName: 'Admin', email: 'kunda@ep.com', status: 'active', createdAt: new Date() },
@@ -91,7 +91,7 @@ export default function SignupPage() {
     }
 
     try {
-      // 1. Create Firebase Auth user first. This is the most critical step.
+      // 1. Create Firebase Auth user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const authUser = userCredential.user;
       
@@ -105,6 +105,7 @@ export default function SignupPage() {
       let role = "student";
       let franchiseId: string | null = null;
       let existingUserDocId: string | null = null;
+      let isPreExisting = false;
 
       if (!userSnap.empty) {
         const preExistingUserData = userSnap.docs[0].data();
@@ -112,6 +113,7 @@ export default function SignupPage() {
             role = "franchiseAdmin";
             franchiseId = preExistingUserData.franchiseId;
             existingUserDocId = userSnap.docs[0].id;
+            isPreExisting = true;
         }
       }
 
@@ -129,43 +131,25 @@ export default function SignupPage() {
 
       // 4. Create or Update user document in Firestore
       const userDocRef = doc(db, "users", authUser.uid);
-
-      if (role === 'franchiseAdmin' && existingUserDocId && existingUserDocId !== authUser.uid) {
-        // A franchise admin was pre-registered with a different ID (e.g. by superAdmin).
-        // This case is complex. For now, we assume the document ID should be the new auth UID.
-        // A better approach is to have admins confirm their email to get access.
-        // For simplicity here, we'll update the document if the pre-registered doc ID is the new auth UID, otherwise create a new one.
-        // This logic is tricky, so we'll simplify: We'll just create a doc with the new UID. The rules must allow this.
-        await setDoc(userDocRef, {
-            id: authUser.uid,
-            name: name,
-            email: email,
-            role: "franchiseAdmin",
-            city: city, // Use city from form
-            franchiseId: franchiseId,
-            createdAt: serverTimestamp()
-        });
-      } else {
-          // This handles both new students and franchise admins who are signing up for the first time
-          // and their email might have been added to a franchise document, but not the users collection.
-          await setDoc(userDocRef, {
-            id: authUser.uid,
-            name: name,
-            email: email,
-            role: role,
-            city: city,
-            franchiseId: franchiseId,
-            createdAt: serverTimestamp()
-          });
-      }
+      const userData = {
+        id: authUser.uid,
+        name: name,
+        email: email,
+        role: role,
+        city: city,
+        franchiseId: franchiseId,
+        createdAt: serverTimestamp()
+      };
       
-      // 5. Log this activity
-      await addDoc(collection(db, "activityLogs"), {
-          userId: authUser.uid,
-          franchiseId: franchiseId,
-          action: role === 'franchiseAdmin' ? "FRANCHISE_ADMIN_SIGNED_UP" : "STUDENT_SIGNED_UP",
-          timestamp: serverTimestamp()
-      });
+      if (isPreExisting && existingUserDocId) {
+         // If a franchise admin was pre-registered, update their doc with the new UID if needed
+         // For simplicity, we assume the doc ID should be the user's auth UID.
+         // This logic creates or overwrites the document with the correct UID.
+         await setDoc(userDocRef, userData);
+      } else {
+         // This handles new students and creates their document.
+         await setDoc(userDocRef, userData);
+      }
       
       toast({
         title: "Account Created",
