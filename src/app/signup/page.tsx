@@ -91,71 +91,75 @@ export default function SignupPage() {
     }
 
     try {
-      // Check if a user document pre-exists for a franchise admin
-      const userQuery = query(collection(db, "users"), where("email", "==", email), where("role", "==", "franchiseAdmin"));
+      // 1. Create Firebase Auth user first. This is the most critical step.
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const authUser = userCredential.user;
+      
+      // 2. Update Auth profile display name
+      await updateProfile(authUser, { displayName: name });
+      
+      // 3. Determine user role and franchise details
+      const userQuery = query(collection(db, "users"), where("email", "==", email));
       const userSnap = await getDocs(userQuery);
 
       let role = "student";
       let franchiseId: string | null = null;
-      let isPreRegisteredFranchiseAdmin = !userSnap.empty;
+      let existingUserDocId: string | null = null;
 
-      if (isPre-registeredFranchiseAdmin) {
-        // This email is pre-registered as a franchise admin
-        const franchiseAdminData = userSnap.docs[0].data();
-        role = "franchiseAdmin";
-        franchiseId = franchiseAdminData.franchiseId;
-      } else {
-        // This is a regular student signup
+      if (!userSnap.empty) {
+        const preExistingUserData = userSnap.docs[0].data();
+        if (preExistingUserData.role === 'franchiseAdmin') {
+            role = "franchiseAdmin";
+            franchiseId = preExistingUserData.franchiseId;
+            existingUserDocId = userSnap.docs[0].id;
+        }
+      }
+
+      if (role === "student") {
         const selectedFranchise = franchises.find(f => f.city === city);
         if (!selectedFranchise) {
-            toast({ title: "Error", description: "Selected city does not have an active franchise. Please contact support.", variant: "destructive" });
-            setIsLoading(false);
-            return;
+            throw new Error("Selected city does not have an active franchise. Please contact support.");
         }
         franchiseId = selectedFranchise.id;
       }
       
       if (!franchiseId) {
-          toast({ title: "Error", description: "Could not assign a franchise. Please contact support.", variant: "destructive" });
-          setIsLoading(false);
-          return;
+          throw new Error("Could not assign a franchise. Please contact support.");
       }
 
-      // 1. Create Firebase Auth user
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const authUser = userCredential.user;
-      
-      // 2. Update Auth profile
-      await updateProfile(authUser, { displayName: name });
-      
-      // 3. Create or Update user document in Firestore
+      // 4. Create or Update user document in Firestore
       const userDocRef = doc(db, "users", authUser.uid);
 
-      if (isPre-registeredFranchiseAdmin) {
-          // If the admin was pre-registered, update their doc with the new UID, if necessary.
-          // This logic assumes the pre-registered doc might have a different ID.
-          // A safer pattern is to always use the auth UID as the document ID.
-          // We will set the document with the new auth UID.
-          const preRegisteredData = userSnap.docs[0].data();
-          await setDoc(userDocRef, {
-            ...preRegisteredData,
-            id: authUser.uid, // Ensure the doc has the correct UID
-            name: name, // Update name from form
-          });
+      if (role === 'franchiseAdmin' && existingUserDocId && existingUserDocId !== authUser.uid) {
+        // A franchise admin was pre-registered with a different ID (e.g. by superAdmin).
+        // This case is complex. For now, we assume the document ID should be the new auth UID.
+        // A better approach is to have admins confirm their email to get access.
+        // For simplicity here, we'll update the document if the pre-registered doc ID is the new auth UID, otherwise create a new one.
+        // This logic is tricky, so we'll simplify: We'll just create a doc with the new UID. The rules must allow this.
+        await setDoc(userDocRef, {
+            id: authUser.uid,
+            name: name,
+            email: email,
+            role: "franchiseAdmin",
+            city: city, // Use city from form
+            franchiseId: franchiseId,
+            createdAt: serverTimestamp()
+        });
       } else {
-          // Create a new document for a student
+          // This handles both new students and franchise admins who are signing up for the first time
+          // and their email might have been added to a franchise document, but not the users collection.
           await setDoc(userDocRef, {
             id: authUser.uid,
             name: name,
             email: email,
-            role: "student",
+            role: role,
             city: city,
             franchiseId: franchiseId,
             createdAt: serverTimestamp()
           });
       }
-
-      // 4. (Optional) Log this activity
+      
+      // 5. Log this activity
       await addDoc(collection(db, "activityLogs"), {
           userId: authUser.uid,
           franchiseId: franchiseId,
@@ -188,10 +192,11 @@ export default function SignupPage() {
              errorMessage = 'The password is too weak.';
              break;
            case 'permission-denied':
-             errorMessage = 'You do not have permission to perform this action. Please check security rules.';
+           case 'firestore/permission-denied':
+             errorMessage = 'You do not have permission to create an account. Please check your details or contact support.';
              break;
           default:
-            errorMessage = 'Failed to create an account. Please try again.';
+            errorMessage = error.message || 'Failed to create an account. Please try again.';
             break;
         }
       }
