@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,8 +14,9 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Head from "next/head";
 import { doc, setDoc, getDocs, collection, query, where, serverTimestamp, updateDoc } from "firebase/firestore";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Franchise } from "@/lib/types";
+import type { Franchise, User as AppUser } from "@/lib/types";
 import { isValidTLD } from "@/lib/tld-validator";
+import { Loader2 } from "lucide-react";
 
 
 export default function SignupPage() {
@@ -24,6 +25,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [city, setCity] = useState('');
   const [franchises, setFranchises] = useState<Franchise[]>([]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -69,6 +71,42 @@ export default function SignupPage() {
     fetchFranchises();
   }, [db]);
 
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile) return null;
+
+    const formData = new FormData();
+    formData.append('file', imageFile);
+    formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
+
+    try {
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Image upload failed');
+      }
+
+      const data = await response.json();
+      return data.secure_url;
+    } catch (error) {
+      console.error("Cloudinary Upload Error:", error);
+      toast({
+        title: "Image Upload Failed",
+        description: "Could not upload your profile picture. Please try again or continue without it.",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth || !db) return;
@@ -91,12 +129,14 @@ export default function SignupPage() {
     }
 
     try {
+      const photoUrl = await uploadImage();
+
       // 1. Create Firebase Auth user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const authUser = userCredential.user;
       
-      // 2. Update Auth profile display name
-      await updateProfile(authUser, { displayName: name });
+      // 2. Update Auth profile display name and photo
+      await updateProfile(authUser, { displayName: name, photoURL: photoUrl });
       
       // 3. Determine user role and franchise details
       const userQuery = query(collection(db, "users"), where("email", "==", email));
@@ -104,16 +144,14 @@ export default function SignupPage() {
 
       let role = "student";
       let franchiseId: string | null = null;
-      let existingUserDocId: string | null = null;
-      let isPreExisting = false;
+      let isPreExistingFranchiseAdmin = false;
 
       if (!userSnap.empty) {
         const preExistingUserData = userSnap.docs[0].data();
         if (preExistingUserData.role === 'franchiseAdmin') {
             role = "franchiseAdmin";
             franchiseId = preExistingUserData.franchiseId;
-            existingUserDocId = userSnap.docs[0].id;
-            isPreExisting = true;
+            isPreExistingFranchiseAdmin = true;
         }
       }
 
@@ -131,21 +169,24 @@ export default function SignupPage() {
 
       // 4. Create or Update user document in Firestore
       const userDocRef = doc(db, "users", authUser.uid);
-      const userData = {
+      const userData: AppUser = {
         id: authUser.uid,
         name: name,
         email: email,
-        role: role,
+        role: role as 'student' | 'franchiseAdmin' | 'superAdmin',
         city: city,
         franchiseId: franchiseId,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        photoUrl: photoUrl || null,
       };
       
-      if (isPreExisting && existingUserDocId) {
-         // If a franchise admin was pre-registered, update their doc with the new UID if needed
-         // For simplicity, we assume the doc ID should be the user's auth UID.
-         // This logic creates or overwrites the document with the correct UID.
-         await setDoc(userDocRef, userData);
+      if (isPreExistingFranchiseAdmin) {
+        // If a franchise admin was pre-registered, update their doc
+        await updateDoc(userSnap.docs[0].ref, {
+          id: authUser.uid, // Link the doc to the new auth UID
+          name,
+          photoUrl: photoUrl || null,
+        });
       } else {
          // This handles new students and creates their document.
          await setDoc(userDocRef, userData);
@@ -258,8 +299,17 @@ export default function SignupPage() {
                       </SelectContent>
                   </Select>
               </div>
+              <div className="grid gap-2">
+                <Label htmlFor="photo">Profile Photo</Label>
+                <Input
+                  id="photo"
+                  type="file"
+                  accept="image/png, image/jpeg"
+                  onChange={handleFileChange}
+                />
+              </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Creating Account...' : 'Sign Up'}
+                {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...</> : 'Sign Up'}
               </Button>
               <div className="mt-4 text-center text-sm">
                 Already have an account?{' '}

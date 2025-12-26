@@ -301,6 +301,7 @@ a.click();
     
     const dobValue = typeof formData.dob === 'string' ? formData.dob : format(new Date(), 'yyyy-MM-dd');
 
+    const profilePhotoUrl = registration.photoUrl || user?.photoURL;
 
     return (
         <div className="bg-secondary">
@@ -309,7 +310,7 @@ a.click();
                     <CardHeader className="bg-card p-8 border-b">
                          <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
                             <Avatar className="w-28 h-28 text-4xl border-4 border-primary/10 shadow-md">
-                                <AvatarImage src={registration.photoUrl} alt={registration.fullName} />
+                                <AvatarImage src={profilePhotoUrl || undefined} alt={registration.fullName} />
                                 <AvatarFallback className="bg-primary/20 text-primary font-semibold">{getInitials(registration.fullName)}</AvatarFallback>
                             </Avatar>
                             <div>
@@ -357,10 +358,6 @@ a.click();
                                      <div className="grid gap-2">
                                         <Label>Course (Locked)</Label>
                                         <Input value={registration.course} disabled />
-                                    </div>
-                                    <div className="grid gap-2 md:col-span-2">
-                                        <Label htmlFor="photoUrl">Photo URL</Label>
-                                        <Input id="photoUrl" name="photoUrl" value={formData.photoUrl || ''} onChange={handleFormChange} />
                                     </div>
                                 </div>
                                 <div className="flex justify-end gap-4 mt-6">

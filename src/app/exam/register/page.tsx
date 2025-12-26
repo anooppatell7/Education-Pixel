@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -41,7 +41,7 @@ const formSchema = z.object({
   gender: z.enum(['Male', 'Female', 'Other']),
   course: z.string().min(1, "Please select a course."),
   courseDuration: z.string().min(2, "Please enter course duration."),
-  photoUrl: z.string().url("Please enter a valid URL for your photo."),
+  photoUrl: z.string().url({ message: "Photo is required for registration." }).min(1, "Photo is required."),
   address: z.string().min(5, "Address must be at least 5 characters."),
   city: z.string().min(2, "City is required."),
   state: z.string().min(2, "State is required."),
@@ -63,6 +63,9 @@ export default function ExamRegistrationPage() {
     const [courses, setCourses] = useState<Course[]>([]);
     const [franchises, setFranchises] = useState<Franchise[]>([]);
     const [coursesLoading, setCoursesLoading] = useState(true);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+
     const { toast } = useToast();
     
     useEffect(() => {
@@ -117,6 +120,39 @@ export default function ExamRegistrationPage() {
         fetchDropdownData();
     }, [toast, db]);
 
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+          setImageFile(e.target.files[0]);
+        }
+    };
+
+    const uploadImage = async (): Promise<string> => {
+        if (!imageFile) {
+            throw new Error("No image file selected.");
+        };
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
+
+        try {
+          const response = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+            method: 'POST',
+            body: formData,
+          });
+    
+          if (!response.ok) {
+            throw new Error('Image upload failed');
+          }
+    
+          const data = await response.json();
+          form.setValue('photoUrl', data.secure_url);
+          return data.secure_url;
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
 
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
@@ -143,6 +179,15 @@ export default function ExamRegistrationPage() {
         setIsLoading(true);
 
         try {
+            let finalPhotoUrl = data.photoUrl;
+            if (imageFile && !finalPhotoUrl) {
+                finalPhotoUrl = await uploadImage();
+            }
+
+            if (!finalPhotoUrl) {
+                 throw new Error("Photo is required and could not be uploaded.");
+            }
+
              const selectedFranchise = franchises.find(f => f.city === data.city);
             if (!selectedFranchise) {
                 toast({ title: "Error", description: "Selected city does not have an active franchise. Please contact support.", variant: "destructive" });
@@ -170,6 +215,7 @@ export default function ExamRegistrationPage() {
 
             const registrationData: Omit<ExamRegistration, 'id'> = {
                 ...data,
+                photoUrl: finalPhotoUrl,
                 dob: format(data.dob, 'yyyy-MM-dd'),
                 registrationNumber: newRegNumber,
                 registeredAt: serverTimestamp(),
@@ -392,13 +438,20 @@ export default function ExamRegistrationPage() {
                                                 </FormItem>
                                             )}
                                         />
-                                         <FormField
+                                        <FormField
                                             control={form.control}
                                             name="photoUrl"
                                             render={({ field }) => (
                                                 <FormItem className="md:col-span-2">
-                                                    <FormLabel>Photo URL</FormLabel>
-                                                    <FormControl><Input type="url" placeholder="https://example.com/your-photo.jpg" {...field} /></FormControl>
+                                                    <FormLabel>Your Photo</FormLabel>
+                                                    <FormControl>
+                                                        <Input 
+                                                            type="file" 
+                                                            accept="image/png, image/jpeg"
+                                                            onChange={handleFileChange}
+                                                            className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                                                        />
+                                                    </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -462,9 +515,9 @@ export default function ExamRegistrationPage() {
                                         />
                                     </div>
 
-                                    <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
-                                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                        {isLoading ? 'Submitting...' : 'Submit for Approval'}
+                                    <Button type="submit" size="lg" className="w-full" disabled={isLoading || isUploading}>
+                                        {(isLoading || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        {isUploading ? 'Uploading Image...' : isLoading ? 'Submitting...' : 'Submit for Approval'}
                                     </Button>
                                 </form>
                             </Form>

@@ -295,6 +295,7 @@ export type User = {
     franchiseId: string;
     phone?: string;
     createdAt: any;
+    photoUrl?: string | null;
 }
 
 export type ActivityLog = {
