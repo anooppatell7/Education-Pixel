@@ -38,13 +38,14 @@ service cloud.firestore {
     // == CORE DATA ==
 
     match /users/{userId} {
-      // New users can create their own user document upon signup.
-      allow create: if isOwner(userId);
-      // Users can get and update their own document.
-      allow get, update: if isOwner(userId);
-      // SuperAdmins have full read/write access to any user document.
+      // A new user can create their own document.
+      // An existing user can get and update their own document.
+      allow create, get, update: if isOwner(userId);
+      
+      // SuperAdmin can read/write any user document.
       allow read, write: if isSuperAdmin();
-      // No one can list all users or delete accounts from the client.
+
+      // No user can list other users or delete their own account from the client.
       allow list, delete: if false;
     }
     
@@ -123,7 +124,8 @@ service cloud.firestore {
         allow create: if isSuperAdmin() || isFranchiseAdmin(request.resource.data.franchiseId);
         allow get: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId) || (request.auth.uid in resource.data.allowedStudents);
         allow list: if isAuth();
-        allow update, delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
+        allow update: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
+        allow delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
     }
     
 
