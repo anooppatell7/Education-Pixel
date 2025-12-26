@@ -1,15 +1,9 @@
-
 "use client";
 
-import { useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from "@/components/ui/input";
-import { Loader2, Search, CheckCircle, XCircle, Award } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/firebase';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
@@ -17,134 +11,133 @@ import SectionDivider from '@/components/section-divider';
 import type { ExamResult } from '@/lib/types';
 import { format } from 'date-fns';
 
-const formSchema = z.object({
-  certificateId: z.string().min(5, "Please enter a valid Certificate ID."),
-});
-
-type FormData = z.infer<typeof formSchema>;
-
-export default function VerifyCertificatePage() {
-  const [isLoading, setIsLoading] = useState(false);
+function VerificationContent() {
+  const searchParams = useSearchParams();
+  const certificateId = searchParams.get('id');
+  
+  const [isLoading, setIsLoading] = useState(true);
   const [verificationResult, setVerificationResult] = useState<ExamResult | null>(null);
   const [notFound, setNotFound] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      certificateId: '',
-    },
-  });
-
-  const onSubmit: SubmitHandler<FormData> = async (data) => {
-    setIsLoading(true);
-    setVerificationResult(null);
-    setNotFound(false);
-    try {
-      const q = query(
-        collection(db, "examResults"),
-        where("certificateId", "==", data.certificateId.trim()),
-        limit(1)
-      );
-
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        setNotFound(true);
-      } else {
-        const resultData = querySnapshot.docs[0].data() as ExamResult;
-        setVerificationResult(resultData);
-      }
-    } catch (error) {
-      console.error("Error verifying certificate:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
+  useEffect(() => {
+    if (!certificateId) {
       setIsLoading(false);
+      // This case is handled by the main component render logic
+      return;
     }
-  };
 
+    const verifyCertificate = async () => {
+      setIsLoading(true);
+      setVerificationResult(null);
+      setNotFound(false);
+      try {
+        const q = query(
+          collection(db, "examResults"),
+          where("certificateId", "==", certificateId.trim()),
+          limit(1)
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          setNotFound(true);
+        } else {
+          const resultData = querySnapshot.docs[0].data() as ExamResult;
+          setVerificationResult(resultData);
+        }
+      } catch (error) {
+        console.error("Error verifying certificate:", error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    verifyCertificate();
+  }, [certificateId, toast]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center">
+        <Loader2 className="mr-2 h-8 w-8 animate-spin" />
+        <p className="mt-4">Verifying certificate...</p>
+      </div>
+    );
+  }
+
+  if (verificationResult) {
+    return (
+      <Card className="w-full max-w-lg bg-green-500/10 border-green-500 shadow-lg rounded-lg">
+        <CardHeader className="flex-row items-center gap-4">
+          <CheckCircle className="h-10 w-10 text-green-600 flex-shrink-0" />
+          <div>
+            <CardTitle className="text-green-800">Certificate Verified</CardTitle>
+            <CardDescription className="text-green-700">This is a valid certificate issued by Education Pixel.</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-foreground">
+          <p><strong>Student Name:</strong> {verificationResult.studentName}</p>
+          <p><strong>Course:</strong> {verificationResult.courseName || verificationResult.testName}</p>
+          <p><strong>Date of Exam:</strong> {format(new Date(verificationResult.submittedAt.seconds * 1000), "dd MMMM, yyyy")}</p>
+          <p><strong>Certificate ID:</strong> {verificationResult.certificateId}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <Card className="w-full max-w-lg bg-destructive/10 border-destructive shadow-lg rounded-lg">
+        <CardHeader className="flex-row items-center gap-4">
+          <XCircle className="h-10 w-10 text-destructive flex-shrink-0" />
+          <div>
+            <CardTitle className="text-destructive">Verification Failed</CardTitle>
+            <CardDescription className="text-destructive/80">No certificate found with this ID.</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-destructive/90">Please check the Certificate ID and try again. Ensure the QR code is scanned correctly.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  // Initial state when no ID is provided in URL
+  return (
+    <Card className="w-full max-w-lg shadow-lg rounded-lg">
+        <CardHeader>
+          <CardTitle className="font-headline text-2xl">Certificate Verification</CardTitle>
+          <CardDescription>To verify a certificate, please scan the QR code on the document. This page will automatically display the verification status.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <p className="text-sm text-muted-foreground text-center">Waiting for a certificate ID...</p>
+        </CardContent>
+    </Card>
+  )
+}
+
+export default function VerifyCertificatePage() {
   return (
     <>
       <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-black text-white">
         <div className="container py-16 sm:py-24 text-center">
           <h1 className="font-headline text-4xl font-bold sm:text-5xl">Verify Certificate<span className="text-purple-300">.</span></h1>
           <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-50">
-            Enter the Certificate ID found on the certificate to verify its authenticity.
+            This page validates the authenticity of certificates issued by Education Pixel.
           </p>
         </div>
       </div>
       <div className="bg-secondary relative">
         <SectionDivider style="wave" className="text-gradient-to-br from-purple-900 via-blue-900 to-black" position="top"/>
         <div className="container py-16 sm:py-24 flex justify-center">
-          <Card className="w-full max-w-lg shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
-            <CardHeader>
-              <CardTitle className="font-headline text-2xl">Certificate Verification</CardTitle>
-              <CardDescription>Enter the ID to check the certificate details.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="certificateId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Certificate ID</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                             <Input placeholder="e.g., CERT-2024-123456" {...field} className="pl-10" />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
-                    {isLoading ? 'Verifying...' : 'Verify'}
-                  </Button>
-                </form>
-              </Form>
-
-              {verificationResult && (
-                 <Card className="mt-8 bg-green-500/10 border-green-500 shadow-lg rounded-lg">
-                    <CardHeader className="flex-row items-center gap-4">
-                        <CheckCircle className="h-10 w-10 text-green-600" />
-                        <div>
-                            <CardTitle className="text-green-800">Certificate Verified</CardTitle>
-                            <CardDescription className="text-green-700">This is a valid certificate issued by Education Pixel.</CardDescription>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                        <p><strong>Student Name:</strong> {verificationResult.studentName}</p>
-                        <p><strong>Course:</strong> {verificationResult.courseName || verificationResult.testName}</p>
-                        <p><strong>Date of Exam:</strong> {format(new Date(verificationResult.submittedAt.seconds * 1000), "dd MMMM, yyyy")}</p>
-                    </CardContent>
-                 </Card>
-              )}
-
-              {notFound && (
-                 <Card className="mt-8 bg-destructive/10 border-destructive shadow-lg rounded-lg">
-                    <CardHeader className="flex-row items-center gap-4">
-                        <XCircle className="h-10 w-10 text-destructive" />
-                         <div>
-                            <CardTitle className="text-destructive">Verification Failed</CardTitle>
-                            <CardDescription className="text-destructive/80">No certificate found with this ID.</CardDescription>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-destructive/90">Please check the Certificate ID and try again. Ensure there are no typos.</p>
-                    </CardContent>
-                 </Card>
-              )}
-
-            </CardContent>
-          </Card>
+          <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin" />}>
+            <VerificationContent />
+          </Suspense>
         </div>
       </div>
     </>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import jsPDF from 'jspdf';
@@ -7,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import CertificateTemplate from '@/components/certificate-template';
 import type { ExamResult, ExamRegistration } from './types';
 import { preloadImageAsBase64 } from './base64-preloader';
+import QRCode from 'qrcode';
 
 interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'responses' | 'timeTaken'> {
   registration: ExamRegistration;
@@ -18,19 +18,26 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   logoUrl: string;
   studentPhotoUrl: string;
   certificateImageUrl: string;
+  qrCodeUrl?: string;
 }
 
 const A4_WIDTH = 1123;
 const A4_HEIGHT = 794;
 
-async function getCertificateImages(photoUrl: string) {
-  const [logo, studentPhoto, certificateImage] = await Promise.all([
+async function getCertificateImages(photoUrl: string, qrCodeDataUrl?: string) {
+  const imagePromises = [
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"),
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Fallback if photo fails
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766732021/certificate_xtyqd5.png"),
-  ]);
+  ];
 
-  return { logo, studentPhoto, certificateImage };
+  if (qrCodeDataUrl) {
+    imagePromises.push(Promise.resolve(qrCodeDataUrl));
+  }
+
+  const [logo, studentPhoto, certificateImage, qrCode] = await Promise.all(imagePromises);
+
+  return { logo, studentPhoto, certificateImage, qrCode };
 }
 
 const getGrade = (percentage: number) => {
@@ -43,7 +50,11 @@ const getGrade = (percentage: number) => {
 
 export async function generateCertificatePdf(data: CertificateData): Promise<Blob> {
   try {
-    const { logo, studentPhoto, certificateImage } = await getCertificateImages(data.registration.photoUrl);
+    const siteUrl = window.location.origin;
+    const verificationUrl = `${siteUrl}/verify-certificate?id=${data.certificateId}`;
+    const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+
+    const { logo, studentPhoto, certificateImage, qrCode } = await getCertificateImages(data.registration.photoUrl, qrCodeDataUrl);
     
     const grade = getGrade(data.percentage);
 
@@ -53,6 +64,7 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
       logoUrl: logo,
       studentPhotoUrl: studentPhoto,
       certificateImageUrl: certificateImage,
+      qrCodeUrl: qrCode,
     };
     
     const container = document.createElement("div");

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { ExamResult, ExamRegistration } from '@/lib/types';
 import { format, parseISO } from 'date-fns';
@@ -13,6 +12,7 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   logoUrl: string;
   studentPhotoUrl: string;
   certificateImageUrl: string;
+  qrCodeUrl?: string; // QR code is now optional and passed as a data URL
 }
 
 export default function CertificateTemplate(data: CertificateData) {
@@ -92,7 +92,7 @@ export default function CertificateTemplate(data: CertificateData) {
         
         mainBody: {
             textAlign: 'center',
-            marginTop: '-5px',
+            marginTop: '0px',
             flexGrow: 1,
         },
         certificateImage: {
@@ -114,7 +114,7 @@ export default function CertificateTemplate(data: CertificateData) {
         },
 
         footerSection: {
-            display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
             width: '100%', padding: '0',
             marginTop: 'auto',
         },
@@ -123,6 +123,20 @@ export default function CertificateTemplate(data: CertificateData) {
         },
         signatureLine: {
             borderBottom: '1px solid black', paddingBottom: '30px', marginBottom: '5px' 
+        },
+        qrCodeBlock: {
+            textAlign: 'center',
+            width: '100px',
+        },
+        qrImage: {
+            width: '80px',
+            height: '80px',
+            margin: '0 auto 5px',
+        },
+        qrText: {
+            fontSize: '10px',
+            fontWeight: 'bold',
+            fontFamily: '"Courier New", monospace'
         },
         
         gradingBar: {
@@ -198,6 +212,12 @@ export default function CertificateTemplate(data: CertificateData) {
                         </div>
                         <p style={{margin: 0}}>Verified By</p>
                     </div>
+                    {data.qrCodeUrl && (
+                        <div style={styles.qrCodeBlock}>
+                            <img src={data.qrCodeUrl} style={styles.qrImage} alt="QR Code" />
+                            <p style={styles.qrText}>Scan to Verify</p>
+                        </div>
+                    )}
                     <div style={styles.signatureBlock}>
                         <div style={styles.signatureLine}>
                         </div>
@@ -218,4 +238,3 @@ export default function CertificateTemplate(data: CertificateData) {
         </div>
     );
 }
-
