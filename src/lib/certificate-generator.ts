@@ -22,7 +22,7 @@ const A4_HEIGHT = 794;
 async function getCertificateImages(photoUrl: string) {
   const [logo, certBanner, studentPhoto] = await Promise.all([
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"),
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/cert-banner_yjy2f7.png"),
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766861218/cert-banner_yjy2f7.png"),
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Fallback if photo fails
   ]);
 
