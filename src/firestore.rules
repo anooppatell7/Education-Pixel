@@ -122,7 +122,7 @@ service cloud.firestore {
         allow create: if isSuperAdmin() || isFranchiseAdmin(request.resource.data.franchiseId);
         allow get: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId) || (request.auth.uid in resource.data.allowedStudents);
         allow list: if isAuth();
-        allow update, delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
+        update, delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
     }
     
 
