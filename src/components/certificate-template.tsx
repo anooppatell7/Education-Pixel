@@ -12,8 +12,6 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   grade: string;
   logoUrl: string;
   certBannerUrl: string;
-  qrUrl: string;
-  footerLogosUrl: string;
   studentPhotoUrl: string;
 }
 
@@ -82,21 +80,16 @@ export default function CertificateTemplate(data: CertificateData) {
         },
 
         footerSection: {
-            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
-            width: '100%', padding: '10px 0 0 0', borderTop: '2px solid #a94442'
+            display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end',
+            width: '100%', padding: '10px 0 0 0', borderTop: '2px solid #a94442', marginTop: 'auto'
         },
-        qrCodeSection: { textAlign: 'center' },
-        qrCode: { width: '80px', height: '80px' },
         signatureBlock: { textAlign: 'center', width: '180px', fontSize: '14px', fontWeight: 'bold' },
         signatureLine: { borderBottom: '1px solid black', paddingBottom: '30px', marginBottom: '5px' },
         
         gradingBar: {
             backgroundColor: '#d9534f', color: 'white', fontSize: '10px', fontWeight: 'bold',
-            textAlign: 'center', padding: '3px', borderRadius: '5px', width: '100%', margin: '10px 0 5px 0'
+            textAlign: 'center', padding: '3px', borderRadius: '5px', width: '100%', margin: '15px 0'
         },
-        
-        footerLogos: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', width: '100%', marginTop: '5px' },
-        footerLogoImg: { height: '30px' },
         
         footerBar: {
             position: 'absolute', bottom: 0, left: 0, width: '100%',
@@ -105,7 +98,6 @@ export default function CertificateTemplate(data: CertificateData) {
         }
     };
     
-    // Admission Date can be null if not available, fallback to exam date
     const admissionDate = data.registration.registeredAt?.toDate ? format(data.registration.registeredAt.toDate(), 'dd-MM-yyyy') : format(new Date(data.examDate), 'dd-MM-yyyy');
 
     return (
@@ -158,10 +150,6 @@ export default function CertificateTemplate(data: CertificateData) {
                 </div>
 
                 <div style={styles.footerSection}>
-                    <div style={styles.qrCodeSection}>
-                        <img src={data.qrUrl} style={styles.qrCode} alt="QR Code" />
-                        <p style={{fontSize: '10px', fontWeight: 'bold', margin: 0}}>Scan to Verify</p>
-                    </div>
                     <div style={styles.signatureBlock}>
                          <div style={{height: '40px'}}>{/* Spacer for signature */}</div>
                         <div style={styles.signatureLine}></div>
@@ -178,9 +166,6 @@ export default function CertificateTemplate(data: CertificateData) {
                     Assessment Grading: A-Excellent (75% Above), B-Good (60%), C-Satisfactory (50%), D-Defaulter
                 </div>
 
-                <div style={styles.footerLogos}>
-                    <img src={data.footerLogosUrl} style={{ width: '350px'}} alt="Footer Logos" />
-                </div>
             </div>
 
              <div style={styles.footerBar}>
