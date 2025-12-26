@@ -26,17 +26,35 @@ export default function CertificateTemplate(data: CertificateData) {
             position: 'relative',
             backgroundColor: '#fff',
             overflow: 'hidden',
-            padding: '25px',
         },
         border: {
             position: 'absolute',
-            top: '0',
-            left: '0',
+            top: '25px',
+            left: '25px',
+            right: '25px',
+            bottom: '25px',
+            border: '2px solid #b08c54',
+            zIndex: 1,
+        },
+        corner: {
+            position: 'absolute',
+            width: '250px',
+            height: '250px',
+            zIndex: 2,
+        },
+        cornerInner: {
+            position: 'absolute',
             width: '100%',
             height: '100%',
-            boxSizing: 'border-box',
-            border: '2px solid #b08c54',
+            borderRadius: '50%',
         },
+        cTopLeft: { top: 0, left: 0 },
+        cTopRight: { top: 0, right: 0, transform: 'rotate(90deg)' },
+        cBottomLeft: { bottom: 0, left: 0, transform: 'rotate(-90deg)' },
+        cBottomRight: { bottom: 0, right: 0, transform: 'rotate(180deg)' },
+        cInnerMaroon: { background: '#c00000', clipPath: 'polygon(0 0, 100% 0, 0 100%)' },
+        cInnerGold: { background: '#b08c54', clipPath: 'polygon(0 0, 65% 0, 0 65%)' },
+
         backgroundWatermark: {
             position: 'absolute',
             top: '50%',
@@ -47,19 +65,14 @@ export default function CertificateTemplate(data: CertificateData) {
             height: 'auto',
             zIndex: 0,
         },
-        curveTopLeft: {
-            position: 'absolute', top: '0', left: '0', height: '200px', width: 'auto', zIndex: 2
-        },
-        curveBottomRight: {
-            position: 'absolute', bottom: '0', right: '0', height: '250px', width: 'auto', zIndex: 2
-        },
         content: {
             position: 'relative',
-            zIndex: 1,
-            padding: '20px 40px',
+            zIndex: 3,
+            padding: '40px 60px',
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
+            boxSizing: 'border-box',
         },
         header: {
             display: 'flex', alignItems: 'center', gap: '20px',
@@ -79,19 +92,20 @@ export default function CertificateTemplate(data: CertificateData) {
         
         mainBody: {
             textAlign: 'center',
-            marginTop: '-5px', // Move the whole block up
+            marginTop: '-5px',
             flexGrow: 1,
         },
         certificateImage: {
-             width: '200px', // Slightly smaller
+             width: '180px',
              height: 'auto',
              margin: '0 auto',
+             marginTop: '-15px'
         },
         
         studentInfo: {
-            textAlign: 'left', fontSize: '16px', lineHeight: 1.5, // Tighter line height
+            textAlign: 'left', fontSize: '16px', lineHeight: 1.4,
             width: '100%',
-            marginTop: '5px', // Reduced margin
+            marginTop: '0px',
             fontFamily: '"Times New Roman", serif'
         },
         detailRow: {
@@ -101,8 +115,8 @@ export default function CertificateTemplate(data: CertificateData) {
 
         footerSection: {
             display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end',
-            width: '100%', padding: '5px 0 0 0', // Reduced padding
-            marginTop: 'auto'
+            width: '100%', padding: '0',
+            marginTop: 'auto',
         },
         signatureBlock: {
             textAlign: 'center', width: '200px', fontSize: '14px', fontWeight: 'bold' 
@@ -117,9 +131,7 @@ export default function CertificateTemplate(data: CertificateData) {
         },
         
         footerBar: {
-            position: 'absolute', bottom: '25px', left: '25px', right: '25px',
-            borderTop: '2px solid #b08c54',
-            paddingTop: '5px',
+            position: 'absolute', bottom: '35px', left: '60px', right: '60px',
             textAlign: 'center',
             fontSize: '11px',
         },
@@ -130,9 +142,12 @@ export default function CertificateTemplate(data: CertificateData) {
     return (
         <div style={styles.page}>
             <div style={styles.border}></div>
+            <div style={{...styles.corner, ...styles.cTopLeft}}><div style={{...styles.cornerInner, ...styles.cInnerMaroon}}></div><div style={{...styles.cornerInner, ...styles.cInnerGold}}></div></div>
+            <div style={{...styles.corner, ...styles.cTopRight}}><div style={{...styles.cornerInner, ...styles.cInnerMaroon}}></div><div style={{...styles.cornerInner, ...styles.cInnerGold}}></div></div>
+            <div style={{...styles.corner, ...styles.cBottomLeft}}><div style={{...styles.cornerInner, ...styles.cInnerMaroon}}></div><div style={{...styles.cornerInner, ...styles.cInnerGold}}></div></div>
+            <div style={{...styles.corner, ...styles.cBottomRight}}><div style={{...styles.cornerInner, ...styles.cInnerMaroon}}></div><div style={{...styles.cornerInner, ...styles.cInnerGold}}></div></div>
+
             <img style={styles.backgroundWatermark} src={data.logoUrl} alt="Watermark"/>
-            <img style={styles.curveTopLeft} src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766898495/cert-curve-left_jwqfxq.png" alt="Decorative Curve"/>
-            <img style={styles.curveBottomRight} src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766898495/cert-curve-right_eywnp1.png" alt="Decorative Curve"/>
 
             <div style={styles.content}>
                 <div style={styles.header}>
@@ -193,12 +208,14 @@ export default function CertificateTemplate(data: CertificateData) {
                 <div style={styles.gradingBar}>
                     Assessment Grading: A-Excellent (75% Above), B-Good (60%-74%), C-Satisfactory (50%-59%), D-Unsatisfactory
                 </div>
+                
+                 <div style={styles.footerBar}>
+                     Regional Office : Bawali Mode, House Number 421 Year, Ward No 15, Near S.S. Dairy, Behror, Alwar, Rajasthan, India, 301701
+                     <br />
+                     www.educationpixel.com | info@educationpixel.com
+                 </div>
             </div>
-             <div style={styles.footerBar}>
-                 Regional Office : Bawali Mode, House Number 421 Year, Ward No 15, Near S.S. Dairy, Behror, Alwar, Rajasthan, India, 301701
-                 <br />
-                 www.educationpixel.com | info@educationpixel.com
-             </div>
         </div>
     );
 }
+
