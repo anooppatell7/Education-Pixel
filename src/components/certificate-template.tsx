@@ -41,16 +41,16 @@ export default function CertificateTemplate(data: CertificateData) {
       
       mainContent: {
         position: 'absolute',
-        top: '260px',
+        top: '280px',
         left: '90px',
         width: '820px'
       },
-
+      
       courseDetailsRow: {
         display: 'flex',
         justifyContent: 'space-between',
-        marginTop: '15px',
-        marginBottom: '15px',
+        marginTop: '10px',
+        marginBottom: '10px',
         fontSize: '15px',
         fontWeight: 'bold'
       },
@@ -58,7 +58,7 @@ export default function CertificateTemplate(data: CertificateData) {
       dateRow: {
         display: 'flex',
         justifyContent: 'space-between',
-        marginTop: '15px',
+        marginTop: '10px',
         fontSize: '15px',
         fontWeight: 'bold'
       },
@@ -70,7 +70,21 @@ export default function CertificateTemplate(data: CertificateData) {
 
       authSigLine: { position: 'absolute', top: '590px', left: '730px', width: '160px', borderTop: '1px solid #000' },
       authSigText: { position: 'absolute', top: '595px', left: '730px', width: '160px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', color: '#1a237e' },
-      
+
+      gradingBar: {
+        position: 'absolute',
+        bottom: '80px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '820px',
+        backgroundColor: '#d32f2f',
+        color: 'white',
+        fontSize: '10px',
+        textAlign: 'center',
+        padding: '4px',
+        borderRadius: '3px',
+        fontWeight: 'bold'
+      }
     };
 
     return (
@@ -85,9 +99,9 @@ export default function CertificateTemplate(data: CertificateData) {
             <img src={data.studentPhotoUrl} alt="Student" style={styles.studentPhoto} />
 
             <div style={styles.mainContent}>
-              <p style={styles.lineText}>We are much pleased to honour Mr./Ms./Mrs :<span style={styles.highlight}>{data.studentName}</span></p>
-              <p style={styles.lineText}>Son/Daughter/Wife Mr. :<span style={styles.highlight}>{data.registration.fatherName}</span></p>
-              <p style={styles.lineText}>Has successfully completed a course of :<span style={styles.highlight}>{data.courseName}</span></p>
+              <p style={{...styles.lineText, marginBottom: '10px'}}>We are much pleased to honour Mr./Ms./Mrs :<span style={styles.highlight}>{data.studentName}</span></p>
+              <p style={{...styles.lineText, marginBottom: '10px'}}>Son/Daughter/Wife Mr. :<span style={styles.highlight}>{data.registration.fatherName}</span></p>
+              <p style={{...styles.lineText, marginBottom: '10px'}}>Has successfully completed a course of :<span style={styles.highlight}>{data.courseName}</span></p>
 
               <div style={styles.courseDetailsRow}>
                   <span><strong>Course Duration :</strong> {data.registration.courseDuration}</span>
@@ -95,7 +109,7 @@ export default function CertificateTemplate(data: CertificateData) {
                   <span><strong>D.O.B.:</strong> {format(parseISO(data.registration.dob), 'dd-MM-yyyy')}</span>
               </div>
               
-              <p style={styles.lineText}><strong>Center :</strong><span style={styles.highlight}>EDUCATION PIXEL ONLINE TRAINING PLATFORM, PRATAPGARH</span></p>
+              <p style={{...styles.lineText, textAlign: 'center', marginBottom: '10px'}}><strong>Center :</strong><span style={styles.highlight}>EDUCATION PIXEL ONLINE TRAINING PLATFORM, PRATAPGARH</span></p>
               
               <div style={styles.dateRow}>
                   <span><strong>Date of Admission:</strong> {format(new Date(data.registration.registeredAt.seconds * 1000), 'dd-MM-yyyy')}</span>
@@ -110,6 +124,10 @@ export default function CertificateTemplate(data: CertificateData) {
 
             <div style={styles.authSigLine}></div>
             <p style={styles.authSigText}>Authorised Signature</p>
+
+            <div style={styles.gradingBar}>
+                Assessment Grading: A-Excellent (75% Above), B-Good (75%-50%), C-Satisfactory (50%-30%), D-Below
+            </div>
         </div>
     );
 }
