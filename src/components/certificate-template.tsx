@@ -18,9 +18,8 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       headerLogo: {
         position: 'absolute',
-        top: '30px',
-        left: '50%',
-        transform: 'translateX(-50%)',
+        top: '40px',
+        left: '80px',
         display: 'flex',
         alignItems: 'center',
         gap: '15px'
@@ -33,8 +32,7 @@ export default function CertificateTemplate(data: CertificateData) {
       mainTitle: {
         position: 'absolute',
         top: '40px',
-        left: '50%',
-        transform: 'translateX(-50%)',
+        right: '80px',
         fontFamily: "'Poppins', sans-serif",
         color: '#d32f2f',
         fontSize: '77px',
