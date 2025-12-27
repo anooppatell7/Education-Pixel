@@ -14,6 +14,13 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   studentPhotoUrl: string;
   sealUrl: string;
   qrCodeUrl?: string;
+  partnerLogos: {
+    gov: string;
+    iso: string;
+    msme: string;
+    niti: string;
+    startup: string;
+  }
 }
 
 export default function CertificateTemplate(data: CertificateData) {
@@ -122,7 +129,7 @@ export default function CertificateTemplate(data: CertificateData) {
         alignItems: 'center',
         position: 'relative',
         zIndex: 3,
-        marginTop: '10px',
+        marginTop: '0px',
       },
       regDetails: {
         fontSize: '14px',
@@ -153,12 +160,12 @@ export default function CertificateTemplate(data: CertificateData) {
       contentSection: {
         position: 'relative',
         zIndex: 3,
-        marginTop: '20px',
+        marginTop: '10px',
         color: '#000',
       },
       line: {
         fontSize: '18px',
-        margin: '15px 0',
+        margin: '10px 0',
         fontWeight: 'bold',
       },
       val: {
@@ -170,14 +177,14 @@ export default function CertificateTemplate(data: CertificateData) {
       infoGrid: {
         display: 'flex',
         justifyContent: 'space-between',
-        margin: '20px 0',
+        margin: '15px 0',
         fontSize: '17px',
       },
       valSmall: { color: '#1a237e', fontWeight: 'bold' },
       dateRow: {
         display: 'flex',
         justifyContent: 'space-between',
-        marginTop: '20px',
+        marginTop: '15px',
         fontSize: '18px',
         color: '#000',
       },
@@ -203,7 +210,7 @@ export default function CertificateTemplate(data: CertificateData) {
         fontSize: '11px',
         textAlign: 'center',
         padding: '4px',
-        margin: '15px 0',
+        margin: '15px 0 10px 0',
         position: 'relative',
         zIndex: 3,
         fontWeight: 'bold',
@@ -219,7 +226,7 @@ export default function CertificateTemplate(data: CertificateData) {
       bottomAddress: {
         textAlign: 'center',
         fontSize: '10px',
-        marginTop: '10px',
+        marginTop: '5px',
         position: 'relative',
         zIndex: 3,
         fontWeight: 'bold',
@@ -248,8 +255,8 @@ export default function CertificateTemplate(data: CertificateData) {
 
           <div style={styles.metaRow}>
             <div style={styles.regDetails}>
-              <p><strong>Regd. No. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {data.registration.registrationNumber}</strong></p>
-              <p><strong>Certificate No. &nbsp;: {data.certificateId}</strong></p>
+              <p><strong>Regd. No. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {data.registration.registrationNumber}</strong></p>
+              <p><strong>Certificate No. : {data.certificateId}</strong></p>
             </div>
             <div style={{textAlign: 'center'}}>
               <div style={styles.certBadge}>CERTIFICATE</div>
@@ -300,6 +307,14 @@ export default function CertificateTemplate(data: CertificateData) {
             Assessment Grading-A-Excellent (75% Above), B-Good (75%-50%), C-Satisfactory (50%-30%), D-Below
           </div>
           
+           <div style={styles.partnerStrip}>
+                <img style={styles.partnerStripImg} src={data.partnerLogos.gov} alt="Gov"/>
+                <img style={styles.partnerStripImg} src={data.partnerLogos.iso} alt="ISO"/>
+                <img style={styles.partnerStripImg} src={data.partnerLogos.msme} alt="MSME"/>
+                <img style={styles.partnerStripImg} src={data.partnerLogos.niti} alt="Niti"/>
+                <img style={styles.partnerStripImg} src={data.partnerLogos.startup} alt="Startup"/>
+            </div>
+
           <div style={styles.bottomAddress}>
             <p style={styles.bottomAddressP}>Registered Office : Nawab House, House number 431 Near by S. R. Dairy, Haldoni Greater Noida (UP) Pin Code- 201308</p>
             <p style={styles.bottomAddressP}>🌐 www.educationpixel.com &nbsp;&nbsp; ✉ ashishkumargiri51@gmail.com</p>
@@ -307,3 +322,4 @@ export default function CertificateTemplate(data: CertificateData) {
         </div>
     );
 }
+
