@@ -18,7 +18,7 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       headerRow: {
         position: 'absolute',
-        top: '30px',
+        top: '25px',
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
