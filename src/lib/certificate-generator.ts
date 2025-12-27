@@ -22,10 +22,7 @@ export interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' |
   qrCodeUrl?: string;
   backgroundImageUrl: string;
   certificateBadgeUrl: string;
-  footerLogo1Url: string;
-  footerLogo2Url: string;
-  footerLogo3Url: string;
-  footerLogo4Url: string;
+  combinedFooterLogoUrl: string;
 }
 
 const CERT_WIDTH = 1000;
@@ -37,27 +34,21 @@ async function getCertificateImages(photoUrl: string, qrCodeDataUrl?: string) {
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Student Photo
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766814473/certificate_bg_o6wkeq.png"), // Background Image
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766732021/certificate_xtyqd5.png"), // Certificate Badge
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766844521/LOGO3_kpspxh.png"), // Footer Logo 1
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766844521/LOGO1_exkjvv.png"), // Footer Logo 2
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766844521/LOGO4_mcxcor.png"), // Footer Logo 3
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766844521/LOGO2_y7qdu9.png"), // Footer Logo 4
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766845649/footerlogo1_ilorc0.png"), // Combined Footer Logo
   ];
 
   if (qrCodeDataUrl) {
     imagePromises.push(Promise.resolve(qrCodeDataUrl));
   }
 
-  const [logo, studentPhoto, background, certificateBadge, footerLogo1, footerLogo2, footerLogo3, footerLogo4, qrCode] = await Promise.all(imagePromises);
+  const [logo, studentPhoto, background, certificateBadge, combinedFooterLogo, qrCode] = await Promise.all(imagePromises);
   
   return { 
     logo, 
     studentPhoto, 
     background,
     certificateBadge,
-    footerLogo1,
-    footerLogo2,
-    footerLogo3,
-    footerLogo4,
+    combinedFooterLogo,
     qrCode 
   };
 }
@@ -76,7 +67,7 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
     const verificationUrl = `${siteUrl}/verify-certificate?id=${data.certificateId}`;
     const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H', width: 80 });
 
-    const { logo, studentPhoto, background, certificateBadge, qrCode, footerLogo1, footerLogo2, footerLogo3, footerLogo4 } = await getCertificateImages(data.registration.photoUrl, qrCodeDataUrl);
+    const { logo, studentPhoto, background, certificateBadge, qrCode, combinedFooterLogo } = await getCertificateImages(data.registration.photoUrl, qrCodeDataUrl);
     
     const grade = getGrade(data.percentage);
 
@@ -88,10 +79,7 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
       qrCodeUrl: qrCode,
       backgroundImageUrl: background,
       certificateBadgeUrl: certificateBadge,
-      footerLogo1Url: footerLogo1,
-      footerLogo2Url: footerLogo2,
-      footerLogo3Url: footerLogo3,
-      footerLogo4Url: footerLogo4,
+      combinedFooterLogoUrl: combinedFooterLogo,
     };
     
     const container = document.createElement("div");

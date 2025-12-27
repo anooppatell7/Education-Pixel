@@ -26,15 +26,15 @@ export default function CertificateTemplate(data: CertificateData) {
         gap: '15px',
         whiteSpace: 'nowrap'
       },
-      logo: { 
-        width: '70px', 
+      logo: {
+        width: '70px',
         height: '70px',
         objectFit: 'contain'
       },
-      mainTitle: { 
-        fontFamily: "'Times New Roman', serif", 
-        color: '#d32f2f', 
-        fontSize: '48px', 
+      mainTitle: {
+        fontFamily: "'Times New Roman', serif",
+        color: '#d32f2f',
+        fontSize: '48px',
         fontWeight: 'bold',
         margin: 0,
         padding: 0,
@@ -111,18 +111,12 @@ export default function CertificateTemplate(data: CertificateData) {
         fontWeight: 'bold'
       },
       
-      footerLogos: {
+      footerCombinedLogo: {
         position: 'absolute',
         bottom: '110px',
         left: '50%',
         transform: 'translateX(-50%)',
-        display: 'flex',
-        gap: '30px',
-        alignItems: 'center'
-      },
-      footerLogo: {
         height: '50px',
-        width: '50px',
         objectFit: 'contain'
       },
       footerContact: {
@@ -178,12 +172,7 @@ export default function CertificateTemplate(data: CertificateData) {
                 Assessment Grading: A-Excellent (75% Above), B-Good (75%-50%), C-Satisfactory (50%-30%), D-Below
             </div>
 
-            <div style={styles.footerLogos}>
-                <img src={data.footerLogo1Url} alt="Footer Logo 1" style={styles.footerLogo} />
-                <img src={data.footerLogo2Url} alt="Footer Logo 2" style={styles.footerLogo} />
-                <img src={data.footerLogo3Url} alt="Footer Logo 3" style={styles.footerLogo} />
-                <img src={data.footerLogo4Url} alt="Footer Logo 4" style={styles.footerLogo} />
-            </div>
+            <img src={data.combinedFooterLogoUrl} alt="Footer Logos" style={styles.footerCombinedLogo} />
 
             <div style={styles.footerContact}>
                 <span style={{ marginRight: '20px' }}>📧 ashishkumargiri51@gmail.com</span>
