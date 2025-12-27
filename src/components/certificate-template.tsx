@@ -22,7 +22,6 @@ export default function CertificateTemplate(data: CertificateData) {
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
-        alignItems: 'center',
         gap: '15px',
         whiteSpace: 'nowrap'
       },
@@ -122,7 +121,7 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       footerAddress: {
         position: 'absolute',
-        bottom: '70px',
+        bottom: '85px',
         left: '50%',
         transform: 'translateX(-50%)',
         fontSize: '12px',
@@ -132,7 +131,7 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       footerContact: {
         position: 'absolute',
-        bottom: '50px',
+        bottom: '65px',
         left: '0',
         right: '0',
         width: '100%',
