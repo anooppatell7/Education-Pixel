@@ -68,7 +68,7 @@ export default function CertificateTemplate(data: CertificateData) {
       
       mainContent: {
         position: 'absolute',
-        top: '290px',
+        top: '250px',
         left: '80px',
         width: '840px'
       },
