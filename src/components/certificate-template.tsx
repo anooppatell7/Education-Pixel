@@ -16,19 +16,29 @@ export default function CertificateTemplate(data: CertificateData) {
         backgroundSize: '100% 100%',
         boxSizing: 'border-box'
       },
-      headerContainer: {
+      headerRow: {
         position: 'absolute',
         top: '55px',
-        left: '0',
-        right: '0',
+        left: '50%',
+        transform: 'translateX(-50%)',
         display: 'flex',
-        justifyContent: 'center',
         alignItems: 'center',
-        gap: '10px'
+        gap: '15px'
       },
-      logo: { width: '80px', height: '80px' },
-      
-      mainTitle: { fontFamily: "'Times New Roman', serif", color: '#d32f2f', fontSize: '48px', letterSpacing: '1px', fontWeight: 'bold' },
+      logo: { 
+        width: '80px', 
+        height: '80px',
+        objectFit: 'contain'
+      },
+      mainTitle: { 
+        fontFamily: "'Times New Roman', serif", 
+        color: '#d32f2f', 
+        fontSize: '48px', 
+        letterSpacing: '1px', 
+        fontWeight: 'bold',
+        margin: 0,
+        lineHeight: 1
+      },
       
       certificateBadge: { position: 'absolute', top: '125px', left: '50%', transform: 'translateX(-50%)', width: '200px' },
 
@@ -121,7 +131,7 @@ export default function CertificateTemplate(data: CertificateData) {
 
     return (
         <div style={styles.certContainer}>
-            <div style={styles.headerContainer}>
+            <div style={styles.headerRow}>
               <img src={data.logoUrl} alt="Logo" style={styles.logo} />
               <h1 style={styles.mainTitle}>EDUCATION PIXEL</h1>
             </div>
@@ -169,4 +179,3 @@ export default function CertificateTemplate(data: CertificateData) {
         </div>
     );
 }
-
