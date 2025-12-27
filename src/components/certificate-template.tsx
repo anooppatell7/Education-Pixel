@@ -91,8 +91,8 @@ export default function CertificateTemplate(data: CertificateData) {
         fontWeight: 'bold'
       },
       
-      qrCode: { position: 'absolute', bottom: '90px', left: '90px', width: '80px', height: '80px' },
-      qrText: { position: 'absolute', bottom: '75px', left: '95px', fontSize: '10px', fontWeight: 'bold' },
+      qrCode: { position: 'absolute', bottom: '90px', left: '90px', width: '100px', height: '100px' },
+      qrText: { position: 'absolute', bottom: '75px', left: '105px', fontSize: '10px', fontWeight: 'bold' },
       
       authSigLine: { position: 'absolute', bottom: '115px', right: '80px', width: '160px', borderTop: '1px solid #000' },
       authSigText: { position: 'absolute', bottom: '90px', right: '80px', width: '160px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', color: '#1a237e' },
@@ -100,9 +100,7 @@ export default function CertificateTemplate(data: CertificateData) {
       gradingBar: {
         position: 'absolute',
         bottom: '180px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '700px',
+        right: '80px',
         backgroundColor: '#d32f2f',
         color: 'white',
         fontSize: '12px',
