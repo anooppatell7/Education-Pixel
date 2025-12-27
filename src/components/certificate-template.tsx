@@ -22,6 +22,7 @@ export default function CertificateTemplate(data: CertificateData) {
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
+        alignItems: 'center',
         gap: '15px',
         whiteSpace: 'nowrap'
       },
@@ -110,7 +111,8 @@ export default function CertificateTemplate(data: CertificateData) {
         fontWeight: 'bold',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        whiteSpace: 'nowrap'
       },
       
       footerCombinedLogo: {
@@ -129,7 +131,8 @@ export default function CertificateTemplate(data: CertificateData) {
         fontSize: '12px',
         color: '#333',
         fontWeight: '500',
-        textAlign: 'center'
+        textAlign: 'center',
+        whiteSpace: 'nowrap'
       },
       footerContact: {
         position: 'absolute',
