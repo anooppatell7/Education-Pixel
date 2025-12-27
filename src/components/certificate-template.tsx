@@ -16,10 +16,10 @@ export default function CertificateTemplate(data: CertificateData) {
         backgroundSize: '100% 100%',
         boxSizing: 'border-box'
       },
-      logo: { position: 'absolute', top: '70px', left: '90px', width: '90px', height: '90px', borderRadius: '50%'},
+      logo: { position: 'absolute', top: '55px', left: '210px', width: '90px', height: '90px', borderRadius: '50%'},
       
-      mainTitle: { position: 'absolute', top: '48px', left: '180px', width: '640px', textAlign: 'center', fontFamily: "'Times New Roman', serif", color: '#d32f2f', fontSize: '40px', letterSpacing: '1px', fontWeight: 'bold' },
-      tagline: { position: 'absolute', top: '90px', left: '180px', width: '640px', textAlign: 'center', fontFamily: "'Dancing Script', cursive", color: '#1a237e', fontSize: '24px', margin: 0},
+      mainTitle: { position: 'absolute', top: '55px', left: '180px', width: '640px', textAlign: 'center', fontFamily: "'Times New Roman', serif", color: '#d32f2f', fontSize: '48px', letterSpacing: '1px', fontWeight: 'bold' },
+      tagline: { position: 'absolute', top: '105px', left: '180px', width: '640px', textAlign: 'center', fontFamily: "'Dancing Script', cursive", color: '#1a237e', fontSize: '24px', margin: 0},
       
       regNo: { position: 'absolute', top: '168px', left: '90px', fontSize: '14px', fontWeight: 'bold' },
       certNo: { position: 'absolute', top: '188px', left: '90px', fontSize: '14px', fontWeight: 'bold' },
