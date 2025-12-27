@@ -27,39 +27,31 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
     startup: string;
   }
   qrCodeUrl?: string;
+  backgroundImageUrl: string;
 }
 
 const CERT_WIDTH = 1000;
 const CERT_HEIGHT = 700;
 
 async function getCertificateImages(photoUrl: string, qrCodeDataUrl?: string) {
-  // Removed all csspicker.dev links to prevent CORS errors.
-  // Using placeholders or empty strings for now. These can be replaced with reliable, hosted image URLs.
   const imagePromises: Promise<string>[] = [
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"), // Main Logo
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Student Photo
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766813292/seal_v4yrk3.png"), // Seal
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766814473/certificate_bg_o6wkeq.png") // Background Image
   ];
 
   if (qrCodeDataUrl) {
     imagePromises.push(Promise.resolve(qrCodeDataUrl));
   }
 
-  const [logo, studentPhoto, qrCode] = await Promise.all(imagePromises);
+  const [logo, studentPhoto, seal, background, qrCode] = await Promise.all(imagePromises);
   
-  const placeholderImage = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"; // Transparent 1x1 pixel
-
   return { 
     logo, 
     studentPhoto, 
-    // Using placeholders for previously failing images
-    seal: placeholderImage, 
-    partnerLogos: { 
-        gov: placeholderImage, 
-        iso: placeholderImage, 
-        msme: placeholderImage, 
-        niti: placeholderImage, 
-        startup: placeholderImage 
-    },
+    seal,
+    background,
     qrCode 
   };
 }
@@ -78,18 +70,19 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
     const verificationUrl = `${siteUrl}/verify-certificate?id=${data.certificateId}`;
     const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H', width: 80 });
 
-    const { logo, studentPhoto, seal, partnerLogos, qrCode } = await getCertificateImages(data.registration.photoUrl, qrCodeDataUrl);
+    const { logo, studentPhoto, seal, background, qrCode } = await getCertificateImages(data.registration.photoUrl, qrCodeDataUrl);
     
     const grade = getGrade(data.percentage);
 
-    const finalData = {
+    const finalData: CertificateData = {
       ...data,
       grade,
       logoUrl: logo,
       studentPhotoUrl: studentPhoto,
       sealUrl: seal,
-      partnerLogos,
       qrCodeUrl: qrCode,
+      backgroundImageUrl: background,
+      partnerLogos: { gov: '', iso: '', msme: '', niti: '', startup: '' } // Not used anymore
     };
     
     const container = document.createElement("div");
@@ -99,15 +92,12 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
     container.style.height = `${CERT_HEIGHT}px`;
     document.body.appendChild(container);
     
-    // We need to use ReactDOMServer to render the component to a string
-    // This string is then put into the container div.
     const staticMarkup = renderToStaticMarkup(CertificateTemplate(finalData));
     container.innerHTML = staticMarkup;
     
-    // Add a delay for fonts and images to potentially load
     await new Promise<void>((resolve) => {
       document.fonts.ready.then(() => {
-        setTimeout(resolve, 1500); // Wait for images etc.
+        setTimeout(resolve, 1500); 
       });
     });
 
@@ -115,7 +105,7 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
       scale: 3, 
       useCORS: true,
       allowTaint: true,
-      backgroundColor: '#ffffff', // Set a white background
+      backgroundColor: null, // Make background transparent to see the div background
       imageTimeout: 0,
       width: CERT_WIDTH,
       height: CERT_HEIGHT,
