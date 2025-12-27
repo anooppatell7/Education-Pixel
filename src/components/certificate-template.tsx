@@ -188,7 +188,8 @@ export default function CertificateTemplate(data: CertificateData) {
             <img src={data.combinedFooterLogoUrl} alt="Footer Logos" style={styles.footerCombinedLogo} />
 
             <div style={styles.footerAddress}>
-                <span><strong>Add:</strong> MTS COMPUTER INSTITUTE Churri Chauraha Raniganj road pratapgarh uttar pradesh, 229410</span>
+                <span><strong>Add:</strong> MTS COMPUTER INSTITUTE Churri Chauraha Raniganj road pratapgarh</span>
+                <span style={{display: 'block'}}>uttar pradesh, 229410</span>
             </div>
 
             <div style={styles.footerContact}>
