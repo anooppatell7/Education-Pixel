@@ -32,7 +32,7 @@ export default function CertificateTemplate(data: CertificateData) {
       mainTitle: {
         position: 'absolute',
         top: '40px',
-        right: '80px',
+        right: '40px',
         fontFamily: "'Poppins', sans-serif",
         color: '#d32f2f',
         fontSize: '77px',
