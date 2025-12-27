@@ -16,15 +16,14 @@ export default function CertificateTemplate(data: CertificateData) {
         backgroundSize: '100% 100%',
         boxSizing: 'border-box'
       },
-      headerRow: {
+      headerLogo: {
         position: 'absolute',
-        top: '25px',
+        top: '30px',
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
         alignItems: 'center',
-        gap: '15px',
-        whiteSpace: 'nowrap'
+        gap: '15px'
       },
       logo: {
         width: '110px',
@@ -32,16 +31,18 @@ export default function CertificateTemplate(data: CertificateData) {
         objectFit: 'contain'
       },
       mainTitle: {
+        position: 'absolute',
+        top: '40px',
+        left: '50%',
+        transform: 'translateX(-50%)',
         fontFamily: "'Poppins', sans-serif",
         color: '#d32f2f',
         fontSize: '77px',
         letterSpacing: '1px',
         fontWeight: 'bold',
-        margin: 0,
-        padding: 0,
+        margin: '0',
+        padding: '0',
         lineHeight: '1',
-        display: 'flex',
-        alignItems: 'center',
         whiteSpace: 'nowrap'
       },
       
@@ -146,10 +147,10 @@ export default function CertificateTemplate(data: CertificateData) {
 
     return (
         <div style={styles.certContainer}>
-            <div style={styles.headerRow}>
+            <div style={styles.headerLogo}>
               <img src={data.logoUrl} alt="Logo" style={styles.logo} />
-              <h1 style={styles.mainTitle}>EDUCATION PIXEL</h1>
             </div>
+             <h1 style={styles.mainTitle}>EDUCATION PIXEL</h1>
 
             <img src={data.certificateBadgeUrl} alt="Certificate Badge" style={styles.certificateBadge} />
 
