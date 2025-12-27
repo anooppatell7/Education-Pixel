@@ -13,7 +13,6 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   logoUrl: string;
   studentPhotoUrl: string;
   sealUrl: string;
-  qrCodeUrl?: string;
   partnerLogos: {
     gov: string;
     iso: string;
@@ -21,6 +20,7 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
     niti: string;
     startup: string;
   }
+  qrCodeUrl?: string;
 }
 
 export default function CertificateTemplate(data: CertificateData) {
@@ -30,7 +30,7 @@ export default function CertificateTemplate(data: CertificateData) {
         height: '700px',
         background: '#fff',
         position: 'relative',
-        padding: '40px',
+        padding: '30px',
         boxSizing: 'border-box',
         overflow: 'hidden',
         boxShadow: '0 0 30px rgba(0,0,0,0.2)',
@@ -81,7 +81,7 @@ export default function CertificateTemplate(data: CertificateData) {
         display: 'flex',
         position: 'relative',
         zIndex: 3,
-        marginBottom: '10px',
+        marginBottom: '5px',
       },
       logoContainer: {
         width: '120px',
@@ -129,7 +129,7 @@ export default function CertificateTemplate(data: CertificateData) {
         alignItems: 'center',
         position: 'relative',
         zIndex: 3,
-        marginTop: '0px',
+        marginTop: '5px',
       },
       regDetails: {
         fontSize: '14px',
@@ -138,8 +138,8 @@ export default function CertificateTemplate(data: CertificateData) {
       certBadge: {
         background: 'linear-gradient(to bottom, #1e4a9e, #0a2a66)',
         color: 'white',
-        padding: '12px 50px',
-        fontSize: '26px',
+        padding: '10px 40px',
+        fontSize: '22px',
         fontWeight: 'bold',
         fontStyle: 'italic',
         border: '2px solid #d4af37',
@@ -172,20 +172,20 @@ export default function CertificateTemplate(data: CertificateData) {
         color: '#1a237e',
         textTransform: 'uppercase',
         paddingLeft: '10px',
-        fontSize: '20px',
+        fontSize: '19px',
       },
       infoGrid: {
         display: 'flex',
         justifyContent: 'space-between',
         margin: '15px 0',
-        fontSize: '17px',
+        fontSize: '16px',
       },
       valSmall: { color: '#1a237e', fontWeight: 'bold' },
       dateRow: {
         display: 'flex',
         justifyContent: 'space-between',
         marginTop: '15px',
-        fontSize: '18px',
+        fontSize: '16px',
         color: '#000',
       },
       footerSection: {
@@ -194,7 +194,7 @@ export default function CertificateTemplate(data: CertificateData) {
         alignItems: 'flex-end',
         position: 'relative',
         zIndex: 3,
-        marginTop: '20px',
+        marginTop: '15px',
       },
       qrArea: { textAlign: 'center' },
       qrAreaImg: { width: '80px', height: '80px' },
@@ -207,10 +207,10 @@ export default function CertificateTemplate(data: CertificateData) {
       gradingBar: {
         background: '#d32f2f',
         color: 'white',
-        fontSize: '11px',
+        fontSize: '10px',
         textAlign: 'center',
-        padding: '4px',
-        margin: '15px 0 10px 0',
+        padding: '3px',
+        margin: '10px 0 5px 0',
         position: 'relative',
         zIndex: 3,
         fontWeight: 'bold',
@@ -222,7 +222,7 @@ export default function CertificateTemplate(data: CertificateData) {
         position: 'relative',
         zIndex: 3,
       },
-      partnerStripImg: { height: '35px' },
+      partnerStripImg: { height: '30px' },
       bottomAddress: {
         textAlign: 'center',
         fontSize: '10px',
@@ -248,7 +248,7 @@ export default function CertificateTemplate(data: CertificateData) {
               <h1 style={styles.mainTitle}>EDUCATION PIXEL</h1>
               <p style={styles.tagline}>Learn focus & Grow</p>
               <div style={styles.headerSubtext}>
-                 {/* Removed the foundation and registration details */}
+                 {/* This section is removed as per user request */}
               </div>
             </div>
           </div>
@@ -293,7 +293,7 @@ export default function CertificateTemplate(data: CertificateData) {
             
             <div style={styles.sigs}>
               <div style={styles.sigItem}>
-                {/* Seal image can be re-added here if you host it */}
+                {/* <img src={data.sealUrl} alt="Seal" style={styles.seal} /> */}
                 <p style={styles.sigItemP}>Verified By :</p>
               </div>
               <div style={styles.sigItem}>
@@ -308,11 +308,7 @@ export default function CertificateTemplate(data: CertificateData) {
           </div>
           
            <div style={styles.partnerStrip}>
-                <img style={styles.partnerStripImg} src={data.partnerLogos.gov} alt="Gov"/>
-                <img style={styles.partnerStripImg} src={data.partnerLogos.iso} alt="ISO"/>
-                <img style={styles.partnerStripImg} src={data.partnerLogos.msme} alt="MSME"/>
-                <img style={styles.partnerStripImg} src={data.partnerLogos.niti} alt="Niti"/>
-                <img style={styles.partnerStripImg} src={data.partnerLogos.startup} alt="Startup"/>
+                {/* Partner logos removed to prevent CORS errors */}
             </div>
 
           <div style={styles.bottomAddress}>
@@ -322,4 +318,3 @@ export default function CertificateTemplate(data: CertificateData) {
         </div>
     );
 }
-
