@@ -1,3 +1,4 @@
+
 'use client';
 
 import jsPDF from 'jspdf';
@@ -32,28 +33,33 @@ const CERT_WIDTH = 1000;
 const CERT_HEIGHT = 700;
 
 async function getCertificateImages(photoUrl: string, qrCodeDataUrl?: string) {
+  // Removed all csspicker.dev links to prevent CORS errors.
+  // Using placeholders or empty strings for now. These can be replaced with reliable, hosted image URLs.
   const imagePromises: Promise<string>[] = [
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"), // Main Logo
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Student Photo
-    preloadImageAsBase64("https://csspicker.dev/api/image/?q=blue+round+seal&image_type=vector"), // Seal
-    preloadImageAsBase64("https://csspicker.dev/api/image/?q=india+emblem&image_type=vector"), // Gov Logo
-    preloadImageAsBase64("https://csspicker.dev/api/image/?q=iso+certified+logo&image_type=vector"), // ISO Logo
-    preloadImageAsBase64("https://csspicker.dev/api/image/?q=msme+logo&image_type=vector"), // MSME Logo
-    preloadImageAsBase64("https://csspicker.dev/api/image/?q=niti+aayog+logo&image_type=vector"), // NITI Aayog Logo
-    preloadImageAsBase64("https://csspicker.dev/api/image/?q=startup+india+logo&image_type=vector"), // Startup India Logo
   ];
 
   if (qrCodeDataUrl) {
     imagePromises.push(Promise.resolve(qrCodeDataUrl));
   }
 
-  const [logo, studentPhoto, seal, gov, iso, msme, niti, startup, qrCode] = await Promise.all(imagePromises);
+  const [logo, studentPhoto, qrCode] = await Promise.all(imagePromises);
+  
+  const placeholderImage = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"; // Transparent 1x1 pixel
 
   return { 
     logo, 
     studentPhoto, 
-    seal, 
-    partnerLogos: { gov, iso, msme, niti, startup },
+    // Using placeholders for previously failing images
+    seal: placeholderImage, 
+    partnerLogos: { 
+        gov: placeholderImage, 
+        iso: placeholderImage, 
+        msme: placeholderImage, 
+        niti: placeholderImage, 
+        startup: placeholderImage 
+    },
     qrCode 
   };
 }
