@@ -27,14 +27,14 @@ export default function CertificateTemplate(data: CertificateData) {
         whiteSpace: 'nowrap'
       },
       logo: {
-        width: '70px',
-        height: '70px',
+        width: '75px',
+        height: '75px',
         objectFit: 'contain'
       },
       mainTitle: {
         fontFamily: "'Poppins', sans-serif",
         color: '#d32f2f',
-        fontSize: '48px',
+        fontSize: '52px',
         fontWeight: 'bold',
         margin: 0,
         padding: 0,
