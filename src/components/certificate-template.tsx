@@ -119,9 +119,18 @@ export default function CertificateTemplate(data: CertificateData) {
         height: '50px',
         objectFit: 'contain'
       },
+      footerAddress: {
+        position: 'absolute',
+        bottom: '95px',
+        width: '100%',
+        textAlign: 'center',
+        fontSize: '12px',
+        color: '#333',
+        fontWeight: '500'
+      },
       footerContact: {
         position: 'absolute',
-        bottom: '80px',
+        bottom: '75px',
         left: '50%',
         transform: 'translateX(-50%)',
         fontSize: '12px',
@@ -173,6 +182,10 @@ export default function CertificateTemplate(data: CertificateData) {
             </div>
 
             <img src={data.combinedFooterLogoUrl} alt="Footer Logos" style={styles.footerCombinedLogo} />
+
+            <div style={styles.footerAddress}>
+                MTS COMPUTER INSTITUTE Churri Chauraha Raniganj road pratapgarh uttar pradesh, 229410
+            </div>
 
             <div style={styles.footerContact}>
                 <span style={{ marginRight: '20px' }}>📧 ashishkumargiri51@gmail.com</span>
