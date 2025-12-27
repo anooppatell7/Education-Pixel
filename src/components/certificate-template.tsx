@@ -176,6 +176,13 @@ export default function CertificateTemplate(data: CertificateData) {
                 Assessment Grading: A-Excellent (75% Above), B-Good (75%-50%), C-Satisfactory (50%-30%), D-Below
             </div>
 
+            <div style={styles.footerLogos}>
+                <img src={data.footerLogo1Url} alt="Footer Logo 1" style={styles.footerLogo} />
+                <img src={data.footerLogo2Url} alt="Footer Logo 2" style={styles.footerLogo} />
+                <img src={data.footerLogo3Url} alt="Footer Logo 3" style={styles.footerLogo} />
+                <img src={data.footerLogo4Url} alt="Footer Logo 4" style={styles.footerLogo} />
+            </div>
+
             <div style={styles.footerContact}>
                 <span style={{ marginRight: '20px' }}>📧 ashishkumargiri51@gmail.com</span>
                 <span>🌐 www.educationpixel.site</span>

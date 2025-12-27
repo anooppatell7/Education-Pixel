@@ -270,6 +270,10 @@ export interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' |
   qrCodeUrl?: string;
   backgroundImageUrl: string;
   certificateBadgeUrl: string;
+  footerLogo1Url: string;
+  footerLogo2Url: string;
+  footerLogo3Url: string;
+  footerLogo4Url: string;
 }
 
 
