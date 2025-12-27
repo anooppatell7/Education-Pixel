@@ -121,7 +121,9 @@ export default function CertificateTemplate(data: CertificateData) {
         alignItems: 'center'
       },
       footerLogo: {
-        height: '50px'
+        height: '50px',
+        width: '50px',
+        objectFit: 'contain'
       },
       footerContact: {
         position: 'absolute',
