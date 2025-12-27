@@ -18,7 +18,7 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       headerRow: {
         position: 'absolute',
-        top: '55px',
+        top: '35px',
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
@@ -27,14 +27,14 @@ export default function CertificateTemplate(data: CertificateData) {
         whiteSpace: 'nowrap'
       },
       logo: {
-        width: '75px',
-        height: '75px',
+        width: '110px',
+        height: '110px',
         objectFit: 'contain'
       },
       mainTitle: {
         fontFamily: "'Poppins', sans-serif",
         color: '#d32f2f',
-        fontSize: '52px',
+        fontSize: '80px',
         letterSpacing: '1px',
         fontWeight: 'bold',
         margin: 0,
@@ -122,7 +122,7 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       footerAddress: {
         position: 'absolute',
-        bottom: '85px',
+        bottom: '70px',
         left: '50%',
         transform: 'translateX(-50%)',
         fontSize: '12px',
@@ -132,7 +132,7 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       footerContact: {
         position: 'absolute',
-        bottom: '65px',
+        bottom: '50px',
         left: '0',
         right: '0',
         width: '100%',
