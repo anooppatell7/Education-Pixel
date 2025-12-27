@@ -18,14 +18,6 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   grade: string;
   logoUrl: string;
   studentPhotoUrl: string;
-  sealUrl: string;
-  partnerLogos: {
-    gov: string;
-    iso: string;
-    msme: string;
-    niti: string;
-    startup: string;
-  }
   qrCodeUrl?: string;
   backgroundImageUrl: string;
 }
@@ -37,7 +29,6 @@ async function getCertificateImages(photoUrl: string, qrCodeDataUrl?: string) {
   const imagePromises: Promise<string>[] = [
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"), // Main Logo
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Student Photo
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766813292/seal_v4yrk3.png"), // Seal
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766814473/certificate_bg_o6wkeq.png") // Background Image
   ];
 
@@ -45,12 +36,11 @@ async function getCertificateImages(photoUrl: string, qrCodeDataUrl?: string) {
     imagePromises.push(Promise.resolve(qrCodeDataUrl));
   }
 
-  const [logo, studentPhoto, seal, background, qrCode] = await Promise.all(imagePromises);
+  const [logo, studentPhoto, background, qrCode] = await Promise.all(imagePromises);
   
   return { 
     logo, 
     studentPhoto, 
-    seal,
     background,
     qrCode 
   };
@@ -70,7 +60,7 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
     const verificationUrl = `${siteUrl}/verify-certificate?id=${data.certificateId}`;
     const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H', width: 80 });
 
-    const { logo, studentPhoto, seal, background, qrCode } = await getCertificateImages(data.registration.photoUrl, qrCodeDataUrl);
+    const { logo, studentPhoto, background, qrCode } = await getCertificateImages(data.registration.photoUrl, qrCodeDataUrl);
     
     const grade = getGrade(data.percentage);
 
@@ -79,10 +69,8 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
       grade,
       logoUrl: logo,
       studentPhotoUrl: studentPhoto,
-      sealUrl: seal,
       qrCodeUrl: qrCode,
       backgroundImageUrl: background,
-      partnerLogos: { gov: '', iso: '', msme: '', niti: '', startup: '' } // Not used anymore
     };
     
     const container = document.createElement("div");
