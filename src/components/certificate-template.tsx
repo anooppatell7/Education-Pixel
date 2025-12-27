@@ -13,13 +13,6 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   logoUrl: string;
   studentPhotoUrl: string;
   sealUrl: string;
-  partnerLogos: {
-    gov: string;
-    iso: string;
-    msme: string;
-    niti: string;
-    startup: string;
-  }
   qrCodeUrl?: string;
 }
 
@@ -120,6 +113,7 @@ export default function CertificateTemplate(data: CertificateData) {
         lineHeight: 1.3,
         color: '#000',
         fontWeight: 'bold',
+        minHeight: '50px',
       },
       cin: { color: '#d32f2f', margin: '2px 0' },
       metaRow: {
@@ -231,7 +225,7 @@ export default function CertificateTemplate(data: CertificateData) {
         fontWeight: 'bold',
       },
       bottomAddressP: { margin: '2px 0' },
-    }
+    };
 
     return (
         <div style={styles.certContainer}>
@@ -247,12 +241,7 @@ export default function CertificateTemplate(data: CertificateData) {
               <h1 style={styles.mainTitle}>EDUCATION PIXEL</h1>
               <p style={styles.tagline}>Learn focus & Grow</p>
               <div style={styles.headerSubtext}>
-                <p>Run under: AROGYA JEEVAN SOCIAL HEALTHCARE FOUNDATION</p>
-                <p>Reg. by: Ministry of Corporate Affairs [Govt. of India] sub-section (2) of section 7 and sub-section (1)</p>
-                <p>of section 8 of the Companies Act, 2013 (18 of 2013) and rule 18 of the Companies [Incorporation] Rules, 2014]</p>
-                <p style={styles.cin}>CIN-U85300BR2022NPL055558</p>
-                <p style={styles.cin as React.CSSProperties}>Regd. NITI Aayog Unique ID: BR/2022/0304927</p>
-                <p style={styles.cin as React.CSSProperties}>(AN ISO 9001:2015 Certified)</p>
+                 {/* Removed the foundation and registration details */}
               </div>
             </div>
           </div>
@@ -297,7 +286,7 @@ export default function CertificateTemplate(data: CertificateData) {
             
             <div style={styles.sigs}>
               <div style={styles.sigItem}>
-                <img src={data.sealUrl} style={styles.seal} />
+                {/* Seal image can be re-added here if you host it */}
                 <p style={styles.sigItemP}>Verified By :</p>
               </div>
               <div style={styles.sigItem}>
@@ -310,15 +299,7 @@ export default function CertificateTemplate(data: CertificateData) {
           <div style={styles.gradingBar}>
             Assessment Grading-A-Excellent (75% Above), B-Good (75%-50%), C-Satisfactory (50%-30%), D-Below
           </div>
-
-          <div style={styles.partnerStrip}>
-            <img src={data.partnerLogos.gov} style={styles.partnerStripImg} />
-            <img src={data.partnerLogos.iso} style={styles.partnerStripImg} />
-            <img src={data.partnerLogos.msme} style={styles.partnerStripImg} />
-            <img src={data.partnerLogos.niti} style={styles.partnerStripImg} />
-            <img src={data.partnerLogos.startup} style={styles.partnerStripImg} />
-          </div>
-
+          
           <div style={styles.bottomAddress}>
             <p style={styles.bottomAddressP}>Registered Office : Nawab House, House number 431 Near by S. R. Dairy, Haldoni Greater Noida (UP) Pin Code- 201308</p>
             <p style={styles.bottomAddressP}>🌐 www.educationpixel.com &nbsp;&nbsp; ✉ ashishkumargiri51@gmail.com</p>
@@ -326,4 +307,3 @@ export default function CertificateTemplate(data: CertificateData) {
         </div>
     );
 }
-
