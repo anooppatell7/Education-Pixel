@@ -23,7 +23,8 @@ export default function CertificateTemplate(data: CertificateData) {
         transform: 'translateX(-50%)',
         display: 'flex',
         alignItems: 'center',
-        gap: '15px'
+        gap: '15px',
+        whiteSpace: 'nowrap'
       },
       logo: { 
         width: '80px', 
@@ -37,7 +38,8 @@ export default function CertificateTemplate(data: CertificateData) {
         letterSpacing: '1px', 
         fontWeight: 'bold',
         margin: 0,
-        lineHeight: 1
+        lineHeight: 1,
+        whiteSpace: 'nowrap'
       },
       
       certificateBadge: { position: 'absolute', top: '125px', left: '50%', transform: 'translateX(-50%)', width: '200px' },
