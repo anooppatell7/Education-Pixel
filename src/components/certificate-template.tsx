@@ -105,10 +105,12 @@ export default function CertificateTemplate(data: CertificateData) {
         backgroundColor: '#d32f2f',
         color: 'white',
         fontSize: '12px',
-        textAlign: 'center',
         padding: '5px 10px',
         borderRadius: '5px',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       },
       
       footerCombinedLogo: {
