@@ -16,9 +16,19 @@ export default function CertificateTemplate(data: CertificateData) {
         backgroundSize: '100% 100%',
         boxSizing: 'border-box'
       },
-      logo: { position: 'absolute', top: '55px', left: '180px', width: '80px', height: '80px' },
+      headerContainer: {
+        position: 'absolute',
+        top: '55px',
+        left: '0',
+        right: '0',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '10px'
+      },
+      logo: { width: '80px', height: '80px' },
       
-      mainTitle: { position: 'absolute', top: '55px', left: '270px', fontFamily: "'Times New Roman', serif", color: '#d32f2f', fontSize: '48px', letterSpacing: '1px', fontWeight: 'bold' },
+      mainTitle: { fontFamily: "'Times New Roman', serif", color: '#d32f2f', fontSize: '48px', letterSpacing: '1px', fontWeight: 'bold' },
       
       certificateBadge: { position: 'absolute', top: '125px', left: '50%', transform: 'translateX(-50%)', width: '200px' },
 
@@ -111,8 +121,11 @@ export default function CertificateTemplate(data: CertificateData) {
 
     return (
         <div style={styles.certContainer}>
-            <img src={data.logoUrl} alt="Logo" style={styles.logo} />
-            <h1 style={styles.mainTitle}>EDUCATION PIXEL</h1>
+            <div style={styles.headerContainer}>
+              <img src={data.logoUrl} alt="Logo" style={styles.logo} />
+              <h1 style={styles.mainTitle}>EDUCATION PIXEL</h1>
+            </div>
+
             <img src={data.certificateBadgeUrl} alt="Certificate Badge" style={styles.certificateBadge} />
 
             <div style={styles.regNo}><strong>Regd. No. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</strong> {data.registration.registrationNumber}</div>
@@ -156,3 +169,4 @@ export default function CertificateTemplate(data: CertificateData) {
         </div>
     );
 }
+
