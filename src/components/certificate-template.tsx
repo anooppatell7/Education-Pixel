@@ -18,8 +18,8 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       logo: { position: 'absolute', top: '55px', left: '210px', width: '90px', height: '90px', borderRadius: '50%'},
       
-      mainTitle: { position: 'absolute', top: '55px', left: '180px', width: '640px', textAlign: 'center', fontFamily: "'Times New Roman', serif", color: '#d32f2f', fontSize: '48px', letterSpacing: '1px', fontWeight: 'bold' },
-      tagline: { position: 'absolute', top: '105px', left: '180px', width: '640px', textAlign: 'center', fontFamily: "'Dancing Script', cursive", color: '#1a237e', fontSize: '24px', margin: 0},
+      mainTitle: { position: 'absolute', top: '55px', left: '0', right: '0', textAlign: 'center', fontFamily: "'Times New Roman', serif", color: '#d32f2f', fontSize: '48px', letterSpacing: '1px', fontWeight: 'bold' },
+      tagline: { position: 'absolute', top: '105px', left: '0', right: '0', textAlign: 'center', fontFamily: "'Dancing Script', cursive", color: '#1a237e', fontSize: '24px', margin: 0},
       
       regNo: { position: 'absolute', top: '168px', left: '90px', fontSize: '14px', fontWeight: 'bold' },
       certNo: { position: 'absolute', top: '188px', left: '90px', fontSize: '14px', fontWeight: 'bold' },
@@ -58,25 +58,25 @@ export default function CertificateTemplate(data: CertificateData) {
       dateRow: {
         display: 'flex',
         justifyContent: 'space-between',
-        marginTop: '10px',
+        marginTop: '15px',
         fontSize: '15px',
         fontWeight: 'bold'
       },
       
-      qrCode: { position: 'absolute', top: '530px', left: '90px', width: '80px', height: '80px' },
-      qrText: { position: 'absolute', top: '615px', left: '95px', fontSize: '10px', fontWeight: 'bold' },
+      qrCode: { position: 'absolute', bottom: '110px', left: '90px', width: '80px', height: '80px' },
+      qrText: { position: 'absolute', bottom: '95px', left: '95px', fontSize: '10px', fontWeight: 'bold' },
       
-      verifiedBy: { position: 'absolute', top: '595px', left: '465px', width: '70px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', color: '#1a237e'},
+      verifiedBy: { position: 'absolute', bottom: '100px', left: '465px', width: '70px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', color: '#1a237e'},
 
-      authSigLine: { position: 'absolute', top: '590px', left: '730px', width: '160px', borderTop: '1px solid #000' },
-      authSigText: { position: 'absolute', top: '595px', left: '730px', width: '160px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', color: '#1a237e' },
+      authSigLine: { position: 'absolute', bottom: '125px', left: '730px', width: '160px', borderTop: '1px solid #000' },
+      authSigText: { position: 'absolute', bottom: '100px', left: '730px', width: '160px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', color: '#1a237e' },
 
       gradingBar: {
         position: 'absolute',
         bottom: '80px',
         left: '50%',
         transform: 'translateX(-50%)',
-        width: '780px',
+        width: '450px',
         backgroundColor: '#d32f2f',
         color: 'white',
         fontSize: '10px',
@@ -109,7 +109,7 @@ export default function CertificateTemplate(data: CertificateData) {
                   <span><strong>D.O.B.:</strong> {format(parseISO(data.registration.dob), 'dd-MM-yyyy')}</span>
               </div>
               
-              <p style={{...styles.lineText, textAlign: 'center', marginBottom: '10px'}}><strong>Center :</strong><span style={styles.highlight}>EDUCATION PIXEL ONLINE TRAINING PLATFORM, PRATAPGARH</span></p>
+              <p style={{...styles.lineText, textAlign: 'center', marginBottom: '15px', marginTop: '15px'}}><strong>Center :</strong><span style={styles.highlight}>EDUCATION PIXEL ONLINE TRAINING PLATFORM, PRATAPGARH</span></p>
               
               <div style={styles.dateRow}>
                   <span><strong>Date of Admission:</strong> {format(new Date(data.registration.registeredAt.seconds * 1000), 'dd-MM-yyyy')}</span>
