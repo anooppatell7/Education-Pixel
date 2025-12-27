@@ -18,7 +18,7 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       logo: { position: 'absolute', top: '55px', left: '250px', width: '80px', height: '80px' },
       
-      mainTitle: { position: 'absolute', top: '65px', left: '340px', fontFamily: "'Times New Roman', serif", color: '#d32f2f', fontSize: '48px', letterSpacing: '1px', fontWeight: 'bold' },
+      mainTitle: { position: 'absolute', top: '55px', left: '340px', fontFamily: "'Times New Roman', serif", color: '#d32f2f', fontSize: '48px', letterSpacing: '1px', fontWeight: 'bold' },
       
       certificateBadge: { position: 'absolute', top: '125px', left: '50%', transform: 'translateX(-50%)', width: '200px' },
 
