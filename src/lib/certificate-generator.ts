@@ -10,7 +10,7 @@ import type { ExamResult, ExamRegistration } from './types';
 import { preloadImageAsBase64 } from './base64-preloader';
 import QRCode from 'qrcode';
 
-interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'responses' | 'timeTaken'> {
+export interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'responses' | 'timeTaken'> {
   registration: ExamRegistration;
   certificateId: string;
   issueDate: string;
@@ -31,8 +31,8 @@ async function getCertificateImages(photoUrl: string, qrCodeDataUrl?: string) {
   const imagePromises: Promise<string>[] = [
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"), // Main Logo
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Student Photo
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766732021/certificate_xtyqd5.png"), // Background Image
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766819323/certificate_badge_uorf8n.png"), // Certificate Badge
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766817965/EDUCATION_PIXEL_zdg6qs.png"), // Background Image
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766732021/certificate_xtyqd5.png"), // Certificate Badge
   ];
 
   if (qrCodeDataUrl) {
