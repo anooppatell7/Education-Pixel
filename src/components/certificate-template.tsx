@@ -16,42 +16,45 @@ export default function CertificateTemplate(data: CertificateData) {
         backgroundSize: '100% 100%',
         boxSizing: 'border-box'
       },
-      logo: { position: 'absolute', top: '55px', left: '210px', width: '90px', height: '90px', borderRadius: '50%'},
+      logo: { position: 'absolute', top: '45px', left: '80px', width: '80px', height: '80px' },
       
-      mainTitle: { position: 'absolute', top: '55px', left: '0', right: '0', textAlign: 'center', fontFamily: "'Times New Roman', serif", color: '#d32f2f', fontSize: '48px', letterSpacing: '1px', fontWeight: 'bold' },
-      tagline: { position: 'absolute', top: '105px', left: '0', right: '0', textAlign: 'center', fontFamily: "'Dancing Script', cursive", color: '#1a237e', fontSize: '24px', margin: 0},
+      mainTitle: { position: 'absolute', top: '55px', left: '170px', fontFamily: "'Times New Roman', serif", color: '#d32f2f', fontSize: '48px', letterSpacing: '1px', fontWeight: 'bold' },
       
-      regNo: { position: 'absolute', top: '168px', left: '90px', fontSize: '14px', fontWeight: 'bold' },
-      certNo: { position: 'absolute', top: '188px', left: '90px', fontSize: '14px', fontWeight: 'bold' },
+      certificateBadge: { position: 'absolute', top: '125px', left: '50%', transform: 'translateX(-50%)', width: '200px' },
+
+      regNo: { position: 'absolute', top: '180px', left: '80px', fontSize: '14px', fontWeight: 'bold' },
+      certNo: { position: 'absolute', top: '200px', left: '80px', fontSize: '14px', fontWeight: 'bold' },
       
-      studentPhoto: { position: 'absolute', top: '158px', right: '80px', width: '100px', height: '125px', border: '2px solid #000', objectFit: 'cover' },
+      studentPhoto: { position: 'absolute', top: '170px', right: '70px', width: '100px', height: '125px', border: '2px solid #000', objectFit: 'cover' },
 
       lineText: {
-        fontSize: '16px',
-        fontWeight: 'bold',
-        marginBottom: '10px'
+        fontSize: '17px',
+        fontWeight: 'normal',
+        marginBottom: '10px',
+        color: '#333'
       },
       
       highlight: {
         color: '#1a237e',
         fontSize: '18px',
         fontWeight: 'bold',
-        paddingLeft: '10px'
+        padding: '0 8px',
+        fontFamily: "'Times New Roman', serif"
       },
       
       mainContent: {
         position: 'absolute',
-        top: '280px',
-        left: '90px',
-        width: '820px'
+        top: '290px',
+        left: '80px',
+        width: '840px'
       },
       
       courseDetailsRow: {
         display: 'flex',
         justifyContent: 'space-between',
-        marginTop: '10px',
-        marginBottom: '10px',
-        fontSize: '15px',
+        marginTop: '15px',
+        marginBottom: '15px',
+        fontSize: '16px',
         fontWeight: 'bold'
       },
       
@@ -59,31 +62,50 @@ export default function CertificateTemplate(data: CertificateData) {
         display: 'flex',
         justifyContent: 'space-between',
         marginTop: '15px',
-        fontSize: '15px',
+        fontSize: '16px',
         fontWeight: 'bold'
       },
       
-      qrCode: { position: 'absolute', bottom: '110px', left: '90px', width: '80px', height: '80px' },
-      qrText: { position: 'absolute', bottom: '95px', left: '95px', fontSize: '10px', fontWeight: 'bold' },
+      qrCode: { position: 'absolute', bottom: '90px', left: '90px', width: '80px', height: '80px' },
+      qrText: { position: 'absolute', bottom: '75px', left: '95px', fontSize: '10px', fontWeight: 'bold' },
       
-      verifiedBy: { position: 'absolute', bottom: '100px', left: '465px', width: '70px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', color: '#1a237e'},
-
-      authSigLine: { position: 'absolute', bottom: '125px', left: '730px', width: '160px', borderTop: '1px solid #000' },
-      authSigText: { position: 'absolute', bottom: '100px', left: '730px', width: '160px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', color: '#1a237e' },
+      authSigLine: { position: 'absolute', bottom: '115px', right: '80px', width: '160px', borderTop: '1px solid #000' },
+      authSigText: { position: 'absolute', bottom: '90px', right: '80px', width: '160px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', color: '#1a237e' },
 
       gradingBar: {
+        position: 'absolute',
+        bottom: '180px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '700px',
+        backgroundColor: '#d32f2f',
+        color: 'white',
+        fontSize: '12px',
+        textAlign: 'center',
+        padding: '5px 10px',
+        borderRadius: '5px',
+        fontWeight: 'bold'
+      },
+      
+      footerLogos: {
+        position: 'absolute',
+        bottom: '120px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        display: 'flex',
+        gap: '20px',
+        alignItems: 'center'
+      },
+      footerLogo: {
+        height: '40px'
+      },
+      footerContact: {
         position: 'absolute',
         bottom: '80px',
         left: '50%',
         transform: 'translateX(-50%)',
-        width: '450px',
-        backgroundColor: '#d32f2f',
-        color: 'white',
-        fontSize: '10px',
-        textAlign: 'center',
-        padding: '4px',
-        borderRadius: '3px',
-        fontWeight: 'bold'
+        fontSize: '12px',
+        color: '#333'
       }
     };
 
@@ -91,7 +113,7 @@ export default function CertificateTemplate(data: CertificateData) {
         <div style={styles.certContainer}>
             <img src={data.logoUrl} alt="Logo" style={styles.logo} />
             <h1 style={styles.mainTitle}>EDUCATION PIXEL</h1>
-            <p style={styles.tagline}>Learn focus & Grow</p>
+            <img src={data.certificateBadgeUrl} alt="Certificate Badge" style={styles.certificateBadge} />
 
             <div style={styles.regNo}><strong>Regd. No. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</strong> {data.registration.registrationNumber}</div>
             <div style={styles.certNo}><strong>Certificate No. :</strong> {data.certificateId}</div>
@@ -99,9 +121,9 @@ export default function CertificateTemplate(data: CertificateData) {
             <img src={data.studentPhotoUrl} alt="Student" style={styles.studentPhoto} />
 
             <div style={styles.mainContent}>
-              <p style={{...styles.lineText, marginBottom: '10px'}}>We are much pleased to honour Mr./Ms./Mrs :<span style={styles.highlight}>{data.studentName}</span></p>
-              <p style={{...styles.lineText, marginBottom: '10px'}}>Son/Daughter/Wife Mr. :<span style={styles.highlight}>{data.registration.fatherName}</span></p>
-              <p style={{...styles.lineText, marginBottom: '10px'}}>Has successfully completed a course of :<span style={styles.highlight}>{data.courseName}</span></p>
+              <p style={{...styles.lineText, marginBottom: '15px'}}>We are much pleased to honour Mr./Ms./Mrs :<span style={styles.highlight}>{data.studentName}</span></p>
+              <p style={{...styles.lineText, marginBottom: '15px'}}>Son/Daughter/Wife Mr. :<span style={styles.highlight}>{data.registration.fatherName}</span></p>
+              <p style={{...styles.lineText, marginBottom: '15px'}}>Has successfully completed a course of :<span style={styles.highlight}>{data.courseName}</span></p>
 
               <div style={styles.courseDetailsRow}>
                   <span><strong>Course Duration :</strong> {data.registration.courseDuration}</span>
@@ -109,7 +131,7 @@ export default function CertificateTemplate(data: CertificateData) {
                   <span><strong>D.O.B.:</strong> {format(parseISO(data.registration.dob), 'dd-MM-yyyy')}</span>
               </div>
               
-              <p style={{...styles.lineText, textAlign: 'center', marginBottom: '15px', marginTop: '15px'}}><strong>Center :</strong><span style={styles.highlight}>EDUCATION PIXEL ONLINE TRAINING PLATFORM, PRATAPGARH</span></p>
+              <p style={{...styles.lineText, textAlign: 'center', margin: '20px 0'}}><strong>Center :</strong><span style={styles.highlight}>EDUCATION PIXEL ONLINE TRAINING PLATFORM, PRATAPGARH</span></p>
               
               <div style={styles.dateRow}>
                   <span><strong>Date of Admission:</strong> {format(new Date(data.registration.registeredAt.seconds * 1000), 'dd-MM-yyyy')}</span>
@@ -120,13 +142,16 @@ export default function CertificateTemplate(data: CertificateData) {
             {data.qrCodeUrl && <img src={data.qrCodeUrl} alt="QR" style={styles.qrCode} />}
             <p style={styles.qrText}>Scan to Verify</p>
             
-            <p style={styles.verifiedBy}>Verified By :</p>
-
             <div style={styles.authSigLine}></div>
             <p style={styles.authSigText}>Authorised Signature</p>
 
             <div style={styles.gradingBar}>
                 Assessment Grading: A-Excellent (75% Above), B-Good (75%-50%), C-Satisfactory (50%-30%), D-Below
+            </div>
+
+            <div style={styles.footerContact}>
+                <span style={{ marginRight: '20px' }}>📧 ashishkumargiri51@gmail.com</span>
+                <span>🌐 www.educationpixel.site</span>
             </div>
         </div>
     );

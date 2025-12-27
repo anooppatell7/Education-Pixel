@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import jsPDF from 'jspdf';
@@ -20,6 +21,7 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   studentPhotoUrl: string;
   qrCodeUrl?: string;
   backgroundImageUrl: string;
+  certificateBadgeUrl: string;
 }
 
 const CERT_WIDTH = 1000;
@@ -29,19 +31,21 @@ async function getCertificateImages(photoUrl: string, qrCodeDataUrl?: string) {
   const imagePromises: Promise<string>[] = [
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"), // Main Logo
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Student Photo
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766814473/certificate_bg_o6wkeq.png") // Background Image
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766732021/certificate_xtyqd5.png"), // Background Image
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766819323/certificate_badge_uorf8n.png"), // Certificate Badge
   ];
 
   if (qrCodeDataUrl) {
     imagePromises.push(Promise.resolve(qrCodeDataUrl));
   }
 
-  const [logo, studentPhoto, background, qrCode] = await Promise.all(imagePromises);
+  const [logo, studentPhoto, background, certificateBadge, qrCode] = await Promise.all(imagePromises);
   
   return { 
     logo, 
     studentPhoto, 
     background,
+    certificateBadge,
     qrCode 
   };
 }
@@ -60,7 +64,7 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
     const verificationUrl = `${siteUrl}/verify-certificate?id=${data.certificateId}`;
     const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H', width: 80 });
 
-    const { logo, studentPhoto, background, qrCode } = await getCertificateImages(data.registration.photoUrl, qrCodeDataUrl);
+    const { logo, studentPhoto, background, certificateBadge, qrCode } = await getCertificateImages(data.registration.photoUrl, qrCodeDataUrl);
     
     const grade = getGrade(data.percentage);
 
@@ -71,6 +75,7 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
       studentPhotoUrl: studentPhoto,
       qrCodeUrl: qrCode,
       backgroundImageUrl: background,
+      certificateBadgeUrl: certificateBadge,
     };
     
     const container = document.createElement("div");

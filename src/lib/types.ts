@@ -258,6 +258,21 @@ export type ExamResult = {
   certificateId?: string; // Stored, unique certificate ID
 };
 
+export interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'responses' | 'timeTaken'> {
+  registration: ExamRegistration;
+  certificateId: string;
+  issueDate: string;
+  examDate: string;
+  percentage: number;
+  grade: string;
+  logoUrl: string;
+  studentPhotoUrl: string;
+  qrCodeUrl?: string;
+  backgroundImageUrl: string;
+  certificateBadgeUrl: string;
+}
+
+
 export type Certificate = {
     id: string; // Auto-generated
     certificateId: string; // Human-readable ID e.g., CERT-2025-0001
@@ -315,3 +330,4 @@ export type FAQPageSchema = FAQPage;
     
 
     
+
