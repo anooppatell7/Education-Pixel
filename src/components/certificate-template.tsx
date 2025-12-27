@@ -27,18 +27,20 @@ export default function CertificateTemplate(data: CertificateData) {
         whiteSpace: 'nowrap'
       },
       logo: { 
-        width: '80px', 
-        height: '80px',
+        width: '70px', 
+        height: '70px',
         objectFit: 'contain'
       },
       mainTitle: { 
         fontFamily: "'Times New Roman', serif", 
         color: '#d32f2f', 
         fontSize: '48px', 
-        letterSpacing: '1px', 
         fontWeight: 'bold',
         margin: 0,
-        lineHeight: 1,
+        padding: 0,
+        lineHeight: '1',
+        display: 'flex',
+        alignItems: 'center',
         whiteSpace: 'nowrap'
       },
       
