@@ -18,7 +18,7 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       headerRow: {
         position: 'absolute',
-        top: '35px',
+        top: '30px',
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
@@ -34,7 +34,7 @@ export default function CertificateTemplate(data: CertificateData) {
       mainTitle: {
         fontFamily: "'Poppins', sans-serif",
         color: '#d32f2f',
-        fontSize: '80px',
+        fontSize: '77px',
         letterSpacing: '1px',
         fontWeight: 'bold',
         margin: 0,
