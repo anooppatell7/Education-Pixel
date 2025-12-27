@@ -31,7 +31,7 @@ async function getCertificateImages(photoUrl: string, qrCodeDataUrl?: string) {
   const imagePromises: Promise<string>[] = [
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"), // Main Logo
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Student Photo
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766817965/EDUCATION_PIXEL_zdg6qs.png"), // Background Image
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766814473/certificate_bg_o6wkeq.png"), // Background Image
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766732021/certificate_xtyqd5.png"), // Certificate Badge
   ];
 
@@ -128,3 +128,4 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
     throw err;
   }
 }
+
