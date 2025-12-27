@@ -113,15 +113,15 @@ export default function CertificateTemplate(data: CertificateData) {
       
       footerLogos: {
         position: 'absolute',
-        bottom: '120px',
+        bottom: '110px',
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
-        gap: '20px',
+        gap: '30px',
         alignItems: 'center'
       },
       footerLogo: {
-        height: '40px'
+        height: '50px'
       },
       footerContact: {
         position: 'absolute',
