@@ -32,7 +32,7 @@ export default function CertificateTemplate(data: CertificateData) {
         objectFit: 'contain'
       },
       mainTitle: {
-        fontFamily: "'Times New Roman', serif",
+        fontFamily: "'Poppins', sans-serif",
         color: '#d32f2f',
         fontSize: '48px',
         fontWeight: 'bold',
