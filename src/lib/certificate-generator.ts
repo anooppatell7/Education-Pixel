@@ -17,33 +17,51 @@ interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' | 'respo
   grade: string;
   logoUrl: string;
   studentPhotoUrl: string;
-  certificateImageUrl: string;
+  sealUrl: string;
+  partnerLogos: {
+    gov: string;
+    iso: string;
+    msme: string;
+    niti: string;
+    startup: string;
+  }
   qrCodeUrl?: string;
 }
 
-const A4_WIDTH = 1123;
-const A4_HEIGHT = 794;
+const CERT_WIDTH = 1000;
+const CERT_HEIGHT = 700;
 
 async function getCertificateImages(photoUrl: string, qrCodeDataUrl?: string) {
-  const imagePromises = [
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"),
-    preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Fallback if photo fails
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766732021/certificate_xtyqd5.png"),
+  const imagePromises: Promise<string>[] = [
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png"), // Main Logo
+    preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Student Photo
+    preloadImageAsBase64("https://csspicker.dev/api/image/?q=blue+round+seal&image_type=vector"), // Seal
+    preloadImageAsBase64("https://csspicker.dev/api/image/?q=india+emblem&image_type=vector"), // Gov Logo
+    preloadImageAsBase64("https://csspicker.dev/api/image/?q=iso+certified+logo&image_type=vector"), // ISO Logo
+    preloadImageAsBase64("https://csspicker.dev/api/image/?q=msme+logo&image_type=vector"), // MSME Logo
+    preloadImageAsBase64("https://csspicker.dev/api/image/?q=niti+aayog+logo&image_type=vector"), // NITI Aayog Logo
+    preloadImageAsBase64("https://csspicker.dev/api/image/?q=startup+india+logo&image_type=vector"), // Startup India Logo
   ];
 
   if (qrCodeDataUrl) {
     imagePromises.push(Promise.resolve(qrCodeDataUrl));
   }
 
-  const [logo, studentPhoto, certificateImage, qrCode] = await Promise.all(imagePromises);
+  const [logo, studentPhoto, seal, gov, iso, msme, niti, startup, qrCode] = await Promise.all(imagePromises);
 
-  return { logo, studentPhoto, certificateImage, qrCode };
+  return { 
+    logo, 
+    studentPhoto, 
+    seal, 
+    partnerLogos: { gov, iso, msme, niti, startup },
+    qrCode 
+  };
 }
 
 const getGrade = (percentage: number) => {
     if (percentage >= 75) return 'A';
-    if (percentage >= 60) return 'B';
-    if (percentage >= 50) return 'C';
+    if (percentage >= 50) return 'B';
+    if (percentage >= 30) return 'C';
     return 'D';
 };
 
@@ -52,9 +70,9 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
   try {
     const siteUrl = window.location.origin;
     const verificationUrl = `${siteUrl}/verify-certificate?id=${data.certificateId}`;
-    const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+    const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H', width: 80 });
 
-    const { logo, studentPhoto, certificateImage, qrCode } = await getCertificateImages(data.registration.photoUrl, qrCodeDataUrl);
+    const { logo, studentPhoto, seal, partnerLogos, qrCode } = await getCertificateImages(data.registration.photoUrl, qrCodeDataUrl);
     
     const grade = getGrade(data.percentage);
 
@@ -63,24 +81,27 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
       grade,
       logoUrl: logo,
       studentPhotoUrl: studentPhoto,
-      certificateImageUrl: certificateImage,
+      sealUrl: seal,
+      partnerLogos,
       qrCodeUrl: qrCode,
     };
     
     const container = document.createElement("div");
     container.style.position = "absolute";
     container.style.left = "-9999px";
-    container.style.width = `${A4_WIDTH}px`;
-    container.style.height = `${A4_HEIGHT}px`;
+    container.style.width = `${CERT_WIDTH}px`;
+    container.style.height = `${CERT_HEIGHT}px`;
     document.body.appendChild(container);
     
+    // We need to use ReactDOMServer to render the component to a string
+    // This string is then put into the container div.
     const staticMarkup = renderToStaticMarkup(CertificateTemplate(finalData));
     container.innerHTML = staticMarkup;
     
-    // Wait for fonts and images to load
+    // Add a delay for fonts and images to potentially load
     await new Promise<void>((resolve) => {
       document.fonts.ready.then(() => {
-        setTimeout(resolve, 1000); // Increased timeout for better rendering
+        setTimeout(resolve, 1500); // Wait for images etc.
       });
     });
 
@@ -88,12 +109,12 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
       scale: 3, 
       useCORS: true,
       allowTaint: true,
-      backgroundColor: null,
+      backgroundColor: '#ffffff', // Set a white background
       imageTimeout: 0,
-      width: A4_WIDTH,
-      height: A4_HEIGHT,
-      windowWidth: A4_WIDTH,
-      windowHeight: A4_HEIGHT,
+      width: CERT_WIDTH,
+      height: CERT_HEIGHT,
+      windowWidth: CERT_WIDTH,
+      windowHeight: CERT_HEIGHT,
     });
 
     const imgData = canvas.toDataURL("image/png", 1.0);
@@ -102,10 +123,10 @@ export async function generateCertificatePdf(data: CertificateData): Promise<Blo
     const pdf = new jsPDF({
       orientation: "landscape",
       unit: "px",
-      format: [A4_WIDTH, A4_HEIGHT],
+      format: [CERT_WIDTH, CERT_HEIGHT],
     });
 
-    pdf.addImage(imgData, "PNG", 0, 0, A4_WIDTH, A4_HEIGHT);
+    pdf.addImage(imgData, "PNG", 0, 0, CERT_WIDTH, CERT_HEIGHT);
     const blob = pdf.output("blob");
 
     if (!blob || blob.size < 5000) {
