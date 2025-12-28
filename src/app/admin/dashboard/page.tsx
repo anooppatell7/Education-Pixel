@@ -491,7 +491,7 @@ export default function AdminDashboardPage() {
         } else if (activeTab === 'test-categories') {
              collectionName = 'testCategories';
              if (!isEditing) {
-                dataToSave.franchiseId = null; 
+                dataToSave.franchiseId = null; // Global by default for superAdmin
                 dataToSave.createdBy = user.uid;
                 dataToSave.createdAt = serverTimestamp();
              }
@@ -530,7 +530,7 @@ export default function AdminDashboardPage() {
                 collectionName = 'mockTests';
                 if(!isEditing) {
                     dataToSave.questions = [];
-                    dataToSave.franchiseId = null;
+                    dataToSave.franchiseId = null; // Global by default for superAdmin
                     dataToSave.createdBy = user.uid;
                     dataToSave.createdAt = serverTimestamp();
                 }
@@ -899,7 +899,7 @@ export default function AdminDashboardPage() {
                     <div className="grid gap-2">
                         <Label htmlFor="id">Category ID (Slug)</Label>
                         <Input id="id" name="id" value={formData.id || ''} onChange={handleFormChange} disabled={!!editingItem} placeholder="e.g., ms-word. Will be auto-generated."/>
-                        <p className="text-xs text-muted-foreground">Create a category called 'Student Exam' with ID 'student-exam' for registered student exams.</p>
+                        <p className="text-xs text-muted-foreground">This ID is permanent and used in the URL.</p>
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="title">Title</Label>
@@ -1326,7 +1326,7 @@ export default function AdminDashboardPage() {
                             <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Test Categories</CardTitle>
-                                    <CardDescription>Manage categories for mock tests. Create a category called 'Student Exam' with ID 'student-exam' for registered student exams.</CardDescription>
+                                    <CardDescription>Manage categories for mock tests. These are visible to everyone.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     {loading ? <p>Loading categories...</p> :
@@ -1384,7 +1384,7 @@ export default function AdminDashboardPage() {
                             <Card className="shadow-lg rounded-lg">
                                 <CardHeader>
                                     <CardTitle>Mock Tests</CardTitle>
-                                    <CardDescription>Create and manage mock tests. Assign tests to the "Student Exam" category to make them visible only to registered students.</CardDescription>
+                                    <CardDescription>Create and manage mock tests. These are visible to all logged-in users.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     {loading ? <p>Loading mock tests...</p> : (

@@ -22,6 +22,10 @@ service cloud.firestore {
                        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId == franchiseId;
     }
     
+    function isAnyFranchiseAdmin() {
+       return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'franchiseAdmin';
+    }
+    
     function isOwner(userId) {
       return isAuth() && request.auth.uid == userId;
     }
@@ -38,19 +42,9 @@ service cloud.firestore {
     // == CORE DATA ==
 
     match /users/{userId} {
-      // A new user can create their own document.
-      // An existing user can get and update their own document.
       allow create, get, update: if isOwner(userId);
-      
-      // SuperAdmin can read/write any user document.
       allow read, write: if isSuperAdmin();
-
-      // Any authenticated user can query the collection.
-      // Firestore's query security ensures that the 'get' rule is also checked for each document returned.
-      // This means a user can only ever retrieve their own document via a query.
       allow list: if isAuth();
-
-      // No user can delete their own account from the client. Deletions should be server-side.
       allow delete: if false;
     }
     
@@ -112,17 +106,15 @@ service cloud.firestore {
     // == FRANCHISE-RESTRICTED TEST CONTENT ==
     
     match /testCategories/{categoryId} {
-        allow create: if isSuperAdmin() || isFranchiseAdmin(request.resource.data.franchiseId);
-        allow read: if isAuth(); 
+        allow create: if isSuperAdmin() || isAnyFranchiseAdmin();
+        allow read, list: if isAuth(); 
         allow update, delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
-        allow list: if isAuth();
     }
     
      match /mockTests/{testId} {
-        allow create: if isSuperAdmin() || isFranchiseAdmin(request.resource.data.franchiseId);
-        allow read: if isAuth(); 
+        allow create: if isSuperAdmin() || isAnyFranchiseAdmin();
+        allow read, list: if isAuth(); 
         allow update, delete: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
-        allow list: if isAuth(); 
     }
     
     match /studentExams/{examId} {

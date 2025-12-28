@@ -142,19 +142,20 @@ export default function FranchiseDashboardPage() {
             const regQuery = query(collection(firestore, "examRegistrations"), where("franchiseId", "==", franchiseId), orderBy("registeredAt", "desc"));
             const resultsQuery = query(collection(firestore, "examResults"), where("franchiseId", "==", franchiseId), orderBy("submittedAt", "desc"));
             
+            // Fetch both franchise-specific and global categories
             const franchiseCategoriesQuery = query(collection(firestore, "testCategories"), where("franchiseId", "==", franchiseId));
             const globalCategoriesQuery = query(collection(firestore, "testCategories"), where("franchiseId", "in", [null, ""]));
             
-            const mockTestsQuery = query(collection(firestore, "mockTests"), where("franchiseId", "==", franchiseId));
+            const mockTestsQuery = query(collection(firestore, "mockTests")); // Fetch all mock tests
             const studentExamsQuery = query(collection(firestore, "studentExams"), where("franchiseId", "==", franchiseId));
 
             const [regSnap, resultsSnap, franchiseCategoriesSnap, globalCategoriesSnap, mockTestsSnap, studentExamsSnap] = await Promise.all([
                 getDocs(regQuery), 
                 getDocs(resultsQuery), 
-                getDocs(franchiseCategoriesQuery), 
-                getDocs(globalCategoriesQuery),
+                getDocs(franchiseCategoriesSnap), 
+                getDocs(globalCategoriesSnap),
                 getDocs(mockTestsQuery),
-                getDocs(studentExamsQuery)
+                getDocs(studentExamsSnap)
             ]);
 
             const registrationList = regSnap.docs.map(d => ({ id: d.id, ...d.data(), registeredAt: (d.data().registeredAt as Timestamp)?.toDate().toLocaleString() || '' } as ExamRegistration));
@@ -280,13 +281,11 @@ export default function FranchiseDashboardPage() {
             createdAt: editingItem?.createdAt || serverTimestamp(),
         };
     
-        dataToSave = { ...dataToSave, ...commonData };
-    
         if (activeTab === 'test-categories') {
             collectionName = 'testCategories';
             docId = editingItem?.id || createSlug(dataToSave.title);
             if (!docId) { toast({ title: "Error", description: "Category must have a title.", variant: "destructive" }); return; }
-            dataToSave.id = docId;
+            dataToSave = { ...dataToSave, id: docId, franchiseId: dataToSave.franchiseId || appUser.franchiseId, createdBy: appUser.id, createdAt: commonData.createdAt };
         } else if (activeTab === 'mock-tests' || activeTab === 'student-exams') {
             const isStudentExam = activeTab === 'student-exams';
             const parentCollection = isStudentExam ? 'studentExams' : 'mockTests';
@@ -323,8 +322,7 @@ export default function FranchiseDashboardPage() {
                    }
                 } else {
                     const category = data.testCategories.find(c => c.id === dataToSave.categoryId);
-                    dataToSave.categoryName = category?.title || '';
-                    dataToSave.accessType = "free";
+                    dataToSave = { ...dataToSave, ...commonData, categoryName: category?.title || '', accessType: 'free' };
                 }
                 if (!editingItem) dataToSave.questions = [];
             }
@@ -429,6 +427,16 @@ export default function FranchiseDashboardPage() {
         switch(currentForm) {
              case 'test-categories': return (
                 <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="franchiseId">Visibility</Label>
+                        <Select name="franchiseId" value={formData.franchiseId === null ? "global" : appUser?.franchiseId} onValueChange={(val) => setFormData({ ...formData, franchiseId: val === "global" ? null : appUser?.franchiseId })}>
+                             <SelectTrigger><SelectValue placeholder="Select visibility" /></SelectTrigger>
+                             <SelectContent>
+                                 <SelectItem value="global">Global (Visible to Everyone)</SelectItem>
+                                 <SelectItem value={appUser?.franchiseId}>Franchise Only</SelectItem>
+                             </SelectContent>
+                        </Select>
+                    </div>
                     <div className="grid gap-2"><Label htmlFor="title">Title</Label><Input id="title" name="title" value={formData.title || ''} onChange={handleFormChange} /></div>
                     <div className="grid gap-2"><Label htmlFor="description">Description</Label><Textarea id="description" name="description" value={formData.description || ''} onChange={handleFormChange} /></div>
                     <div className="grid gap-2"><Label htmlFor="icon">Icon (Emoji)</Label><Input id="icon" name="icon" value={formData.icon || ''} onChange={handleFormChange} placeholder="e.g., 📄"/></div>
@@ -508,7 +516,7 @@ export default function FranchiseDashboardPage() {
                  <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
                     <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Students</CardTitle><UserCheck className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{loading ? '...' : data.registrations.length}</div><p className="text-xs text-muted-foreground">students registered in your franchise</p></CardContent></Card>
                     <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Pending Registrations</CardTitle><UserCheck className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{loading ? '...' : unreadRegistrations}</div><p className="text-xs text-muted-foreground">new applications to review</p></CardContent></Card>
-                    <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Mock Tests Created</CardTitle><ListTodo className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{loading ? '...' : data.mockTests.length}</div><p className="text-xs text-muted-foreground">Free practice tests</p></CardContent></Card>
+                    <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Mock Tests Created</CardTitle><ListTodo className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{loading ? '...' : data.mockTests.filter(t => t.franchiseId === franchiseId).length}</div><p className="text-xs text-muted-foreground">Free practice tests</p></CardContent></Card>
                     <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Student Exams Created</CardTitle><Shield className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{loading ? '...' : data.studentExams.length}</div><p className="text-xs text-muted-foreground">Official exams for students</p></CardContent></Card>
                 </div>
                 <Tabs defaultValue="registrations" onValueChange={setActiveTab}>
@@ -585,7 +593,7 @@ export default function FranchiseDashboardPage() {
                         </Card>
                     </TabsContent>
                     <TabsContent value="mock-tests">
-                        <Card><CardHeader><CardTitle>Mock Tests</CardTitle><CardDescription>Create and manage free practice tests for students in your city.</CardDescription></CardHeader>
+                        <Card><CardHeader><CardTitle>Mock Tests</CardTitle><CardDescription>Create and manage free practice tests. These are visible to everyone.</CardDescription></CardHeader>
                             <CardContent>{loading ? <p>Loading...</p> : (<Accordion type="multiple" className="w-full">
                                 {data.mockTests.map(test => (<AccordionItem value={test.id} key={test.id} className="rounded-lg mb-2 border bg-card"><div className="flex items-center pr-4 hover:bg-muted/50 rounded-t-lg">
                                     <AccordionTrigger className="flex-1 px-4 py-2 hover:no-underline"><div className="flex items-center justify-between w-full"><div><span className="font-semibold text-lg">{test.title}</span><Badge variant="outline" className="ml-2">{test.categoryName || 'Uncategorized'}</Badge></div><div className="flex items-center gap-4 text-sm text-muted-foreground"><span>{test.questions?.length || 0} Questions</span><span>{test.duration} mins</span><Badge variant={test.isPublished ? "default" : "secondary"}>{test.isPublished ? "Published" : "Draft"}</Badge></div></div></AccordionTrigger>

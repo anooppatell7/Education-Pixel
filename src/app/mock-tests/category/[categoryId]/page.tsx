@@ -8,7 +8,7 @@ import { useParams, notFound, useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ListChecks, Clock, ArrowRight, BarChart, ChevronLeft, ShieldQuestion } from "lucide-react";
-import type { MockTest, TestResult, TestCategory, ExamResult, User as AppUser } from "@/lib/types";
+import type { MockTest, TestResult, TestCategory, ExamResult } from "@/lib/types";
 import { useUser, useFirestore } from "@/firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -46,7 +46,6 @@ export default function MockTestsByCategoryPage() {
     const [category, setCategory] = useState<TestCategory | null>(null);
     const [mockTests, setMockTests] = useState<MockTest[]>([]);
     const [userResults, setUserResults] = useState<ExamResult[]>([]);
-    const [appUser, setAppUser] = useState<AppUser | null>(null);
     
     const [isLoading, setIsLoading] = useState(true);
 
@@ -61,27 +60,12 @@ export default function MockTestsByCategoryPage() {
             if (!firestore) return;
             setIsLoading(true);
             try {
-                // Fetch user's franchise info
-                const userDocRef = doc(firestore, "users", user.uid);
-                const userDocSnap = await getDoc(userDocRef);
-                
-                let userData;
-                if (userDocSnap.exists()) {
-                    userData = userDocSnap.data() as AppUser;
-                    setAppUser(userData);
-                } else {
-                     // If user doc doesn't exist, they can't see any franchise-specific content
-                    notFound();
-                    return;
-                }
-
                 // Fetch category details
                 const categoryRef = doc(firestore, "testCategories", categoryId);
                 const categorySnap = await getDoc(categoryRef);
 
-                const categoryData = categorySnap.data() as TestCategory;
-                // A user can see the category if it's global (no franchiseId) or belongs to their franchise
-                if (categorySnap.exists() && (!categoryData.franchiseId || categoryData.franchiseId === userData.franchiseId)) {
+                if (categorySnap.exists()) {
+                    const categoryData = categorySnap.data() as TestCategory;
                     setCategory({ id: categorySnap.id, ...categoryData });
                     document.title = `${categoryData.title} Tests - Education Pixel`;
                 } else {
@@ -89,11 +73,10 @@ export default function MockTestsByCategoryPage() {
                     return;
                 }
 
-                // Fetch tests for this category. Tests should also be either global or franchise-specific.
+                // Fetch tests for this category. No franchise filter needed anymore.
                 const testsQuery = query(
                     collection(firestore, "mockTests"),
                     where("categoryId", "==", categoryId),
-                    where("franchiseId", "in", [null, "", userData.franchiseId]),
                     where("isPublished", "==", true)
                 );
                 const testsSnapshot = await getDocs(testsQuery);
@@ -123,7 +106,7 @@ export default function MockTestsByCategoryPage() {
             try {
                 const resultsQuery = query(
                     collection(firestore, 'examResults'),
-                    where('registrationNumber', '==', user.uid),
+                    where('registrationNumber', '==', user.uid), // User's UID is used as reg number for mock tests
                     where('testId', 'in', testIds)
                 );
                 const resultsSnapshot = await getDocs(resultsQuery);
@@ -237,7 +220,7 @@ export default function MockTestsByCategoryPage() {
                             <CardContent className="p-12 text-center text-muted-foreground">
                                 <ShieldQuestion className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
                                 <p className="text-lg font-semibold">No Mock Tests Found</p>
-                                <p className="mt-2 text-sm">There are no mock tests available in this category for your franchise yet.</p>
+                                <p className="mt-2 text-sm">There are no mock tests available in this category yet.</p>
                             </CardContent>
                         </Card>
                     )}

@@ -6,8 +6,8 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ArrowRight, FileText, Search, X, ShieldQuestion } from "lucide-react";
-import type { TestCategory, User as AppUser } from "@/lib/types";
-import { collection, query, getDocs, where, doc, getDoc } from "firebase/firestore";
+import type { TestCategory } from "@/lib/types";
+import { collection, query, getDocs } from "firebase/firestore";
 import { useFirestore, useUser } from "@/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 import SectionDivider from "@/components/section-divider";
@@ -40,7 +40,6 @@ export default function MockTestCategoriesPage() {
     const db = useFirestore();
     const { user, isLoading: isUserLoading } = useUser();
     const router = useRouter();
-    const [appUser, setAppUser] = useState<AppUser | null>(null);
     const [categories, setCategories] = useState<TestCategory[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -52,30 +51,15 @@ export default function MockTestCategoriesPage() {
             return;
         }
 
-        const fetchUserDataAndCategories = async () => {
+        const fetchCategories = async () => {
             if (!db) return;
             setIsLoading(true);
             try {
-                // Fetch user data to get their city and franchiseId
-                const userDocRef = doc(db, "users", user.uid);
-                const userDocSnap = await getDoc(userDocRef);
-                
-                if (userDocSnap.exists()) {
-                    const userData = userDocSnap.data() as AppUser;
-                    setAppUser(userData);
-
-                    // Fetch categories relevant to the user's franchise
-                    const categoriesQuery = query(
-                        collection(db, "testCategories"),
-                        where("franchiseId", "==", userData.franchiseId)
-                    );
-                    const querySnapshot = await getDocs(categoriesQuery);
-                    const categoryList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TestCategory));
-                    setCategories(categoryList);
-                } else {
-                     // If user doc doesn't exist, they can't see any franchise-specific content
-                    setCategories([]);
-                }
+                // Fetch all categories, regardless of franchise
+                const categoriesQuery = query(collection(db, "testCategories"));
+                const querySnapshot = await getDocs(categoriesQuery);
+                const categoryList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TestCategory));
+                setCategories(categoryList);
             } catch (error) {
                 console.error("Failed to fetch test categories:", error);
             } finally {
@@ -83,7 +67,7 @@ export default function MockTestCategoriesPage() {
             }
         };
 
-        fetchUserDataAndCategories();
+        fetchCategories();
     }, [db, user, isUserLoading, router]);
     
     const filteredCategories = useMemo(() => {
@@ -92,7 +76,7 @@ export default function MockTestCategoriesPage() {
         }
         return categories.filter(category =>
             category.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            category.description.toLowerCase().includes(searchTerm.toLowerCase())
+            (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()))
         );
     }, [categories, searchTerm]);
 
@@ -102,7 +86,7 @@ export default function MockTestCategoriesPage() {
                 <div className="container py-16 sm:py-24 text-center">
                     <h1 className="font-headline text-4xl font-bold sm:text-5xl">Online Mock Tests<span className="text-purple-300">.</span></h1>
                     <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-50">
-                        Select a category to start practicing and test your knowledge for your city.
+                        Select a category to start practicing and test your knowledge.
                     </p>
                 </div>
             </div>
@@ -156,7 +140,7 @@ export default function MockTestCategoriesPage() {
                             <CardContent className="p-12 text-center text-muted-foreground">
                                 <ShieldQuestion className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
                                 <p className="text-lg font-semibold">No Test Categories Found</p>
-                                <p className="mt-2 text-sm">{searchTerm ? "Try a different search term." : "There are no test categories available for your franchise right now."}</p>
+                                <p className="mt-2 text-sm">{searchTerm ? "Try a different search term." : "No mock test categories have been added yet."}</p>
                             </CardContent>
                         </Card>
                     )}
