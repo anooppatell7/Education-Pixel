@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 };
 
 async function getReviews(): Promise<Review[]> {
+  if (!db) return [];
   const reviewsQuery = query(
     collection(db, "reviews"),
     where("isApproved", "==", true),
@@ -35,7 +36,8 @@ async function getReviews(): Promise<Review[]> {
     return {
       id: doc.id,
       ...data,
-      submittedAt: data.submittedAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      // Pass the raw timestamp to the client component
+      submittedAt: data.submittedAt,
     } as Review;
   });
 }

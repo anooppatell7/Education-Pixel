@@ -8,6 +8,16 @@ import { Button } from "@/components/ui/button";
 import { ReviewFormModal } from "@/components/review-form-modal";
 import { cn } from "@/lib/utils";
 
+const formatDate = (timestamp: any) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+};
+
 export default function ReviewPageClient({ reviews }: { reviews: Review[] }) {
     return (
         <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-black text-white">
@@ -46,7 +56,7 @@ export default function ReviewPageClient({ reviews }: { reviews: Review[] }) {
                                         </div>
                                         <div>
                                           <p className="font-semibold text-white">{review.name}</p>
-                                          <p className="text-xs text-white/70">{review.submittedAt}</p>
+                                          <p className="text-xs text-white/70">{formatDate(review.submittedAt)}</p>
                                         </div>
                                     </div>
                                 </CardContent>
