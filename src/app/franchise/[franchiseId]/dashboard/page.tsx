@@ -320,6 +320,7 @@ export default function FranchiseDashboardPage() {
                    } else {
                         dataToSave.allowedStudents = [];
                    }
+                   dataToSave = { ...dataToSave, ...commonData }; // Inject commonData including franchiseId
                 } else {
                     const category = data.testCategories.find(c => c.id === dataToSave.categoryId);
                     dataToSave = { ...dataToSave, ...commonData, categoryName: category?.title || '', accessType: 'free' };
@@ -343,6 +344,15 @@ export default function FranchiseDashboardPage() {
             } catch (error) {
                  console.error("Form submit error:", error);
                  toast({ title: "Error", description: "Could not save data.", variant: "destructive" });
+                 // Re-throw permission error for listener
+                 if(error instanceof Error && error.message.includes('permission-denied')) {
+                     const permissionError = new FirestorePermissionError({
+                        path: `${collectionName}/${docId || 'new'}`,
+                        operation: editingItem ? 'update' : 'create',
+                        requestResourceData: dataToSave
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                 }
             }
         }
     

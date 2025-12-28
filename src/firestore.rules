@@ -35,12 +35,14 @@ service cloud.firestore {
 
     // Users collection stores role and franchise info.
     match /users/{userId} {
-      // Users can read/update their own profile information.
+      // User can create their own document during signup.
+      allow create: if request.auth != null && request.auth.uid == userId;
+      // User can read and update their own profile.
       allow get, update: if isOwner(userId);
-      // Anyone can create a user doc (signup)
-      allow create: if true;
-      // Super Admins can read/write any user document to manage roles/franchises.
+      // Super Admins have full access. This no longer conflicts with create.
       allow read, write: if isSuperAdmin();
+      // Nobody can list all users.
+      allow list: if false;
     }
     
     // Franchises can only be created and managed by Super Admins, but read by anyone for signup.
@@ -62,13 +64,9 @@ service cloud.firestore {
         // Students can create their own registration.
         allow create: if isOwner(userId);
         
-        // SuperAdmins can manage all registrations.
-        // Franchise Admins can read/update registrations belonging to their franchise.
-        allow read, update: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
+        // Admins can manage registrations. Student can read their own.
+        allow read, update: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         
-        // A student can read their own registration.
-        allow get: if isOwner(userId);
-
         // Allow any authenticated user to query the collection (needed for verification)
         allow list: if isAuth();
     }
@@ -80,8 +78,11 @@ service cloud.firestore {
 
         // Readable by Super Admin.
         // Readable by Franchise Admin if the result belongs to a student in their franchise.
-        // Readable by the student who owns the result.
-        allow read: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId) || (isAuth() && resource.data.registrationNumber == request.auth.uid);
+        // Readable by the student who owns the result (using UID for mock tests or Reg No for official exams).
+        allow read: if isSuperAdmin() 
+                    || (isAuth() && isFranchiseAdmin(resource.data.franchiseId)) 
+                    || (isAuth() && resource.data.registrationNumber == request.auth.uid)
+                    || (isAuth() && exists(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)) && resource.data.registrationNumber == get(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)).data.registrationNumber);
         
         // Only Super Admins can delete results.
         allow delete: if isSuperAdmin();
@@ -138,9 +139,13 @@ service cloud.firestore {
     
     // studentExams are more restricted
     match /studentExams/{examId} {
-        allow read: if isAuth() && (userBelongsToFranchise(resource.data.franchiseId) || isSuperAdmin());
-        allow write: if isSuperAdmin() || 
-                     (isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId == request.resource.data.franchiseId);
+      allow read: if isAuth();
+      allow create, update: if isSuperAdmin() || (
+        isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'franchiseAdmin' &&
+        request.resource.data.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId
+      );
+      allow delete: if isSuperAdmin();
     }
     
     // Reviews can be created by anyone, but only read publicly if approved.
