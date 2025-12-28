@@ -109,19 +109,21 @@ function MockTestClientComponent({ testId }: { testId: string }) {
             setTestData(data);
             document.title = `${data.title} - Education Pixel`;
             
-            // Check for existing result
-            const resultIdentifier = registrationNumber || user.uid;
-            const resultsQuery = query(
-                collection(db, 'examResults'),
-                where('registrationNumber', '==', resultIdentifier),
-                where('testId', '==', testId),
-                orderBy('submittedAt', 'desc'),
-                limit(1)
-            );
-            const resultsSnapshot = await getDocs(resultsQuery);
+            // Check for existing result only for official exams
+            if (isOfficialExam) {
+                const resultIdentifier = registrationNumber || user.uid;
+                const resultsQuery = query(
+                    collection(db, 'examResults'),
+                    where('registrationNumber', '==', resultIdentifier),
+                    where('testId', '==', testId),
+                    orderBy('submittedAt', 'desc'),
+                    limit(1)
+                );
+                const resultsSnapshot = await getDocs(resultsQuery);
 
-            if (!resultsSnapshot.empty) {
-                setExistingResult({id: resultsSnapshot.docs[0].id, ...resultsSnapshot.docs[0].data()} as ExamResult);
+                if (!resultsSnapshot.empty) {
+                    setExistingResult({id: resultsSnapshot.docs[0].id, ...resultsSnapshot.docs[0].data()} as ExamResult);
+                }
             }
             
             setIsLoading(false);
@@ -333,5 +335,7 @@ export default function MockTestPage({ params }: { params: { id: string } }) {
     const { id } = params;
     return <MockTestClientComponent testId={id} />;
 }
+
+    
 
     
