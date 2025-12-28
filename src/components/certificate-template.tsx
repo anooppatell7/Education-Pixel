@@ -18,7 +18,7 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       headerLogo: {
         position: 'absolute',
-        top: '40px',
+        top: '35px',
         left: '130px',
         display: 'flex',
         alignItems: 'center',
@@ -44,7 +44,7 @@ export default function CertificateTemplate(data: CertificateData) {
         whiteSpace: 'nowrap'
       },
       
-      certificateBadge: { position: 'absolute', top: '125px', left: '50%', transform: 'translateX(-50%)', width: '200px' },
+      certificateBadge: { position: 'absolute', top: '130px', left: '50%', transform: 'translateX(-50%)', width: '200px' },
 
       regNo: { position: 'absolute', top: '180px', left: '80px', fontSize: '14px', fontWeight: 'bold' },
       certNo: { position: 'absolute', top: '200px', left: '80px', fontSize: '14px', fontWeight: 'bold' },
@@ -163,16 +163,16 @@ export default function CertificateTemplate(data: CertificateData) {
               <p style={{...styles.lineText, marginBottom: '10px'}}>Has successfully completed a course of :<span style={styles.highlight}>{data.courseName}</span></p>
 
               <div style={styles.courseDetailsRow}>
-                  <span>Course Duration : {data.registration.courseDuration}</span>
-                  <span>Grade Awarded : {data.grade}</span>
-                  <span>D.O.B.: {format(parseISO(data.registration.dob), 'dd-MM-yyyy')}</span>
+                  <span>Course Duration :<span style={styles.highlight}>{data.registration.courseDuration}</span></span>
+                  <span>Grade Awarded :<span style={styles.highlight}>{data.grade}</span></span>
+                  <span>D.O.B.:<span style={styles.highlight}>{format(parseISO(data.registration.dob), 'dd-MM-yyyy')}</span></span>
               </div>
               
               <p style={styles.lineText}>Center :<span style={styles.highlight}>EDUCATION PIXEL ONLINE TRAINING PLATFORM, PRATAPGARH</span></p>
               
               <div style={styles.dateRow}>
-                  <span>Date of Admission: {format(new Date(data.registration.registeredAt.seconds * 1000), 'dd-MM-yyyy')}</span>
-                  <span>Date of Issue: {format(new Date(data.issueDate), 'dd-MM-yyyy')}</span>
+                  <span>Date of Admission:<span style={styles.highlight}>{format(new Date(data.registration.registeredAt.seconds * 1000), 'dd-MM-yyyy')}</span></span>
+                  <span>Date of Issue:<span style={styles.highlight}>{format(new Date(data.issueDate), 'dd-MM-yyyy')}</span></span>
               </div>
             </div>
 
