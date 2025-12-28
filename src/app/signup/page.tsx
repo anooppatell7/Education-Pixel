@@ -13,7 +13,6 @@ import { useAuth, useUser, db } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Head from "next/head";
 import { doc, setDoc, getDocs, collection, query, where, serverTimestamp } from "firebase/firestore";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Franchise, User as AppUser } from "@/lib/types";
 import { isValidTLD } from "@/lib/tld-validator";
 import { Loader2 } from "lucide-react";
@@ -23,8 +22,6 @@ export default function SignupPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [city, setCity] = useState('');
-  const [franchises, setFranchises] = useState<Franchise[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -37,29 +34,14 @@ export default function SignupPage() {
     }
   }, [user, router]);
   
-  useEffect(() => {
-    const fetchFranchises = async () => {
-        if (!db) return;
-        try {
-            const q = query(collection(db, "franchises"), where("status", "==", "active"));
-            const querySnapshot = await getDocs(q);
-            const franchiseList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Franchise));
-            setFranchises(franchiseList);
-        } catch (error) {
-            console.error("Error fetching franchises:", error);
-        }
-    }
-    fetchFranchises();
-  }, [db]);
-
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth || !db) return;
     setIsLoading(true);
 
-    if (!name || !email || !password || !city) {
-      toast({ title: "Error", description: "Please fill all fields, including city.", variant: "destructive" });
+    if (!name || !email || !password) {
+      toast({ title: "Error", description: "Please fill all fields.", variant: "destructive" });
       setIsLoading(false);
       return;
     }
@@ -88,25 +70,16 @@ export default function SignupPage() {
 
       let role = "student";
       let franchiseId: string | null = null;
+      let userCity: string | null = null;
       
+      // If a user doc already exists with this email, it's likely a pre-added franchise admin
       if (!userSnap.empty && userSnap.docs[0].data().role === 'franchiseAdmin') {
           const preExistingUserData = userSnap.docs[0].data();
           role = "franchiseAdmin";
           franchiseId = preExistingUserData.franchiseId;
-      }
-
-      if (role === "student") {
-        const selectedFranchise = franchises.find(f => f.city === city);
-        if (!selectedFranchise) {
-            throw new Error("Selected city does not have an active franchise. Please contact support.");
-        }
-        franchiseId = selectedFranchise.id;
+          userCity = preExistingUserData.city;
       }
       
-      if (!franchiseId) {
-          throw new Error("Could not assign a franchise. Please contact support.");
-      }
-
       // 4. Create user document in Firestore. This will overwrite if a doc with the same UID exists, which is fine here.
       const userDocRef = doc(db, "users", authUser.uid);
       const userData: AppUser = {
@@ -114,8 +87,8 @@ export default function SignupPage() {
         name: name,
         email: email,
         role: role as 'student' | 'franchiseAdmin' | 'superAdmin',
-        city: city,
-        franchiseId: franchiseId,
+        city: userCity || '',
+        franchiseId: franchiseId || '',
         createdAt: serverTimestamp(),
       };
       
@@ -215,19 +188,7 @@ export default function SignupPage() {
                   required
                 />
               </div>
-               <div className="grid gap-2">
-                  <Label htmlFor="city">City</Label>
-                  <Select onValueChange={setCity} value={city}>
-                      <SelectTrigger id="city">
-                          <SelectValue placeholder="Select your city" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          {franchises.map(f => (
-                            <SelectItem key={f.id} value={f.city}>{f.city}</SelectItem>
-                          ))}
-                      </SelectContent>
-                  </Select>
-              </div>
+              
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...</> : 'Sign Up'}
               </Button>
@@ -244,5 +205,3 @@ export default function SignupPage() {
     </>
   );
 }
-
-    
