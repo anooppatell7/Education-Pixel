@@ -19,7 +19,7 @@ export default function CertificateTemplate(data: CertificateData) {
       headerLogo: {
         position: 'absolute',
         top: '40px',
-        left: '115px',
+        left: '130px',
         display: 'flex',
         alignItems: 'center',
         gap: '15px'
