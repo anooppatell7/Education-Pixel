@@ -152,8 +152,8 @@ export default function FranchiseDashboardPage() {
             const [regSnap, resultsSnap, franchiseCategoriesSnap, globalCategoriesSnap, mockTestsSnap, studentExamsSnap] = await Promise.all([
                 getDocs(regQuery), 
                 getDocs(resultsQuery), 
-                getDocs(franchiseCategoriesSnap), 
-                getDocs(globalCategoriesSnap),
+                getDocs(franchiseCategoriesQuery), 
+                getDocs(globalCategoriesQuery),
                 getDocs(mockTestsQuery),
                 getDocs(studentExamsSnap)
             ]);
