@@ -34,7 +34,7 @@ async function getCertificateImages(photoUrl: string, qrCodeDataUrl?: string) {
     preloadImageAsBase64(photoUrl).catch(() => "https://res.cloudinary.com/dqycipmr0/image/upload/v1718182510/placeholder-user_f38a5k.png"), // Student Photo
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766814473/certificate_bg_o6wkeq.png"), // Background Image
     preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766732021/certificate_xtyqd5.png"), // Certificate Badge
-    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766845649/footerlogo1_ilorc0.png"), // Combined Footer Logo
+    preloadImageAsBase64("https://res.cloudinary.com/dqycipmr0/image/upload/v1766896297/Untitled-1_ekelge.png"), // Combined Footer Logo
   ];
 
   if (qrCodeDataUrl) {
