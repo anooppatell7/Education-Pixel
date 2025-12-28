@@ -69,8 +69,8 @@ service cloud.firestore {
     
     match /examResults/{resultId} {
         allow create: if isAuth();
-        allow read: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId) || isResultOwner(resource.data);
-        allow list: if true;
+        allow read: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId) || isResultOwner(resource.data) || (isAuth() && resource.data.registrationNumber == request.auth.uid);
+        allow list: if isAuth();
         allow delete: if isSuperAdmin();
     }
     
