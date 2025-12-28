@@ -122,7 +122,7 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       footerAddress: {
         position: 'absolute',
-        bottom: '85px',
+        bottom: '75px',
         left: '50%',
         transform: 'translateX(-50%)',
         fontSize: '12px',
@@ -133,7 +133,7 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       footerContact: {
         position: 'absolute',
-        bottom: '65px',
+        bottom: '55px',
         left: '0',
         right: '0',
         width: '100%',
