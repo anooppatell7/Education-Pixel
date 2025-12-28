@@ -155,7 +155,7 @@ export default function FranchiseDashboardPage() {
                 getDocs(franchiseCategoriesQuery), 
                 getDocs(globalCategoriesQuery),
                 getDocs(mockTestsQuery),
-                getDocs(studentExamsSnap)
+                getDocs(studentExamsQuery)
             ]);
 
             const registrationList = regSnap.docs.map(d => ({ id: d.id, ...d.data(), registeredAt: (d.data().registeredAt as Timestamp)?.toDate().toLocaleString() || '' } as ExamRegistration));
