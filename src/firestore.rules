@@ -17,9 +17,8 @@ service cloud.firestore {
     }
 
     function isFranchiseAdmin(franchiseId) {
-      // Production: return request.auth.token.role == "franchiseAdmin" && request.auth.token.franchiseId == franchiseId;
       // This rule is more complex without claims, requires a read to user doc.
-      // IMPORTANT: This function has known issues during signup as /users/{uid} may not exist. Use with caution.
+      // Use with caution, especially during signup flows where the user doc might not exist yet.
       return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'franchiseAdmin' 
                        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId == franchiseId;
     }
@@ -27,22 +26,17 @@ service cloud.firestore {
     function isOwner(userId) {
       return isAuth() && request.auth.uid == userId;
     }
-    
+
     // == CORE DATA ==
 
     // Users collection stores role and franchise info.
     match /users/{userId} {
-      // User can create their own document during signup.
-      allow create: if request.auth != null && request.auth.uid == userId;
-
-      // User can read and update their own profile.
+      // Users can read/update their own profile information.
       allow get, update: if isOwner(userId);
-
-      // Super Admins have full access.
+      // Anyone can create a user doc (signup)
+      allow create: if true;
+      // Super Admins can read/write any user document to manage roles/franchises.
       allow read, write: if isSuperAdmin();
-
-      // Nobody can list all users.
-      allow list: if false;
     }
     
     // Franchises can only be created and managed by Super Admins, but read by anyone for signup.
@@ -64,7 +58,8 @@ service cloud.firestore {
         // Students can create their own registration.
         allow create: if isOwner(userId);
         
-        // Admins can manage registrations. Students can read their own.
+        // Student can read their own data.
+        // Admins can read/update registrations in their franchise.
         allow read, update: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
 
         // Allow any authenticated user to query the collection (needed for verification pages).
