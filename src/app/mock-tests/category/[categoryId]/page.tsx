@@ -13,6 +13,8 @@ import { useUser, useFirestore } from "@/firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import SectionDivider from "@/components/section-divider";
+import { FirestorePermissionError } from "@/firebase/errors";
+import { errorEmitter } from "@/firebase/error-emitter";
 
 function TestsLoadingSkeleton() {
     return (
@@ -59,9 +61,14 @@ export default function MockTestsByCategoryPage() {
         const fetchData = async () => {
             if (!firestore) return;
             setIsLoading(true);
+            const categoryRef = doc(firestore, "testCategories", categoryId);
+            const testsQuery = query(
+                collection(firestore, "mockTests"),
+                where("categoryId", "==", categoryId),
+                where("isPublished", "==", true)
+            );
+            
             try {
-                // Fetch category details
-                const categoryRef = doc(firestore, "testCategories", categoryId);
                 const categorySnap = await getDoc(categoryRef);
 
                 if (categorySnap.exists()) {
@@ -73,18 +80,17 @@ export default function MockTestsByCategoryPage() {
                     return;
                 }
 
-                // Fetch tests for this category. No franchise filter needed anymore.
-                const testsQuery = query(
-                    collection(firestore, "mockTests"),
-                    where("categoryId", "==", categoryId),
-                    where("isPublished", "==", true)
-                );
                 const testsSnapshot = await getDocs(testsQuery);
                 const testList = testsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MockTest));
                 setMockTests(testList);
 
             } catch (error) {
                 console.error("Failed to fetch mock tests by category:", error);
+                const permissionError = new FirestorePermissionError({
+                    path: testsQuery.path,
+                    operation: 'list',
+                });
+                errorEmitter.emit('permission-error', permissionError);
             } finally {
                 setIsLoading(false);
             }
@@ -103,12 +109,12 @@ export default function MockTestsByCategoryPage() {
             const testIds = mockTests.map(t => t.id);
             if (testIds.length === 0) return;
 
+            const resultsQuery = query(
+                collection(firestore, 'examResults'),
+                where('registrationNumber', '==', user.uid), // User's UID is used as reg number for mock tests
+                where('testId', 'in', testIds)
+            );
             try {
-                const resultsQuery = query(
-                    collection(firestore, 'examResults'),
-                    where('registrationNumber', '==', user.uid), // User's UID is used as reg number for mock tests
-                    where('testId', 'in', testIds)
-                );
                 const resultsSnapshot = await getDocs(resultsQuery);
                 let results = resultsSnapshot.docs.map(doc => {
                     const data = doc.data();
@@ -120,6 +126,11 @@ export default function MockTestsByCategoryPage() {
                 setUserResults(results);
             } catch (error) {
                 console.error("Failed to fetch user results:", error);
+                 const permissionError = new FirestorePermissionError({
+                    path: resultsQuery.path,
+                    operation: 'list',
+                });
+                errorEmitter.emit('permission-error', permissionError);
             }
         };
 

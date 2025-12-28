@@ -14,6 +14,8 @@ import SectionDivider from "@/components/section-divider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { FirestorePermissionError } from "@/firebase/errors";
+import { errorEmitter } from "@/firebase/error-emitter";
 
 function CategoryLoadingSkeleton() {
     return (
@@ -54,14 +56,18 @@ export default function MockTestCategoriesPage() {
         const fetchCategories = async () => {
             if (!db) return;
             setIsLoading(true);
+            const categoriesQuery = query(collection(db, "testCategories"));
             try {
-                // Fetch all categories, regardless of franchise
-                const categoriesQuery = query(collection(db, "testCategories"));
                 const querySnapshot = await getDocs(categoriesQuery);
                 const categoryList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TestCategory));
                 setCategories(categoryList);
             } catch (error) {
                 console.error("Failed to fetch test categories:", error);
+                const permissionError = new FirestorePermissionError({
+                    path: categoriesQuery.path,
+                    operation: 'list',
+                });
+                errorEmitter.emit('permission-error', permissionError);
             } finally {
                 setIsLoading(false);
             }
