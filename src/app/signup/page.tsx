@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser, db } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Head from "next/head";
-import { doc, setDoc, getDocs, collection, query, where, serverTimestamp, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDocs, collection, query, where, serverTimestamp } from "firebase/firestore";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Franchise, User as AppUser } from "@/lib/types";
 import { isValidTLD } from "@/lib/tld-validator";
@@ -88,15 +88,11 @@ export default function SignupPage() {
 
       let role = "student";
       let franchiseId: string | null = null;
-      let isPreExistingFranchiseAdmin = false;
-
-      if (!userSnap.empty) {
-        const preExistingUserData = userSnap.docs[0].data();
-        if (preExistingUserData.role === 'franchiseAdmin') {
-            role = "franchiseAdmin";
-            franchiseId = preExistingUserData.franchiseId;
-            isPreExistingFranchiseAdmin = true;
-        }
+      
+      if (!userSnap.empty && userSnap.docs[0].data().role === 'franchiseAdmin') {
+          const preExistingUserData = userSnap.docs[0].data();
+          role = "franchiseAdmin";
+          franchiseId = preExistingUserData.franchiseId;
       }
 
       if (role === "student") {
@@ -111,7 +107,7 @@ export default function SignupPage() {
           throw new Error("Could not assign a franchise. Please contact support.");
       }
 
-      // 4. Create or Update user document in Firestore
+      // 4. Create user document in Firestore. This will overwrite if a doc with the same UID exists, which is fine here.
       const userDocRef = doc(db, "users", authUser.uid);
       const userData: AppUser = {
         id: authUser.uid,
@@ -123,14 +119,7 @@ export default function SignupPage() {
         createdAt: serverTimestamp(),
       };
       
-      if (isPreExistingFranchiseAdmin) {
-        await updateDoc(userSnap.docs[0].ref, {
-          id: authUser.uid, // Link the doc to the new auth UID
-          name,
-        });
-      } else {
-         await setDoc(userDocRef, userData);
-      }
+      await setDoc(userDocRef, userData);
       
       toast({
         title: "Account Created",
