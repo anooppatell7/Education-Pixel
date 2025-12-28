@@ -79,7 +79,7 @@ export default function CertificateTemplate(data: CertificateData) {
         marginTop: '15px',
         marginBottom: '15px',
         fontSize: '16px',
-        fontWeight: 'bold'
+        fontWeight: 'normal'
       },
       
       dateRow: {
@@ -87,7 +87,7 @@ export default function CertificateTemplate(data: CertificateData) {
         justifyContent: 'space-between',
         marginTop: '15px',
         fontSize: '16px',
-        fontWeight: 'bold'
+        fontWeight: 'normal'
       },
       
       qrCode: { position: 'absolute', bottom: '90px', left: '90px', width: '100px', height: '100px' },
@@ -163,16 +163,16 @@ export default function CertificateTemplate(data: CertificateData) {
               <p style={{...styles.lineText, marginBottom: '10px'}}>Has successfully completed a course of :<span style={styles.highlight}>{data.courseName}</span></p>
 
               <div style={styles.courseDetailsRow}>
-                  <span><strong>Course Duration :</strong> {data.registration.courseDuration}</span>
-                  <span><strong>Grade Awarded :</strong> {data.grade}</span>
-                  <span><strong>D.O.B.:</strong> {format(parseISO(data.registration.dob), 'dd-MM-yyyy')}</span>
+                  <span>Course Duration : {data.registration.courseDuration}</span>
+                  <span>Grade Awarded : {data.grade}</span>
+                  <span>D.O.B.: {format(parseISO(data.registration.dob), 'dd-MM-yyyy')}</span>
               </div>
               
-              <p style={styles.lineText}><strong>Center :</strong><span style={styles.highlight}>EDUCATION PIXEL ONLINE TRAINING PLATFORM, PRATAPGARH</span></p>
+              <p style={styles.lineText}>Center :<span style={styles.highlight}>EDUCATION PIXEL ONLINE TRAINING PLATFORM, PRATAPGARH</span></p>
               
               <div style={styles.dateRow}>
-                  <span><strong>Date of Admission:</strong> {format(new Date(data.registration.registeredAt.seconds * 1000), 'dd-MM-yyyy')}</span>
-                  <span><strong>Date of Issue:</strong> {format(new Date(data.issueDate), 'dd-MM-yyyy')}</span>
+                  <span>Date of Admission: {format(new Date(data.registration.registeredAt.seconds * 1000), 'dd-MM-yyyy')}</span>
+                  <span>Date of Issue: {format(new Date(data.issueDate), 'dd-MM-yyyy')}</span>
               </div>
             </div>
 
