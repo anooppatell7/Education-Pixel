@@ -24,8 +24,7 @@ export default function FeaturedCourses() {
             }
             const coursesQuery = query(
                 collection(db, "courses"), 
-                where("isFeatured", "==", true), 
-                limit(3)
+                where("isFeatured", "==", true)
             );
             const courseSnapshot = await getDocs(coursesQuery);
             

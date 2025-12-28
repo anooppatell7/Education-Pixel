@@ -24,9 +24,10 @@ type CourseCardProps = {
 
 
 export default function CourseCard({ course }: CourseCardProps) {
-  const summary = course.description.length > 100 
-    ? `${course.description.substring(0, 100)}...` 
-    : course.description;
+  const description = course.description || '';
+  const summary = description.length > 100 
+    ? `${description.substring(0, 100)}...` 
+    : description;
     
   const [imgSrc, setImgSrc] = useState(course.image || LOGO_URL);
 
