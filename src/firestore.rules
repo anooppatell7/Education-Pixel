@@ -35,10 +35,10 @@ service cloud.firestore {
 
     match /users/{userId} {
       // Allows user to create their own profile document during signup
-      allow create: if request.auth != null && request.auth.uid == userId;
+      allow create: if true;
 
       // Allows user to read and update their own profile
-      allow get, update: if request.auth != null && request.auth.uid == userId;
+      allow get, update: if isOwner(userId);
 
       // Super Admin has full read/write access for management purposes
       // This is now separated and won't conflict with user's create/update
@@ -69,7 +69,7 @@ service cloud.firestore {
         
         // SuperAdmins can manage all registrations.
         // Franchise Admins can read/update registrations belonging to their franchise.
-        allow read, update: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
+        allow read, update: if isSuperAdmin() || (isAuth() && isFranchiseAdmin(resource.data.franchiseId));
         
         // A student can read their own registration.
         allow get: if isOwner(userId);
@@ -85,8 +85,11 @@ service cloud.firestore {
 
         // Readable by Super Admin.
         // Readable by Franchise Admin if the result belongs to a student in their franchise.
-        // Readable by the student who owns the result.
-        allow read: if isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId) || (isAuth() && resource.data.registrationNumber == request.auth.uid);
+        // Readable by the student who owns the result (using UID for mock tests or Reg No for official exams).
+        allow read: if isSuperAdmin() 
+                    || (isAuth() && isFranchiseAdmin(resource.data.franchiseId)) 
+                    || (isAuth() && resource.data.registrationNumber == request.auth.uid)
+                    || (isAuth() && exists(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)) && resource.data.registrationNumber == get(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)).data.registrationNumber);
         
         // Only Super Admins can delete results.
         allow delete: if isSuperAdmin();
