@@ -1,17 +1,22 @@
+
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/firebase';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import SectionDivider from '@/components/section-divider';
 import type { ExamResult } from '@/lib/types';
 import { format } from 'date-fns';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
 function VerificationContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const certificateId = searchParams.get('id');
   
@@ -19,11 +24,11 @@ function VerificationContent() {
   const [verificationResult, setVerificationResult] = useState<ExamResult | null>(null);
   const [notFound, setNotFound] = useState(false);
   const { toast } = useToast();
+  const [manualId, setManualId] = useState('');
 
   useEffect(() => {
     if (!certificateId) {
       setIsLoading(false);
-      // This case is handled by the main component render logic
       return;
     }
 
@@ -60,6 +65,19 @@ function VerificationContent() {
 
     verifyCertificate();
   }, [certificateId, toast]);
+  
+  const handleManualVerify = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualId) {
+        toast({
+            title: "ID Required",
+            description: "Please enter a Certificate ID to verify.",
+            variant: "destructive"
+        });
+        return;
+    }
+    router.push(`/verify-certificate?id=${manualId.trim()}`);
+  }
 
   if (isLoading) {
     return (
@@ -102,6 +120,7 @@ function VerificationContent() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-destructive/90">Please check the Certificate ID and try again. Ensure the QR code is scanned correctly.</p>
+           <Button variant="link" onClick={() => router.push('/verify-certificate')} className="p-0 h-auto mt-4">Verify another certificate</Button>
         </CardContent>
       </Card>
     );
@@ -112,10 +131,25 @@ function VerificationContent() {
     <Card className="w-full max-w-lg shadow-lg rounded-lg">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Certificate Verification</CardTitle>
-          <CardDescription>To verify a certificate, please scan the QR code on the document. This page will automatically display the verification status.</CardDescription>
+          <CardDescription>Enter the Certificate ID below or scan the QR code on the document.</CardDescription>
         </CardHeader>
         <CardContent>
-            <p className="text-sm text-muted-foreground text-center">Waiting for a certificate ID...</p>
+            <form onSubmit={handleManualVerify} className="space-y-4">
+                <div className="grid w-full items-center gap-1.5">
+                    <Label htmlFor="certificateId">Certificate ID</Label>
+                    <Input 
+                        id="certificateId"
+                        type="text"
+                        placeholder="e.g., CERT-2024-123456"
+                        value={manualId}
+                        onChange={(e) => setManualId(e.target.value)}
+                    />
+                </div>
+                <Button type="submit" className="w-full">
+                    <Search className="mr-2 h-4 w-4" />
+                    Verify
+                </Button>
+            </form>
         </CardContent>
     </Card>
   )
