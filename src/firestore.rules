@@ -34,16 +34,12 @@ service cloud.firestore {
     // == CORE DATA ==
 
     match /users/{userId} {
-      // Allows user to create their own profile document during signup
-      allow create: if true;
-
       // Allows user to read and update their own profile
       allow get, update: if isOwner(userId);
-
+      // Allows user to create their own profile document during signup
+      allow create: if true;
       // Super Admin has full read/write access for management purposes
-      // This is now separated and won't conflict with user's create/update
       allow read, write, delete: if isSuperAdmin();
-
       // Explicitly deny listing by non-admins
       allow list: if isSuperAdmin();
     }
