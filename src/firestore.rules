@@ -31,12 +31,19 @@ service cloud.firestore {
 
     // Users collection stores role and franchise info.
     match /users/{userId} {
-      // Users can read/update their own profile information.
-      allow get, update: if isOwner(userId);
-      // Anyone can create a user doc (signup)
-      allow create: if true;
-      // Super Admins can read/write any user document to manage roles/franchises.
+      // User creates own profile AFTER signup
+      allow create: if request.auth != null
+                    && request.auth.uid == userId;
+
+      // User reads/updates only own profile
+      allow get, update: if request.auth != null
+                         && request.auth.uid == userId;
+
+      // Super admin full control
       allow read, write: if isSuperAdmin();
+
+      // Never allow listing users
+      allow list: if false;
     }
     
     // Franchises can only be created and managed by Super Admins, but read by anyone for signup.
@@ -62,8 +69,8 @@ service cloud.firestore {
         // Admins can read/update registrations in their franchise.
         allow read, update: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
 
-        // Allow any authenticated user to query the collection (needed for verification pages).
-        allow list: if isAuth();
+        // Franchise admins need to list registrations to add students to an exam.
+        allow list: if isAuth() && (isSuperAdmin() || isFranchiseAdmin(request.query.franchiseId));
     }
     
     // Exam results for students.
@@ -132,7 +139,7 @@ service cloud.firestore {
     
     // studentExams are more restricted
     match /studentExams/{examId} {
-        allow read: if isAuth() && (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId == resource.data.franchiseId || isSuperAdmin());
+        allow read: if isAuth() && (isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId));
         allow write: if isSuperAdmin() || 
                      (isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'franchiseAdmin' &&
                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId == request.resource.data.franchiseId);
