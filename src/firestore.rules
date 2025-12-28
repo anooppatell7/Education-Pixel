@@ -64,7 +64,7 @@ service cloud.firestore {
         // Students can create their own registration.
         allow create: if isOwner(userId);
         
-        // Admins can manage registrations. Student can read their own.
+        // Student can read their own data. Admins can read/update registrations.
         allow read, update: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         
         // Allow any authenticated user to query the collection (needed for verification)
