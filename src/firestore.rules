@@ -33,15 +33,14 @@ service cloud.firestore {
 
     // == CORE DATA ==
 
+    // Users collection stores role and franchise info.
     match /users/{userId} {
-      // Allows user to read and update their own profile
+      // Users can read/update their own profile information.
       allow get, update: if isOwner(userId);
-      // Allows user to create their own profile document during signup
+      // Anyone can create a user doc (signup)
       allow create: if true;
-      // Super Admin has full read/write access for management purposes
-      allow read, write, delete: if isSuperAdmin();
-      // Explicitly deny listing by non-admins
-      allow list: if isSuperAdmin();
+      // Super Admins can read/write any user document to manage roles/franchises.
+      allow read, write: if isSuperAdmin();
     }
     
     // Franchises can only be created and managed by Super Admins, but read by anyone for signup.
