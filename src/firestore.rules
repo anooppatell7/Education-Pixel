@@ -29,19 +29,19 @@ service cloud.firestore {
     // == CORE DATA ==
 
     // Users collection stores role and franchise info.
-    match /users/{userId} {
-      // User creates their own profile document during signup.
-      allow create: if request.auth != null && request.auth.uid == userId;
+    match /users/{userEmail} {
+      // Allow a user to create their own document using their email as the ID.
+      // Also allows superAdmin to create/update documents.
+      allow create, update: if request.auth.token.email == userEmail || isSuperAdmin();
       
-      // A user can read or update their own profile.
-      allow get, update: if isOwner(userId);
+      // Allow a user to read their own document. SuperAdmin can read any.
+      allow get: if request.auth.token.email == userEmail || isSuperAdmin();
       
       // Super Admins have full read and write access.
       allow read, write: if isSuperAdmin();
       
-      // Allow a logged-in user to query the users collection ONLY for email checks.
-      // This is safe because the 'get' rule prevents reading arbitrary documents.
-      allow list: if isAuth();
+      // No one can list all users. This is for security.
+      allow list: if false;
     }
     
     // Franchises can only be created and managed by Super Admins, but read by anyone for signup.
