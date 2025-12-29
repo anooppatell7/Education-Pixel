@@ -73,11 +73,11 @@ export default function SignupPage() {
         role: 'student', // This will only be set if the document is new.
       };
       
-      // Step 3: Use set with { merge: true } on the new user's UID document.
+      // Step 3: Use the user's email as the document ID and set with merge.
       // This is the key change. It creates the doc if it doesn't exist,
-      // or updates it if it does, without overwriting existing fields like `role` or `franchiseId`.
-      const newUserDocRef = doc(db, "users", authUser.uid);
-      await setDoc(newUserDocRef, userData, { merge: true });
+      // or merges with the existing doc if the super admin already created one.
+      const userDocRef = doc(db, "users", email);
+      await setDoc(userDocRef, userData, { merge: true });
       
       toast({
         title: "Account Created",
@@ -187,3 +187,5 @@ export default function SignupPage() {
     </>
   );
 }
+
+  

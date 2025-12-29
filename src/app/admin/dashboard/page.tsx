@@ -53,7 +53,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "@/componentsui/dialog";
 import {
   Accordion,
   AccordionContent,
@@ -444,42 +444,35 @@ export default function AdminDashboardPage() {
         const isEditing = !!editingItem;
         
         if (activeTab === 'franchises') {
-            const collectionRef = collection(firestore, "franchises");
-            dataToSave.createdAt = editingItem?.createdAt || serverTimestamp();
+            const batch = writeBatch(firestore);
             
-            if (!editingItem) {
-                const batch = writeBatch(firestore);
-                const newFranchiseRef = doc(collectionRef);
-                batch.set(newFranchiseRef, dataToSave);
-
-                // Find user by email and update their role
-                const userQuery = query(collection(firestore, "users"), where("email", "==", dataToSave.email));
-                const userSnap = await getDocs(userQuery);
-                
-                if (!userSnap.empty) {
-                    const existingUserRef = userSnap.docs[0].ref;
-                    batch.update(existingUserRef, { role: "franchiseAdmin", franchiseId: newFranchiseRef.id, city: dataToSave.city });
-                } else {
-                    // If user does not exist, create a placeholder.
-                    // The user will complete their profile upon first signup.
-                    const userDocRef = doc(collection(firestore, "users")); // Let Firestore generate ID
-                    batch.set(userDocRef, {
-                        name: dataToSave.ownerName,
-                        email: dataToSave.email,
-                        role: "franchiseAdmin",
-                        franchiseId: newFranchiseRef.id,
-                        city: dataToSave.city,
-                        createdAt: serverTimestamp()
-                    });
-                }
-                
-                await batch.commit();
-                toast({ title: "Success", description: "Franchise created and admin role assigned." });
+            const franchiseRef = editingItem ? doc(firestore, "franchises", docId) : doc(collection(firestore, "franchises"));
+            const franchiseData = {
+                ...dataToSave,
+                createdAt: editingItem?.createdAt || serverTimestamp()
+            };
+            
+            if (editingItem) {
+                batch.update(franchiseRef, franchiseData);
             } else {
-                 const franchiseRef = doc(collectionRef, docId);
-                await updateDoc(franchiseRef, dataToSave);
-                toast({ title: "Success", description: "Franchise updated successfully." });
+                batch.set(franchiseRef, franchiseData);
             }
+
+            // Create or update the user document with the email as the ID
+            const userDocRef = doc(firestore, "users", dataToSave.email);
+            const userProfileData = {
+                name: dataToSave.ownerName,
+                email: dataToSave.email,
+                role: "franchiseAdmin",
+                franchiseId: franchiseRef.id,
+                city: dataToSave.city,
+                createdAt: serverTimestamp()
+            };
+            // Use set with merge to create or update without overwriting existing auth info
+            batch.set(userDocRef, userProfileData, { merge: true });
+
+            await batch.commit();
+            toast({ title: "Success", description: `Franchise ${editingItem ? 'updated' : 'created'} successfully.` });
         
             fetchData();
             handleCloseForm();
@@ -1934,3 +1927,5 @@ export default function AdminDashboardPage() {
         </>
     );
 }
+
+  
