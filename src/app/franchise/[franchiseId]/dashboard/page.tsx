@@ -273,47 +273,64 @@ export default function FranchiseDashboardPage() {
     
         delete dataToSave.id;
     
-        const commonData = {
-            franchiseId: appUser.franchiseId,
-            city: appUser.city,
-            createdBy: appUser.id,
-            createdAt: editingItem?.createdAt || serverTimestamp(),
-        };
+        const isEditing = !!editingItem;
     
         if (activeTab === 'test-categories') {
             collectionName = 'testCategories';
             docId = editingItem?.id || createSlug(dataToSave.title);
             if (!docId) { toast({ title: "Error", description: "Category must have a title.", variant: "destructive" }); return; }
-            dataToSave = { ...dataToSave, id: docId, franchiseId: dataToSave.franchiseId || appUser.franchiseId, createdBy: appUser.id, createdAt: commonData.createdAt };
+            dataToSave = { 
+                ...dataToSave, 
+                id: docId, 
+                franchiseId: dataToSave.franchiseId || appUser.franchiseId, 
+                createdBy: appUser.id, 
+                createdAt: isEditing ? editingItem.createdAt : serverTimestamp() 
+            };
         } else if (activeTab === 'mock-tests' || activeTab === 'student-exams') {
             const isStudentExam = activeTab === 'student-exams';
             const parentCollection = isStudentExam ? 'studentExams' : 'mockTests';
 
             if (formParentIds?.testId) { 
                 const testRef = doc(firestore, parentCollection, formParentIds.testId);
-                const testDoc = await getDoc(testRef);
-                if (testDoc.exists()) {
-                    const testData = testDoc.data() as MockTest | StudentExam;
-                    const questionData = {
-                        questionText: formData.questionText,
-                        options: formData.options,
-                        correctOption: Number(formData.correctOption),
-                        marks: Number(formData.marks) || 1,
-                        explanation: formData.explanation || ''
-                    };
-                    const newQuestion = { ...questionData, id: doc(collection(firestore, parentCollection)).id };
-                    const updatedQuestions = editingItem
-                        ? testData.questions.map(q => q.id === editingItem.id ? { ...questionData, id: editingItem.id } : q)
-                        : [...(testData.questions || []), newQuestion];
-                    await updateDoc(testRef, { questions: updatedQuestions });
+                try {
+                    const testDoc = await getDoc(testRef);
+                    if (testDoc.exists()) {
+                        const testData = testDoc.data() as MockTest | StudentExam;
+                        const questionData = {
+                            questionText: formData.questionText,
+                            options: formData.options,
+                            correctOption: Number(formData.correctOption),
+                            marks: Number(formData.marks) || 1,
+                            explanation: formData.explanation || ''
+                        };
+                        const updatedQuestions = isEditing
+                            ? testData.questions.map(q => q.id === editingItem.id ? { ...questionData, id: editingItem.id } : q)
+                            : [...(testData.questions || []), { ...questionData, id: doc(collection(firestore, 'mock-tests')).id }];
+                        
+                        await updateDoc(testRef, { questions: updatedQuestions });
+                        toast({ title: "Success", description: "Question saved." });
+                        authorizeAndFetch();
+                        handleCloseForm();
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Error saving question:", error);
+                    toast({ title: "Error", description: "Could not save question.", variant: "destructive" });
+                    return;
                 }
             } else { 
                 collectionName = parentCollection;
-                dataToSave = { ...dataToSave, ...commonData }; // Inject commonData including franchiseId
+                if (!isEditing) {
+                    dataToSave.createdBy = appUser.id;
+                    dataToSave.createdAt = serverTimestamp();
+                    dataToSave.franchiseId = appUser.franchiseId;
+                    dataToSave.city = appUser.city;
+                }
+
                 if (isStudentExam) {
                    const regNumbers = (formData.allowedStudents || '').split(',').map((s: string) => s.trim().toUpperCase()).filter(Boolean);
                    if (regNumbers.length > 0) {
-                        const regQuery = query(collection(firestore, "examRegistrations"), where("registrationNumber", "in", regNumbers));
+                        const regQuery = query(collection(firestore, "examRegistrations"), where("franchiseId", "==", appUser.franchiseId), where("registrationNumber", "in", regNumbers));
                         const regSnap = await getDocs(regQuery);
                         const studentUids = regSnap.docs.map(d => d.id);
                         dataToSave.allowedStudents = studentUids;
@@ -325,40 +342,38 @@ export default function FranchiseDashboardPage() {
                     dataToSave.categoryName = category?.title || '';
                     dataToSave.accessType = 'free';
                 }
-                if (!editingItem) dataToSave.questions = [];
+                if (!isEditing) dataToSave.questions = [];
             }
         }
     
-        if (collectionName) {
-            try {
-                if (editingItem) {
-                    const docRef = doc(firestore, collectionName, docId);
-                    await updateDoc(docRef, dataToSave);
+        if (!collectionName) return;
+
+        try {
+            if (isEditing) {
+                const docRef = doc(firestore, collectionName, docId);
+                await updateDoc(docRef, dataToSave);
+            } else {
+                if (docId && activeTab === 'test-categories') {
+                    await setDoc(doc(firestore, collectionName, docId), dataToSave);
                 } else {
-                    if (docId && activeTab === 'test-categories') {
-                        await setDoc(doc(firestore, collectionName, docId), dataToSave);
-                    } else {
-                        await addDoc(collection(firestore, collectionName), dataToSave);
-                    }
+                    await addDoc(collection(firestore, collectionName), dataToSave);
                 }
-            } catch (error) {
-                 console.error("Form submit error:", error);
-                 toast({ title: "Error", description: "Could not save data.", variant: "destructive" });
-                 // Re-throw permission error for listener
-                 if(error instanceof Error && error.message.includes('permission-denied')) {
-                     const permissionError = new FirestorePermissionError({
-                        path: `${collectionName}/${docId || 'new'}`,
-                        operation: editingItem ? 'update' : 'create',
-                        requestResourceData: dataToSave
-                    });
-                    errorEmitter.emit('permission-error', permissionError);
-                 }
             }
+             toast({ title: "Success", description: "Data saved successfully." });
+             authorizeAndFetch();
+             handleCloseForm();
+        } catch (error) {
+             console.error("Form submit error:", error);
+             toast({ title: "Error", description: "Could not save data.", variant: "destructive" });
+             if(error instanceof Error && error.message.includes('permission-denied')) {
+                 const permissionError = new FirestorePermissionError({
+                    path: `${collectionName}/${docId || 'new'}`,
+                    operation: isEditing ? 'update' : 'create',
+                    requestResourceData: dataToSave
+                });
+                errorEmitter.emit('permission-error', permissionError);
+             }
         }
-    
-        toast({ title: "Success", description: "Data saved successfully." });
-        authorizeAndFetch();
-        handleCloseForm();
     };
     
     const openConfirmationDialog = (type: string, id: string, parentIds?: { testId?: string }) => {
