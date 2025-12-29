@@ -16,6 +16,8 @@ import { doc, setDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import type { User as AppUser } from "@/lib/types";
 import { isValidTLD } from "@/lib/tld-validator";
 import { Loader2 } from "lucide-react";
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 
 export default function SignupPage() {
@@ -63,29 +65,35 @@ export default function SignupPage() {
       
       await updateProfile(authUser, { displayName: name });
       
-      // Step 2: Prepare the base data for the Firestore document.
-      // We default to 'student' role. If a document already exists with a different role
-      // (pre-created by a superAdmin), the { merge: true } option will preserve it.
       const userData: Partial<AppUser> = {
         name: name,
         email: email,
         createdAt: serverTimestamp(),
-        role: 'student', // This will only be set if the document is new.
+        role: 'student', 
+        franchiseId: '',
+        city: '',
       };
       
-      // Step 3: Use the user's email as the document ID and set with merge.
-      // This is the key change. It creates the doc if it doesn't exist,
-      // or merges with the existing doc if the super admin already created one.
       const userDocRef = doc(db, "users", email);
-      await setDoc(userDocRef, userData, { merge: true });
       
-      toast({
-        title: "Account Created",
-        description: "Welcome! You have successfully signed up.",
-      });
-
-      // Redirect to login so the user can sign in and be routed correctly
-      router.push('/login');
+      // Use set with merge to create or update without overwriting existing role info
+      setDoc(userDocRef, userData, { merge: true })
+        .then(() => {
+            toast({
+              title: "Account Created",
+              description: "Welcome! You have successfully signed up.",
+            });
+            // Redirect to login so the user can sign in and be routed correctly
+            router.push('/login');
+        })
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'create', // or 'update' depending on your logic
+                requestResourceData: userData,
+              } satisfies SecurityRuleContext);
+            errorEmitter.emit('permission-error', permissionError);
+        });
 
     } catch (error: any) {
       let errorMessage = "An unknown error occurred.";
@@ -109,15 +117,14 @@ export default function SignupPage() {
             break;
         }
       }
-      console.error("Firebase Signup Error:", error);
       toast({
         title: "Signup Failed",
         description: errorMessage,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
-    }
+      setIsLoading(false); // Only set loading to false in catch block of auth error
+    } 
+    // Do not set isLoading to false here, as the setDoc is async and has its own path
   };
 
   return (
@@ -187,5 +194,3 @@ export default function SignupPage() {
     </>
   );
 }
-
-  
