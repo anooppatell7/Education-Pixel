@@ -53,7 +53,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/componentsui/dialog";
+} from "@/components/ui/dialog";
 import {
   Accordion,
   AccordionContent,
@@ -1928,4 +1928,4 @@ export default function AdminDashboardPage() {
     );
 }
 
-  
+    
