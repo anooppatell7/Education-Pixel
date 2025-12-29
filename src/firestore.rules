@@ -30,7 +30,7 @@ service cloud.firestore {
 
     // Users collection stores role and franchise info.
     match /users/{userId} {
-      // User creates own profile document during signup.
+      // User creates their own profile document during signup.
       allow create: if request.auth != null && request.auth.uid == userId;
       
       // A user can read or update their own profile.
@@ -74,18 +74,10 @@ service cloud.firestore {
         // Results are created by the system (or authenticated users during a test).
         allow create: if isAuth();
 
-        // Readable by Super Admin.
-        // Readable by Franchise Admin if the result belongs to a student in their franchise.
-        // Readable by the student who owns the result (using UID for mock tests or Reg No for official exams).
-        allow read: if isSuperAdmin() 
-                    || (isAuth() && isFranchiseAdmin(resource.data.franchiseId)) 
-                    || (isAuth() && resource.data.registrationNumber == request.auth.uid)
-                    || (isAuth() && exists(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)) && resource.data.registrationNumber == get(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)).data.registrationNumber);
+        // Allow public read for verification purposes.
+        // This is safe as long as no sensitive data is in exam results.
+        allow read: if true;
         
-        // Anyone can query for a certificate ID to verify it.
-        // This is safe because certificateId is a non-guessable unique ID.
-        allow list: if request.query.keys().hasAny(['certificateId']);
-
         // Only Super Admins can delete results.
         allow delete: if isSuperAdmin();
     }
@@ -142,12 +134,9 @@ service cloud.firestore {
     // studentExams are more restricted
     match /studentExams/{examId} {
       allow read: if isAuth();
-      allow create, update: if isSuperAdmin() || (
-        isAuth() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'franchiseAdmin' &&
-        request.resource.data.franchiseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId
-      );
-      allow delete: if isSuperAdmin();
+      allow create, update, delete: if isSuperAdmin() || 
+                         (isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'franchiseAdmin' &&
+                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId == request.resource.data.franchiseId);
     }
     
     // Reviews can be created by anyone, but only read publicly if approved.
