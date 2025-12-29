@@ -20,13 +20,15 @@ function VerificationContent() {
   const searchParams = useSearchParams();
   const certificateId = searchParams.get('id');
   
-  const [isLoading, setIsLoading] = useState(true);
+  // Set initial loading state based on whether an ID is present in the URL
+  const [isLoading, setIsLoading] = useState(!!certificateId);
   const [verificationResult, setVerificationResult] = useState<ExamResult | null>(null);
   const [notFound, setNotFound] = useState(false);
   const { toast } = useToast();
   const [manualId, setManualId] = useState('');
 
   useEffect(() => {
+    // Only run verification if a certificateId exists in the URL
     if (!certificateId) {
       setIsLoading(false);
       return;
