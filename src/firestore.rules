@@ -30,11 +30,20 @@ service cloud.firestore {
 
     // Users collection stores role and franchise info.
     match /users/{userId} {
-      // A user can create, read, and update their own document.
-      allow read, write: if isOwner(userId);
+      // Anyone authenticated can create their own user document. This is key for signup.
+      allow create: if isOwner(userId);
       
-      // Super Admins have full read/write access.
+      // A user can read/update their own profile.
+      allow get, update: if isOwner(userId);
+      
+      // SuperAdmins have full read/write access.
       allow read, write: if isSuperAdmin();
+      
+      // Allow list for signup check
+      allow list: if isAuth();
+
+       // Allow deletion of the old email-ID based document during signup migration
+      allow delete: if isAuth();
     }
     
     // Franchises can only be created and managed by Super Admins, but read by anyone for signup.

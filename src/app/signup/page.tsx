@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser, db } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Head from "next/head";
-import { doc, setDoc, serverTimestamp, writeBatch, getDoc, deleteDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, writeBatch, getDoc, deleteDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
 import type { User as AppUser } from "@/lib/types";
 import { isValidTLD } from "@/lib/tld-validator";
 import { Loader2 } from "lucide-react";
@@ -64,30 +64,65 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const authUser = userCredential.user;
       
+      // Step 2: Check if a user document with this email already exists (pre-created by super admin)
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", email), limit(1));
+      const existingUserSnapshot = await getDocs(q);
+
+      let role = 'student';
+      let franchiseId = '';
+      let city = '';
+      let oldDocIdToDelete: string | null = null;
+
+      if (!existingUserSnapshot.empty) {
+        const existingUserData = existingUserSnapshot.docs[0].data() as AppUser;
+        if (existingUserData.role === 'franchiseAdmin') {
+            role = existingUserData.role;
+            franchiseId = existingUserData.franchiseId;
+            city = existingUserData.city;
+        }
+        oldDocIdToDelete = existingUserSnapshot.docs[0].id;
+      }
+      
       const userData: AppUser = {
         id: authUser.uid,
         name: name,
         email: email,
         createdAt: serverTimestamp(),
-        role: 'student', // Always default to student on signup
-        franchiseId: '',
-        city: '',
+        role: role,
+        franchiseId: franchiseId,
+        city: city,
       };
       
-      // Step 2: Create the user document in Firestore with their UID as the ID
-      const userDocRef = doc(db, "users", authUser.uid);
-      
-      // Use setDoc to create the document. This will be allowed by the new, simpler security rule.
-      await setDoc(userDocRef, userData);
+      // Step 3: Use a batch to atomically create the new doc and delete the old one
+      const batch = writeBatch(db);
 
-      // Step 3: Update the user's display name in Firebase Auth
+      // Create the new user document with the correct UID
+      const newUserDocRef = doc(db, "users", authUser.uid);
+      batch.set(newUserDocRef, userData);
+
+      // If an old, email-ID'd doc was found, delete it
+      if (oldDocIdToDelete && oldDocIdToDelete !== authUser.uid) {
+        const oldUserDocRef = doc(db, "users", oldDocIdToDelete);
+        batch.delete(oldUserDocRef);
+      }
+      
+      await batch.commit();
+      
+
+      // Step 4: Update the user's display name in Firebase Auth
       await updateProfile(authUser, { displayName: name });
       
       toast({
           title: "Account Created",
           description: "Welcome! You have successfully signed up.",
       });
-      router.push('/profile');
+      // Redirect based on role
+      if (role === 'franchiseAdmin' && franchiseId) {
+        router.push(`/franchise/${franchiseId}/dashboard`);
+      } else {
+        router.push('/profile');
+      }
 
     } catch (error: any) {
       let errorMessage = "An unknown error occurred.";
