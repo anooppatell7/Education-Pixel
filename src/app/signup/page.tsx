@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser, db } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Head from "next/head";
-import { doc, setDoc, getDocs, collection, query, where, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDocs, collection, query, where, serverTimestamp, writeBatch } from "firebase/firestore";
 import type { Franchise, User as AppUser } from "@/lib/types";
 import { isValidTLD } from "@/lib/tld-validator";
 import { Loader2 } from "lucide-react";
@@ -57,34 +57,54 @@ export default function SignupPage() {
     }
 
     try {
-      // 1. Create Firebase Auth user
+      // Check if a user document with this email already exists (pre-created by super admin)
+      const userQuery = query(collection(db, "users"), where("email", "==", email));
+      const existingUserSnap = await getDocs(userQuery);
+
+      // Create Firebase Auth user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const authUser = userCredential.user;
       
-      // 2. Update Auth profile display name
+      // Update Auth profile display name
       await updateProfile(authUser, { displayName: name });
       
-      // 3. Create user document in Firestore. No need to check for existing user here as signup implies new.
-      // Firestore security rules will handle permissions.
-      const userDocRef = doc(db, "users", authUser.uid);
-      const userData: AppUser = {
-        id: authUser.uid,
-        name: name,
-        email: email,
-        role: 'student', // Default role for new signups
-        city: '',
-        franchiseId: '',
-        createdAt: serverTimestamp(),
-      };
-      
-      await setDoc(userDocRef, userData);
+      if (!existingUserSnap.empty) {
+        // User doc exists, likely a franchise admin. Update it.
+        const existingUserDocRef = existingUserSnap.docs[0].ref;
+        const batch = writeBatch(db);
+        // We delete the old doc and create a new one with the Auth UID to avoid conflicts.
+        batch.delete(existingUserDocRef);
+        
+        const newUserData: AppUser = {
+          ...existingUserSnap.docs[0].data() as AppUser,
+          id: authUser.uid, // Use the new Auth UID
+          name: name, // Update name from signup form
+        };
+        const newUserDocRef = doc(db, "users", authUser.uid);
+        batch.set(newUserDocRef, newUserData);
+        await batch.commit();
+
+      } else {
+        // No pre-existing doc, create a new student document
+        const userDocRef = doc(db, "users", authUser.uid);
+        const userData: AppUser = {
+          id: authUser.uid,
+          name: name,
+          email: email,
+          role: 'student', // Default role for new signups
+          city: '',
+          franchiseId: '',
+          createdAt: serverTimestamp(),
+        };
+        await setDoc(userDocRef, userData);
+      }
       
       toast({
         title: "Account Created",
         description: "Welcome! You have successfully signed up.",
       });
 
-      router.push('/profile');
+      router.push('/profile'); // Let the login redirect handle role-based routing
 
     } catch (error: any) {
       let errorMessage = "An unknown error occurred.";
