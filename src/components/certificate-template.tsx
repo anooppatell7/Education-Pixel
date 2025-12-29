@@ -168,7 +168,7 @@ export default function CertificateTemplate(data: CertificateData) {
                   <span>D.O.B.:<span style={styles.highlight}>{format(parseISO(data.registration.dob), 'dd-MM-yyyy')}</span></span>
               </div>
               
-              <p style={styles.lineText}>Center :<span style={styles.highlight}>EDUCATION PIXEL ONLINE TRAINING PLATFORM, PRATAPGARH</span></p>
+              <p style={styles.lineText}>Center :<span style={styles.highlight}>EDUCATION PIXEL ONLINE TRAINING PLATFORM, {data.registration.city.toUpperCase()}</span></p>
               
               <div style={styles.dateRow}>
                   <span>Date of Admission:<span style={styles.highlight}>{format(new Date(data.registration.registeredAt.seconds * 1000), 'dd-MM-yyyy')}</span></span>
