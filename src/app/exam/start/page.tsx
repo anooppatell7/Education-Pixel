@@ -10,7 +10,7 @@ import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
-import type { ExamRegistration, MockTest } from '@/lib/types';
+import type { ExamRegistration, StudentExam } from '@/lib/types';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ export default function StartExamPage() {
   const { user, isLoading: isUserLoading } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [studentDetails, setStudentDetails] = useState<ExamRegistration | null>(null);
-  const [availableTest, setAvailableTest] = useState<MockTest | null>(null);
+  const [availableTest, setAvailableTest] = useState<StudentExam | null>(null);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   
   const { toast } = useToast();
@@ -79,19 +79,20 @@ export default function StartExamPage() {
 
         setStudentDetails(studentData);
         
+        // Corrected logic: Fetch from studentExams for official tests
         const testsQuery = query(
-            collection(db, "mockTests"), 
-            where("isPublished", "==", true), 
-            where("categoryName", "==", "Student Exam"),
-            where("title", "==", studentData.course),
+            collection(db, "studentExams"), 
+            where("isPublished", "==", true),
+            where("franchiseId", "==", studentData.franchiseId),
+            where("allowedStudents", "array-contains", studentData.id), // Check if student UID is in the allowed list
             limit(1)
         );
         const testsSnapshot = await getDocs(testsQuery);
         
         if (testsSnapshot.empty) {
-            setVerificationError("There is no exam available for your registered course at the moment.");
+            setVerificationError("There is no official exam assigned to you at the moment.");
         } else {
-            const test = { id: testsSnapshot.docs[0].id, ...testsSnapshot.docs[0].data() } as MockTest;
+            const test = { id: testsSnapshot.docs[0].id, ...testsSnapshot.docs[0].data() } as StudentExam;
             setAvailableTest(test);
             if (!isAutoVerify) {
               toast({ title: "Verification Successful", description: "Please confirm your details and start the exam." });
@@ -222,3 +223,5 @@ export default function StartExamPage() {
     </>
   );
 }
+
+    
