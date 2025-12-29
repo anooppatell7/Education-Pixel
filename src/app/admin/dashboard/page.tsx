@@ -451,20 +451,30 @@ export default function AdminDashboardPage() {
                 const batch = writeBatch(firestore);
                 const newFranchiseRef = doc(collectionRef);
                 batch.set(newFranchiseRef, dataToSave);
+
+                // Find user by email and update their role
                 const userQuery = query(collection(firestore, "users"), where("email", "==", dataToSave.email));
                 const userSnap = await getDocs(userQuery);
                 
-                if (userSnap.empty) {
-                    const userDocRef = doc(collection(firestore, "users"));
-                    batch.set(userDocRef, {
-                        name: dataToSave.ownerName, email: dataToSave.email, role: "franchiseAdmin", franchiseId: newFranchiseRef.id, city: dataToSave.city, createdAt: serverTimestamp()
-                    });
-                } else {
+                if (!userSnap.empty) {
                     const existingUserRef = userSnap.docs[0].ref;
-                    batch.update(existingUserRef, { role: "franchiseAdmin", franchiseId: newFranchiseRef.id });
+                    batch.update(existingUserRef, { role: "franchiseAdmin", franchiseId: newFranchiseRef.id, city: dataToSave.city });
+                } else {
+                    // If user does not exist, create a placeholder.
+                    // The user will complete their profile upon first signup.
+                    const userDocRef = doc(collection(firestore, "users")); // Let Firestore generate ID
+                    batch.set(userDocRef, {
+                        name: dataToSave.ownerName,
+                        email: dataToSave.email,
+                        role: "franchiseAdmin",
+                        franchiseId: newFranchiseRef.id,
+                        city: dataToSave.city,
+                        createdAt: serverTimestamp()
+                    });
                 }
+                
                 await batch.commit();
-                toast({ title: "Success", description: "Franchise created successfully." });
+                toast({ title: "Success", description: "Franchise created and admin role assigned." });
             } else {
                  const franchiseRef = doc(collectionRef, docId);
                 await updateDoc(franchiseRef, dataToSave);

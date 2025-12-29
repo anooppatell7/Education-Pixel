@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, ChangeEvent } from "react";
@@ -57,50 +58,27 @@ export default function SignupPage() {
     }
 
     try {
-      // Step 1: Check if a user with this email already exists in Firestore users collection
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("email", "==", email));
-      const querySnapshot = await getDocs(q);
-      
-      let existingUserData: Partial<AppUser> | null = null;
-      let existingUserDocId: string | null = null;
-
-      if (!querySnapshot.empty) {
-        // User with this email exists, capture their data
-        const existingDoc = querySnapshot.docs[0];
-        existingUserData = existingDoc.data() as Partial<AppUser>;
-        existingUserDocId = existingDoc.id;
-      }
-
-      // Step 2: Create user in Firebase Auth
+      // Step 1: Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const authUser = userCredential.user;
       
       await updateProfile(authUser, { displayName: name });
       
-      // Step 3: Prepare data for Firestore document
-      const newUserDocRef = doc(db, "users", authUser.uid);
+      // Step 2: Prepare data for Firestore document
       const userData: Partial<AppUser> = {
         name: name,
         email: email,
         createdAt: serverTimestamp(),
-        // If existing user data was found, use its role, otherwise default to 'student'
-        role: existingUserData?.role || 'student',
-        franchiseId: existingUserData?.franchiseId || '',
-        city: existingUserData?.city || '',
+        role: 'student', // Default role
       };
       
-      // Step 4: Write to Firestore
+      // Step 3: Write to Firestore using a batch to handle potential merge
       const batch = writeBatch(db);
+      const newUserDocRef = doc(db, "users", authUser.uid);
 
-      // If an old document exists with a different ID, delete it
-      if (existingUserDocId && existingUserDocId !== authUser.uid) {
-        const oldDocRef = doc(db, "users", existingUserDocId);
-        batch.delete(oldDocRef);
-      }
-      
-      // Create the new user document with the correct role
-      batch.set(newUserDocRef, userData);
+      // Use set with { merge: true } to update existing doc or create a new one.
+      // This preserves the role if a super-admin created the user doc beforehand.
+      batch.set(newUserDocRef, userData, { merge: true });
       
       await batch.commit();
       
