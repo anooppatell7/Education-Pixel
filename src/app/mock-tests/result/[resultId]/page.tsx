@@ -1,2 +1,190 @@
 
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import { useParams, notFound } from 'next/navigation';
+import type { ExamResult as ExamResultType } from '@/lib/types';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { BarChart, Clock, Target, Check, X, ShieldQuestion, HelpCircle, Award } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import SectionDivider from '@/components/section-divider';
+
+const COLORS = {
+  correct: 'hsl(var(--chart-2))',
+  incorrect: 'hsl(var(--chart-1))',
+  unattempted: 'hsl(var(--muted))'
+};
+
+function ResultSkeleton() {
+    return (
+        <div className="bg-secondary min-h-screen">
+            <div className="container py-8 sm:py-12">
+                 <div className="space-y-4 mb-8 animate-pulse">
+                     <Skeleton className="h-10 w-2/3" />
+                     <Skeleton className="h-6 w-1/3" />
+                 </div>
+
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                     {Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}
+                 </div>
+
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                     <div className="lg:col-span-2 space-y-6">
+                        <Skeleton className="h-96 rounded-lg" />
+                     </div>
+                     <div className="space-y-6">
+                        <Skeleton className="h-80 rounded-lg" />
+                     </div>
+                 </div>
+            </div>
+        </div>
+    );
+}
+
+export default function MockTestResultPage() {
+    const params = useParams();
+    const resultId = params.resultId as string;
     
+    const [result, setResult] = useState<ExamResultType | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (!resultId) {
+            notFound();
+            return;
+        }
+
+        const fetchResultFromSession = () => {
+            const storedResult = sessionStorage.getItem(resultId);
+            if (storedResult) {
+                const parsedResult = JSON.parse(storedResult);
+                setResult(parsedResult);
+            } else {
+                notFound();
+            }
+            setIsLoading(false);
+        }
+        
+        fetchResultFromSession();
+
+    }, [resultId]);
+
+
+    if (isLoading) {
+        return <ResultSkeleton />;
+    }
+
+    if (!result) {
+        return <div className="text-center py-10">Result not found or has expired.</div>;
+    }
+
+    const timeTakenFormatted = `${Math.floor(result.timeTaken / 60)}m ${result.timeTaken % 60}s`;
+
+    const correctCount = result.responses.filter(r => r.isCorrect).length;
+    const incorrectCount = result.responses.filter(r => !r.isCorrect && r.selectedOption !== null).length;
+    const unattemptedCount = result.responses.filter(r => r.selectedOption === null).length;
+
+    const chartData = [
+        { name: 'Correct', value: correctCount, color: COLORS.correct },
+        { name: 'Incorrect', value: incorrectCount, color: COLORS.incorrect },
+        { name: 'Unattempted', value: unattemptedCount, color: COLORS.unattempted }
+    ];
+
+    const getQuestionById = (id: string) => {
+        // Since we don't have the testData here, we have to rely on what's in the result
+        // This is a limitation of the local-only approach but sufficient for review
+        return null;
+    }
+    
+    return (
+        <div className="bg-background">
+            <div className="bg-secondary relative">
+                <SectionDivider style="wave" className="text-background" position="top"/>
+                <div className="container py-8 sm:py-12">
+                    <div className="mb-8">
+                        <h1 className="text-3xl sm:text-4xl font-bold text-primary font-headline">Mock Test Result</h1>
+                        <p className="text-muted-foreground mt-1">Analysis for "{result.testName}"</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                        <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-lg">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Score</CardTitle>
+                                <BarChart className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{result.score} / {result.totalMarks}</div>
+                                <p className="text-xs text-muted-foreground">Marks Obtained</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-lg">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Accuracy</CardTitle>
+                                <Target className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{result.accuracy}%</div>
+                                <p className="text-xs text-muted-foreground">Based on attempted questions</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-lg">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Time Taken</CardTitle>
+                                <Clock className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{timeTakenFormatted}</div>
+                                <p className="text-xs text-muted-foreground">Total time spent</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                         <div className="lg:col-span-2 space-y-4">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                                 <CardHeader><CardTitle>Review Your Answers</CardTitle><CardDescription>Mock test review is not available. Please retake the test to see the questions.</CardDescription></CardHeader>
+                            </Card>
+                         </div>
+                        <div className="space-y-6 sticky top-24">
+                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                                <CardHeader>
+                                    <CardTitle>Performance Summary</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="h-64">
+                                         <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={chartData}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    labelLine={false}
+                                                    outerRadius={80}
+                                                    fill="#8884d8"
+                                                    dataKey="value"
+                                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                                >
+                                                    {chartData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                    <div className="mt-4 space-y-2 text-sm">
+                                        <div className="flex justify-between items-center"><span className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500"/>Correct</span> <span>{correctCount}</span></div>
+                                        <div className="flex justify-between items-center"><span className="flex items-center gap-2"><X className="h-4 w-4 text-red-500"/>Incorrect</span> <span>{incorrectCount}</span></div>
+                                        <div className="flex justify-between items-center"><span className="flex items-center gap-2"><ShieldQuestion className="h-4 w-4 text-gray-500"/>Unattempted</span> <span>{unattemptedCount}</span></div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

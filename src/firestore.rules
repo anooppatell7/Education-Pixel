@@ -30,11 +30,20 @@ service cloud.firestore {
 
     // Users collection stores role and franchise info.
     match /users/{userId} {
-      // A user can create, read, and update their own document.
-      allow read, write: if isOwner(userId);
+      // A user can create their own document.
+      allow create: if isOwner(userId);
       
-      // Super Admins have full access.
+      // A user can read/update their own profile.
+      allow get, update: if isOwner(userId);
+      
+      // SuperAdmins have full read/write access.
       allow read, write: if isSuperAdmin();
+      
+      // Allow list for signup check
+      allow list: if isAuth();
+
+       // Allow deletion of the old email-ID based document during signup migration
+      allow delete: if isAuth();
     }
     
     // Franchises can only be created and managed by Super Admins, but read by anyone for signup.
@@ -56,11 +65,11 @@ service cloud.firestore {
         // Students can create their own registration.
         allow create: if isOwner(userId);
         
-        // Student can read/update their own data. Admins can read/update registrations.
+        // Student can read their own data. Admins can read/update registrations.
         allow read, update: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         
         // Franchise admins need to list their own students to assign them to an exam
-        allow list: if isAuth() && (isSuperAdmin() || isFranchiseAdmin(request.query.franchiseId));
+        allow list: if isAuth() && (isSuperAdmin() || isFranchiseAdmin(request.query.get('franchiseId')));
     }
     
     // Exam results for students.
@@ -72,7 +81,8 @@ service cloud.firestore {
         allow create: if request.resource.data.registrationNumber == request.auth.uid || 
                          isSuperAdmin() || 
                          isFranchiseAdmin(request.resource.data.franchiseId) ||
-                         get(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)).data.registrationNumber == request.resource.data.registrationNumber;
+                         (exists(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)) && 
+                          get(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)).data.registrationNumber == request.resource.data.registrationNumber);
 
         // Public read is necessary for certificate verification.
         allow read: if true; 

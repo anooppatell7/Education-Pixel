@@ -118,6 +118,58 @@ export const useMockTest = (testId: string) => {
         const docRef = await addDoc(collection(db, 'examResults'), resultWithTimestamp);
         return docRef.id;
     };
+    
+    const buildResultData = (testData: MockTest | StudentExam, user: User, registrationNumber: string | null, studentName: string | null): Omit<ExamResult, 'id'> => {
+        let score = 0;
+        let correctAnswers = 0;
+
+        const responses: TestResponse[] = testData.questions.map((q, i) => {
+            const selectedOption = selectedAnswers[i];
+            const isCorrect = selectedOption === q.correctOption;
+            const questionMarks = q.marks || 1;
+            if (isCorrect) {
+                score += questionMarks;
+                correctAnswers++;
+            }
+            return {
+                questionId: q.id,
+                selectedOption: selectedOption === undefined || selectedOption === null ? null : selectedOption,
+                isCorrect,
+                marksAwarded: isCorrect ? questionMarks : 0,
+            };
+        });
+
+        const attemptedQuestions = selectedAnswers.filter(a => a !== null && a !== undefined).length;
+        const accuracy = attemptedQuestions > 0 ? (correctAnswers / attemptedQuestions) * 100 : 0;
+        
+        let timeTaken = initialDurationRef.current - timeLeft;
+        if (isNaN(timeTaken) || timeTaken < 0) {
+            timeTaken = 0;
+        }
+
+        const currentYear = new Date().getFullYear();
+        const randomSuffix = Math.floor(100000 + Math.random() * 900000);
+        const certificateId = `CERT-${currentYear}-${randomSuffix}`;
+        
+        const resultData = {
+            registrationNumber: registrationNumber || user.uid,
+            studentName: studentName || user.displayName || user.email || 'Anonymous',
+            testId: testData.id,
+            testName: testData.title,
+            courseName: 'courseName' in testData ? testData.courseName : testData.title,
+            franchiseId: 'franchiseId' in testData ? testData.franchiseId : '',
+            score,
+            totalMarks: testData.totalMarks,
+            accuracy: parseFloat(accuracy.toFixed(2)) || 0,
+            timeTaken: timeTaken,
+            responses,
+            certificateId,
+            submittedAt: new Date(), // This will be replaced by serverTimestamp in saveExamResult
+        };
+
+        return resultData;
+    }
+
 
     const handleSubmit = useCallback(async (
         isAutoSubmit: boolean, 
@@ -137,105 +189,35 @@ export const useMockTest = (testId: string) => {
         }
         
         const isOfficialExam = !!registrationNumber;
-        
-        let finalRegistrationNumber = registrationNumber;
-        let finalStudentName = studentName;
-        let finalFranchiseId = '';
-        let finalCourseName = testData.title; // Default to test title
 
         try {
-            if (isOfficialExam && registrationNumber) {
-                 const regQuery = query(collection(db, "examRegistrations"), where("registrationNumber", "==", registrationNumber));
-                 const regSnap = await getDocs(regQuery);
+            const resultData = buildResultData(testData, user, registrationNumber, studentName);
+            
+            // Differentiate between saving to Firebase and storing locally
+            if (isOfficialExam) {
+                // Save to Firestore for official exams
+                 const finalResultData = {...resultData, submittedAt: serverTimestamp()};
+                 const resultId = await saveExamResult(finalResultData as Omit<ExamResult, 'id' | 'submittedAt'>);
                  
-                 if (!regSnap.empty) {
-                    const regData = regSnap.docs[0].data() as ExamRegistration;
-                    finalStudentName = regData.fullName;
-                    finalFranchiseId = regData.franchiseId;
-                    finalCourseName = regData.course; // Use the registered course name
-                 }
+                 toast({
+                    title: "Exam Submitted",
+                    description: isAutoSubmit ? "Time's up! Your exam has been automatically submitted." : "Your exam has been submitted successfully."
+                 });
+                 router.push(`/exam/result/${resultId}`);
+
             } else {
-                finalRegistrationNumber = user.uid;
-                finalStudentName = user.displayName || user.email || 'Anonymous';
-                // For non-official tests, franchiseId can be an empty string.
-                finalFranchiseId = ''; 
+                // Store in sessionStorage for mock tests
+                const mockResultId = `mock-${testData.id}-${Date.now()}`;
+                const mockResult = { ...resultData, id: mockResultId };
+                sessionStorage.setItem(mockResultId, JSON.stringify(mockResult));
+
+                toast({
+                    title: "Test Submitted",
+                    description: isAutoSubmit ? "Time's up! Your test has been automatically submitted." : "Your test has been submitted successfully."
+                 });
+                 // Redirect to a local-only result page
+                router.push(`/mock-tests/result/${mockResultId}`);
             }
-            
-            if (!finalRegistrationNumber || !finalStudentName) {
-                toast({ title: "Error", description: "Could not verify student details.", variant: "destructive" });
-                setIsSubmitting(false);
-                return;
-            }
-
-            let score = 0;
-            let correctAnswers = 0;
-
-            const responses: TestResponse[] = testData.questions.map((q, i) => {
-                const selectedOption = selectedAnswers[i];
-                const isCorrect = selectedOption === q.correctOption;
-                const questionMarks = q.marks || 1;
-                if (isCorrect) {
-                    score += questionMarks;
-                    correctAnswers++;
-                }
-                return {
-                    questionId: q.id,
-                    selectedOption: selectedOption === undefined || selectedOption === null ? null : selectedOption,
-                    isCorrect,
-                    marksAwarded: isCorrect ? questionMarks : 0,
-                };
-            });
-
-            const attemptedQuestions = selectedAnswers.filter(a => a !== null && a !== undefined).length;
-            const accuracy = attemptedQuestions > 0 ? (correctAnswers / attemptedQuestions) * 100 : 0;
-            
-            let timeTaken = initialDurationRef.current - timeLeft;
-            if (isNaN(timeTaken) || timeTaken < 0) {
-                timeTaken = 0;
-            }
-
-            // Generate Certificate ID
-            const currentYear = new Date().getFullYear();
-            const randomSuffix = Math.floor(100000 + Math.random() * 900000);
-            const certificateId = `CERT-${currentYear}-${randomSuffix}`;
-            
-            const cleanData = (obj: any): any => {
-                if (Array.isArray(obj)) {
-                    return obj.map(v => cleanData(v));
-                } else if (obj !== null && typeof obj === 'object') {
-                    return Object.entries(obj)
-                        .filter(([_, v]) => v !== undefined)
-                        .reduce((acc, [k, v]) => ({ ...acc, [k]: cleanData(v) }), {});
-                }
-                return obj;
-            };
-
-            const resultData: Omit<ExamResult, 'id' | 'submittedAt'> = {
-                registrationNumber: finalRegistrationNumber,
-                studentName: finalStudentName,
-                testId: testData.id,
-                testName: testData.title,
-                courseName: finalCourseName,
-                franchiseId: finalFranchiseId,
-                score,
-                totalMarks: testData.totalMarks,
-                accuracy: parseFloat(accuracy.toFixed(2)) || 0,
-                timeTaken: timeTaken,
-                responses,
-                certificateId: certificateId,
-            };
-            
-            const finalResultData = cleanData(resultData);
-            const resultId = await saveExamResult(finalResultData);
-
-            toast({
-                title: isOfficialExam ? "Exam Submitted" : "Test Submitted",
-                description: isAutoSubmit
-                    ? `Time's up! Your ${isOfficialExam ? 'exam' : 'test'} has been automatically submitted.`
-                    : `Your ${isOfficialExam ? 'exam' : 'test'} has been submitted successfully.`
-            });
-            
-            router.push(`/exam/result/${resultId}`);
             
             cleanupLocalStorage(registrationNumber);
 
