@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, ChangeEvent } from "react";
@@ -13,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser, db } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Head from "next/head";
-import { doc, setDoc, serverTimestamp, collection, query, where, getDocs, writeBatch } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import type { User as AppUser } from "@/lib/types";
 import { isValidTLD } from "@/lib/tld-validator";
 import { Loader2 } from "lucide-react";
@@ -64,29 +63,28 @@ export default function SignupPage() {
       
       await updateProfile(authUser, { displayName: name });
       
-      // Step 2: Prepare data for Firestore document
+      // Step 2: Prepare the base data for the Firestore document.
+      // We default to 'student' role. If a document already exists with a different role
+      // (pre-created by a superAdmin), the { merge: true } option will preserve it.
       const userData: Partial<AppUser> = {
         name: name,
         email: email,
         createdAt: serverTimestamp(),
-        role: 'student', // Default role
+        role: 'student', // This will only be set if the document is new.
       };
       
-      // Step 3: Write to Firestore using a batch to handle potential merge
-      const batch = writeBatch(db);
+      // Step 3: Use set with { merge: true } on the new user's UID document.
+      // This is the key change. It creates the doc if it doesn't exist,
+      // or updates it if it does, without overwriting existing fields like `role` or `franchiseId`.
       const newUserDocRef = doc(db, "users", authUser.uid);
-
-      // Use set with { merge: true } to update existing doc or create a new one.
-      // This preserves the role if a super-admin created the user doc beforehand.
-      batch.set(newUserDocRef, userData, { merge: true });
-      
-      await batch.commit();
+      await setDoc(newUserDocRef, userData, { merge: true });
       
       toast({
         title: "Account Created",
         description: "Welcome! You have successfully signed up.",
       });
 
+      // Redirect to login so the user can sign in and be routed correctly
       router.push('/login');
 
     } catch (error: any) {
