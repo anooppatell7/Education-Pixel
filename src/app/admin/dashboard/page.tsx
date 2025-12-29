@@ -458,7 +458,7 @@ export default function AdminDashboardPage() {
                 batch.set(franchiseRef, franchiseData);
             }
 
-            // Create or update the user document with the email as the ID
+            // The document ID for the user is now the user's email.
             const userDocRef = doc(firestore, "users", dataToSave.email);
             const userProfileData = {
                 name: dataToSave.ownerName,
@@ -468,6 +468,7 @@ export default function AdminDashboardPage() {
                 city: dataToSave.city,
                 createdAt: serverTimestamp()
             };
+            
             // Use set with merge to create or update without overwriting existing auth info
             batch.set(userDocRef, userProfileData, { merge: true });
 
@@ -1559,9 +1560,7 @@ export default function AdminDashboardPage() {
                                                         <TableCell className="hidden md:table-cell">{reg.registeredAt}</TableCell>
                                                         <TableCell className="text-right">
                                                             <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild>
-                                                                    <Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /></Button>
-                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end">
                                                                      <DropdownMenuLabel>Status</DropdownMenuLabel>
                                                                     <DropdownMenuItem onClick={() => handleRegistrationStatusChange(reg.id, 'Approved')}>
@@ -1927,5 +1926,7 @@ export default function AdminDashboardPage() {
         </>
     );
 }
+
+    
 
     

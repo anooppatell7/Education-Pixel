@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, ChangeEvent } from "react";
@@ -12,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser, db } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Head from "next/head";
-import { doc, setDoc, serverTimestamp, writeBatch } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, writeBatch, getDoc, deleteDoc } from "firebase/firestore";
 import type { User as AppUser } from "@/lib/types";
 import { isValidTLD } from "@/lib/tld-validator";
 import { Loader2 } from "lucide-react";
@@ -63,37 +64,58 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const authUser = userCredential.user;
       
+      // Step 2: Check for a pre-existing user document (created by super-admin)
+      const oldUserDocRef = doc(db, "users", email);
+      const oldUserDocSnap = await getDoc(oldUserDocRef);
+
+      let userData: AppUser;
+
+      if (oldUserDocSnap.exists()) {
+        // If it exists, merge its data with the new user's data
+        const oldData = oldUserDocSnap.data() as AppUser;
+        userData = {
+            id: authUser.uid,
+            name: name,
+            email: email,
+            createdAt: serverTimestamp(),
+            role: oldData.role || 'student', 
+            franchiseId: oldData.franchiseId || '',
+            city: oldData.city || '',
+        };
+      } else {
+        // If it doesn't exist, create a new student document
+        userData = {
+            id: authUser.uid,
+            name: name,
+            email: email,
+            createdAt: serverTimestamp(),
+            role: 'student', 
+            franchiseId: '',
+            city: '',
+        };
+      }
+      
+      // Step 3: Use a batch write to ensure atomicity
+      const batch = writeBatch(db);
+
+      // Set the new document with the user's UID as the ID
+      const newUserDocRef = doc(db, "users", authUser.uid);
+      batch.set(newUserDocRef, userData);
+
+      // If an old document with the email as ID existed, delete it
+      if (oldUserDocSnap.exists()) {
+        batch.delete(oldUserDocRef);
+      }
+
+      await batch.commit();
+
       await updateProfile(authUser, { displayName: name });
       
-      const userData: Partial<AppUser> = {
-        name: name,
-        email: email,
-        createdAt: serverTimestamp(),
-        role: 'student', 
-        franchiseId: '',
-        city: '',
-      };
-      
-      const userDocRef = doc(db, "users", email);
-      
-      // Use set with merge to create or update without overwriting existing role info
-      setDoc(userDocRef, userData, { merge: true })
-        .then(() => {
-            toast({
-              title: "Account Created",
-              description: "Welcome! You have successfully signed up.",
-            });
-            // Redirect to login so the user can sign in and be routed correctly
-            router.push('/login');
-        })
-        .catch(async (serverError) => {
-            const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'create', // or 'update' depending on your logic
-                requestResourceData: userData,
-              } satisfies SecurityRuleContext);
-            errorEmitter.emit('permission-error', permissionError);
-        });
+      toast({
+          title: "Account Created",
+          description: "Welcome! You have successfully signed up.",
+      });
+      router.push('/login');
 
     } catch (error: any) {
       let errorMessage = "An unknown error occurred.";
@@ -117,14 +139,15 @@ export default function SignupPage() {
             break;
         }
       }
+       console.error("Firebase Signup Error:", error);
       toast({
         title: "Signup Failed",
         description: errorMessage,
         variant: "destructive",
       });
-      setIsLoading(false); // Only set loading to false in catch block of auth error
-    } 
-    // Do not set isLoading to false here, as the setDoc is async and has its own path
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
@@ -194,3 +217,5 @@ export default function SignupPage() {
     </>
   );
 }
+
+    

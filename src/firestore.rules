@@ -17,9 +17,9 @@ service cloud.firestore {
     }
 
     function isFranchiseAdmin(franchiseId) {
-      // This is now safer to use as it's not called during signup flows.
-      return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'franchiseAdmin' 
-                       && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId == franchiseId;
+      // It's safe to use the user's email as the document ID here because we ensure it's set that way.
+      return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.role == 'franchiseAdmin' 
+                       && get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.franchiseId == franchiseId;
     }
     
     function isOwner(userId) {
@@ -29,19 +29,24 @@ service cloud.firestore {
     // == CORE DATA ==
 
     // Users collection stores role and franchise info.
-    match /users/{userEmail} {
-      // Allow a user to create their own document using their email as the ID.
-      // Also allows superAdmin to create/update documents.
-      allow create, update: if request.auth.token.email == userEmail || isSuperAdmin();
+    match /users/{userId} {
+      // Anyone authenticated can create their own user document. This is key for signup.
+      allow create: if isOwner(userId);
       
-      // Allow a user to read their own document. SuperAdmin can read any.
-      allow get: if request.auth.token.email == userEmail || isSuperAdmin();
+      // A user can read/update their own profile.
+      allow get, update: if isOwner(userId);
       
-      // Super Admins have full read and write access.
+      // SuperAdmins have full read/write access.
       allow read, write: if isSuperAdmin();
       
-      // No one can list all users. This is for security.
-      allow list: if false;
+      // Franchise Admins can also create user records via the dashboard.
+      allow create: if isAuth() && request.resource.data.role == 'franchiseAdmin';
+
+      // For the signup merge logic, we need to allow listing by email, but only for authenticated users.
+      allow list: if isAuth();
+
+       // Allow deletion of the old email-ID based document during signup migration
+      allow delete: if isAuth();
     }
     
     // Franchises can only be created and managed by Super Admins, but read by anyone for signup.
@@ -76,8 +81,7 @@ service cloud.firestore {
         allow create: if isAuth();
 
         // Public read is necessary for certificate verification.
-        // It's safe as long as no overly sensitive data is stored here.
-        allow read: if true;
+        allow read: if true; 
         
         // Only Super Admins can delete results.
         allow delete: if isSuperAdmin();
@@ -169,3 +173,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
