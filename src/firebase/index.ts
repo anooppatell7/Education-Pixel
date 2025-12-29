@@ -1,7 +1,7 @@
 
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getAuth, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 let firebaseConfig;
@@ -31,12 +31,14 @@ if (!firebaseConfig.projectId) {
     throw new Error("Firebase configuration is missing. Ensure environment variables are set correctly.");
 }
 
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+const auth: Auth = getAuth(app);
+const db: Firestore = getFirestore(app);
 
-// The provider and hook exports remain for components that use them, 
-// but direct imports from here are also possible now.
+// Export the initialized services
+export { app, auth, db };
+
+// The provider and hook exports remain for components that use them
 export * from './provider';
 export * from './auth/use-user';
