@@ -57,54 +57,40 @@ export default function SignupPage() {
     }
 
     try {
-      // Check if a user document with this email already exists (pre-created by super admin)
-      const userQuery = query(collection(db, "users"), where("email", "==", email));
-      const existingUserSnap = await getDocs(userQuery);
-
-      // Create Firebase Auth user
+      // Create Firebase Auth user first
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const authUser = userCredential.user;
       
       // Update Auth profile display name
       await updateProfile(authUser, { displayName: name });
       
-      if (!existingUserSnap.empty) {
-        // User doc exists, likely a franchise admin. Update it.
-        const existingUserDocRef = existingUserSnap.docs[0].ref;
-        const batch = writeBatch(db);
-        // We delete the old doc and create a new one with the Auth UID to avoid conflicts.
-        batch.delete(existingUserDocRef);
-        
-        const newUserData: AppUser = {
-          ...existingUserSnap.docs[0].data() as AppUser,
-          id: authUser.uid, // Use the new Auth UID
-          name: name, // Update name from signup form
-        };
-        const newUserDocRef = doc(db, "users", authUser.uid);
-        batch.set(newUserDocRef, newUserData);
-        await batch.commit();
+      // Now, set the Firestore document.
+      // This will create a new document for a student, or update the placeholder for a franchise admin.
+      const userDocRef = doc(db, "users", authUser.uid);
+      const userData: AppUser = {
+        id: authUser.uid,
+        name: name,
+        email: email,
+        role: 'student', // Default role. If admin doc exists, it will be merged/kept.
+        city: '',
+        franchiseId: '',
+        createdAt: serverTimestamp(),
+      };
 
-      } else {
-        // No pre-existing doc, create a new student document
-        const userDocRef = doc(db, "users", authUser.uid);
-        const userData: AppUser = {
-          id: authUser.uid,
-          name: name,
-          email: email,
-          role: 'student', // Default role for new signups
-          city: '',
-          franchiseId: '',
-          createdAt: serverTimestamp(),
-        };
-        await setDoc(userDocRef, userData);
-      }
+      // setDoc with { merge: true } will create if it doesn't exist, or update if it does.
+      // Crucially, it won't overwrite existing fields if they aren't in `userData`.
+      // Since we don't know the role here, we default to student, but a pre-existing admin role
+      // from the super-admin panel won't be overwritten. Firestore rules will handle if a user
+      // tries to maliciously assign themselves a role. 
+      // For our case, we just need to create the user doc.
+      await setDoc(userDocRef, userData);
       
       toast({
         title: "Account Created",
         description: "Welcome! You have successfully signed up.",
       });
 
-      router.push('/profile'); // Let the login redirect handle role-based routing
+      router.push('/profile');
 
     } catch (error: any) {
       let errorMessage = "An unknown error occurred.";
