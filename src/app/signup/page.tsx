@@ -12,8 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser, db } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Head from "next/head";
-import { doc, setDoc, getDocs, collection, query, where, serverTimestamp, writeBatch } from "firebase/firestore";
-import type { Franchise, User as AppUser } from "@/lib/types";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import type { User as AppUser } from "@/lib/types";
 import { isValidTLD } from "@/lib/tld-validator";
 import { Loader2 } from "lucide-react";
 
@@ -57,40 +57,28 @@ export default function SignupPage() {
     }
 
     try {
-      // Create Firebase Auth user first
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const authUser = userCredential.user;
       
-      // Update Auth profile display name
       await updateProfile(authUser, { displayName: name });
       
-      // Now, set the Firestore document.
-      // This will create a new document for a student, or update the placeholder for a franchise admin.
       const userDocRef = doc(db, "users", authUser.uid);
-      const userData: AppUser = {
-        id: authUser.uid,
+      
+      const userData: Partial<AppUser> = {
         name: name,
         email: email,
-        role: 'student', // Default role. If admin doc exists, it will be merged/kept.
-        city: '',
-        franchiseId: '',
         createdAt: serverTimestamp(),
       };
-
-      // setDoc with { merge: true } will create if it doesn't exist, or update if it does.
-      // Crucially, it won't overwrite existing fields if they aren't in `userData`.
-      // Since we don't know the role here, we default to student, but a pre-existing admin role
-      // from the super-admin panel won't be overwritten. Firestore rules will handle if a user
-      // tries to maliciously assign themselves a role. 
-      // For our case, we just need to create the user doc.
-      await setDoc(userDocRef, userData);
+      
+      await setDoc(userDocRef, userData, { merge: true });
       
       toast({
         title: "Account Created",
         description: "Welcome! You have successfully signed up.",
       });
 
-      router.push('/profile');
+      // After signup, redirect logic will be handled by the login page or a dedicated redirect handler
+      router.push('/login');
 
     } catch (error: any) {
       let errorMessage = "An unknown error occurred.";

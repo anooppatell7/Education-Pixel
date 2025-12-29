@@ -17,33 +17,43 @@ import type { User as AppUser } from "@/lib/types";
 
 
 const handleRedirect = async (user: User, router: any, redirectUrl?: string | null) => {
-    if (redirectUrl) {
+    if (!db) {
+        router.push('/profile'); // Fallback if DB is not ready
+        return;
+    }
+
+    const userDocRef = doc(db, "users", user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    let role = 'student';
+    let franchiseId = '';
+
+    if (userDocSnap.exists()) {
+        const userData = userDocSnap.data() as AppUser;
+        role = userData.role || 'student';
+        franchiseId = userData.franchiseId || '';
+    }
+
+    if (redirectUrl && redirectUrl !== '/profile') { // Honor specific redirects unless it's the default profile
         router.push(redirectUrl);
         return;
     }
 
-    if (!db) return;
-    // Check for a user document in Firestore to determine the role
-    const userDocRef = doc(db, "users", user.uid);
-    const userDocSnap = await getDoc(userDocRef);
-
-    if (userDocSnap.exists()) {
-        const userData = userDocSnap.data() as AppUser;
-        switch (userData.role) {
-            case 'superAdmin':
-                router.push('/admin/dashboard');
-                break;
-            case 'franchiseAdmin':
-                router.push(`/franchise/${userData.franchiseId}/dashboard`); 
-                break;
-            case 'student':
-            default:
-                router.push('/profile');
-                break;
-        }
-    } else {
-        // Fallback for users without a role doc or old users
-        router.push('/profile');
+    switch (role) {
+        case 'superAdmin':
+            router.push('/admin/dashboard');
+            break;
+        case 'franchiseAdmin':
+            if (franchiseId) {
+                router.push(`/franchise/${franchiseId}/dashboard`);
+            } else {
+                router.push('/profile'); // Fallback if franchiseId is missing
+            }
+            break;
+        case 'student':
+        default:
+            router.push('/profile');
+            break;
     }
 };
 
