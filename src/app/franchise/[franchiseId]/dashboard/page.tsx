@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from "next/link";
@@ -155,7 +154,7 @@ export default function FranchiseDashboardPage() {
                 getDocs(franchiseCategoriesQuery), 
                 getDocs(globalCategoriesQuery),
                 getDocs(mockTestsQuery),
-                getDocs(studentExamsQuery)
+                getDocs(studentExamsSnap)
             ]);
 
             const registrationList = regSnap.docs.map(d => ({ id: d.id, ...d.data(), registeredAt: (d.data().registeredAt as Timestamp)?.toDate().toLocaleString() || '' } as ExamRegistration));
@@ -310,6 +309,7 @@ export default function FranchiseDashboardPage() {
                 }
             } else { 
                 collectionName = parentCollection;
+                dataToSave = { ...dataToSave, ...commonData }; // Inject commonData including franchiseId
                 if (isStudentExam) {
                    const regNumbers = (formData.allowedStudents || '').split(',').map((s: string) => s.trim().toUpperCase()).filter(Boolean);
                    if (regNumbers.length > 0) {
@@ -320,10 +320,10 @@ export default function FranchiseDashboardPage() {
                    } else {
                         dataToSave.allowedStudents = [];
                    }
-                   dataToSave = { ...dataToSave, ...commonData }; // Inject commonData including franchiseId
                 } else {
                     const category = data.testCategories.find(c => c.id === dataToSave.categoryId);
-                    dataToSave = { ...dataToSave, ...commonData, categoryName: category?.title || '', accessType: 'free' };
+                    dataToSave.categoryName = category?.title || '';
+                    dataToSave.accessType = 'free';
                 }
                 if (!editingItem) dataToSave.questions = [];
             }
@@ -635,3 +635,5 @@ export default function FranchiseDashboardPage() {
         </div>
     );
 }
+
+    
