@@ -64,14 +64,14 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const authUser = userCredential.user;
       
-      // Step 2: Check for a pre-existing user document (created by super-admin)
+      // Step 2: Check for a pre-existing user document (created by super-admin with email as ID)
       const oldUserDocRef = doc(db, "users", email);
       const oldUserDocSnap = await getDoc(oldUserDocRef);
 
       let userData: AppUser;
 
       if (oldUserDocSnap.exists()) {
-        // If it exists, merge its data with the new user's data
+        // If it exists, merge its data with the new user's data for the new document
         const oldData = oldUserDocSnap.data() as AppUser;
         userData = {
             id: authUser.uid,
@@ -83,7 +83,7 @@ export default function SignupPage() {
             city: oldData.city || '',
         };
       } else {
-        // If it doesn't exist, create a new student document
+        // If it doesn't exist, create a standard new student document
         userData = {
             id: authUser.uid,
             name: name,
@@ -98,7 +98,7 @@ export default function SignupPage() {
       // Step 3: Use a batch write to ensure atomicity
       const batch = writeBatch(db);
 
-      // Set the new document with the user's UID as the ID
+      // Create/Set the new document with the user's UID as the ID
       const newUserDocRef = doc(db, "users", authUser.uid);
       batch.set(newUserDocRef, userData);
 
@@ -217,5 +217,3 @@ export default function SignupPage() {
     </>
   );
 }
-
-    

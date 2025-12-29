@@ -18,8 +18,8 @@ service cloud.firestore {
 
     function isFranchiseAdmin(franchiseId) {
       // It's safe to use the user's email as the document ID here because we ensure it's set that way.
-      return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.role == 'franchiseAdmin' 
-                       && get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.franchiseId == franchiseId;
+      return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'franchiseAdmin' 
+                       && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId == franchiseId;
     }
     
     function isOwner(userId) {
@@ -39,10 +39,7 @@ service cloud.firestore {
       // SuperAdmins have full read/write access.
       allow read, write: if isSuperAdmin();
       
-      // Franchise Admins can also create user records via the dashboard.
-      allow create: if isAuth() && request.resource.data.role == 'franchiseAdmin';
-
-      // For the signup merge logic, we need to allow listing by email, but only for authenticated users.
+      // Allow list for signup check
       allow list: if isAuth();
 
        // Allow deletion of the old email-ID based document during signup migration
@@ -72,7 +69,7 @@ service cloud.firestore {
         allow read, update: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         
         // Franchise admins need to list registrations to add students to an exam.
-        allow list: if isAuth() && (isSuperAdmin() || isFranchiseAdmin(request.query.franchiseId));
+        allow list: if isAuth() && (isSuperAdmin() || (isFranchiseAdmin(request.query.get('franchiseId'))));
     }
     
     // Exam results for students.
@@ -173,5 +170,3 @@ service cloud.firestore {
     }
   }
 }
-
-    
