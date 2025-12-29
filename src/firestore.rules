@@ -65,8 +65,10 @@ service cloud.firestore {
     
     // Exam results for students.
     match /examResults/{resultId} {
-        // Results are created by the system (or authenticated users during a test).
-        allow create: if isAuth();
+        // Either the student submitting their own result, or an admin.
+        allow create: if isOwner(request.auth.uid) || 
+                         isSuperAdmin() || 
+                         isFranchiseAdmin(request.resource.data.franchiseId);
 
         // Public read is necessary for certificate verification.
         allow read: if true; 
