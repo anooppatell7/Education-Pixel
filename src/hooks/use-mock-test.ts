@@ -13,6 +13,11 @@ import { useToast } from '@/hooks/use-toast';
 import { getStorage, ref, uploadString, getDownloadURL } from "firebase/storage";
 import { generateCertificatePdf } from '@/lib/certificate-generator';
 
+// Enhanced response type for mock tests to include full question data for local review
+type MockTestLocalResponse = TestResponse & {
+    question: TestQuestion;
+};
+
 export const useMockTest = (testId: string) => {
     const { toast } = useToast();
     const db = useFirestore();
@@ -195,7 +200,6 @@ export const useMockTest = (testId: string) => {
             
             // Differentiate between saving to Firebase and storing locally
             if (isOfficialExam) {
-                // Save to Firestore for official exams
                  const finalResultData = {...resultData, submittedAt: serverTimestamp()};
                  const resultId = await saveExamResult(finalResultData as Omit<ExamResult, 'id' | 'submittedAt'>);
                  
@@ -206,17 +210,24 @@ export const useMockTest = (testId: string) => {
                  router.push(`/exam/result/${resultId}`);
 
             } else {
-                // Store in sessionStorage for mock tests
                 const mockResultId = `mock-${testData.id}-${Date.now()}`;
-                const mockResult = { ...resultData, id: mockResultId };
+                const responsesWithQuestions: MockTestLocalResponse[] = testData.questions.map((q, i) => ({
+                    ...resultData.responses[i],
+                    question: q,
+                }));
+
+                const mockResult = {
+                    ...resultData,
+                    id: mockResultId,
+                    responses: responsesWithQuestions,
+                };
                 sessionStorage.setItem(mockResultId, JSON.stringify(mockResult));
 
                 toast({
                     title: "Test Submitted",
                     description: isAutoSubmit ? "Time's up! Your test has been automatically submitted." : "Your test has been submitted successfully."
                  });
-                 // Redirect to a local-only result page
-                router.push(`/mock-tests/result/${mockResultId}`);
+                 router.push(`/mock-tests/result/${mockResultId}`);
             }
             
             cleanupLocalStorage(registrationNumber);

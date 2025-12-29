@@ -3,13 +3,29 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, notFound } from 'next/navigation';
-import type { ExamResult as ExamResultType } from '@/lib/types';
+import type { ExamResult as ExamResultType, TestQuestion } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { BarChart, Clock, Target, Check, X, ShieldQuestion, HelpCircle, Award } from 'lucide-react';
+import { BarChart, Clock, Target, Check, X, ShieldQuestion, HelpCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import SectionDivider from '@/components/section-divider';
+
+
+// This is an enhanced response type for local mock tests, including full question data.
+type MockTestLocalResponse = {
+    questionId: string;
+    selectedOption: number | null;
+    isCorrect: boolean;
+    marksAwarded: number;
+    question: TestQuestion; // The full question object
+};
+
+// This is an enhanced result type for local mock tests.
+type MockTestLocalResult = Omit<ExamResultType, 'responses'> & {
+    responses: MockTestLocalResponse[];
+};
+
 
 const COLORS = {
   correct: 'hsl(var(--chart-2))',
@@ -26,7 +42,7 @@ function ResultSkeleton() {
                      <Skeleton className="h-6 w-1/3" />
                  </div>
 
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                      {Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}
                  </div>
 
@@ -47,7 +63,7 @@ export default function MockTestResultPage() {
     const params = useParams();
     const resultId = params.resultId as string;
     
-    const [result, setResult] = useState<ExamResultType | null>(null);
+    const [result, setResult] = useState<MockTestLocalResult | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -59,7 +75,7 @@ export default function MockTestResultPage() {
         const fetchResultFromSession = () => {
             const storedResult = sessionStorage.getItem(resultId);
             if (storedResult) {
-                const parsedResult = JSON.parse(storedResult);
+                const parsedResult: MockTestLocalResult = JSON.parse(storedResult);
                 setResult(parsedResult);
             } else {
                 notFound();
@@ -91,12 +107,6 @@ export default function MockTestResultPage() {
         { name: 'Incorrect', value: incorrectCount, color: COLORS.incorrect },
         { name: 'Unattempted', value: unattemptedCount, color: COLORS.unattempted }
     ];
-
-    const getQuestionById = (id: string) => {
-        // Since we don't have the testData here, we have to rely on what's in the result
-        // This is a limitation of the local-only approach but sufficient for review
-        return null;
-    }
     
     return (
         <div className="bg-background">
@@ -144,7 +154,47 @@ export default function MockTestResultPage() {
                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                          <div className="lg:col-span-2 space-y-4">
                             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
-                                 <CardHeader><CardTitle>Review Your Answers</CardTitle><CardDescription>Mock test review is not available. Please retake the test to see the questions.</CardDescription></CardHeader>
+                                 <CardHeader><CardTitle>Question Review</CardTitle></CardHeader>
+                                 <CardContent>
+                                    {result.responses.map((response, index) => {
+                                        const { question } = response;
+                                        if (!question) return null;
+
+                                        const userAnswerIndex = response.selectedOption;
+                                        const correctAnswerIndex = question.correctOption;
+                                        
+                                        return (
+                                            <div key={index} className="py-4 border-b last:border-b-0">
+                                                <p className="font-semibold">{index + 1}. {question.questionText}</p>
+                                                <div className="mt-4 space-y-2 text-sm">
+                                                    {question.options.map((option, i) => (
+                                                        <div key={i} className={cn(
+                                                            "flex items-start gap-3 p-3 rounded-md border",
+                                                            i === correctAnswerIndex && "bg-green-500/10 border-green-500",
+                                                            i === userAnswerIndex && i !== correctAnswerIndex && "bg-red-500/10 border-red-500"
+                                                        )}>
+                                                            <div className="flex-shrink-0 mt-1">
+                                                                {i === correctAnswerIndex ? <Check className="h-4 w-4 text-green-600" /> : 
+                                                                 i === userAnswerIndex ? <X className="h-4 w-4 text-red-600" /> : 
+                                                                 <div className="h-4 w-4" />}
+                                                            </div>
+                                                            <span>{option}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                {question.explanation && (
+                                                    <div className="mt-4 p-3 bg-blue-500/10 rounded-md text-sm flex items-start gap-3">
+                                                       <HelpCircle className="h-4 w-4 mt-1 text-blue-600 flex-shrink-0"/>
+                                                        <div>
+                                                            <h4 className="font-semibold text-blue-800">Explanation</h4>
+                                                            <p className="text-blue-700">{question.explanation}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                 </CardContent>
                             </Card>
                          </div>
                         <div className="space-y-6 sticky top-24">
