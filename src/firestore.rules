@@ -37,11 +37,14 @@ service cloud.firestore {
     match /users/{userId} {
       // User can create their own document during signup.
       allow create: if request.auth != null && request.auth.uid == userId;
-      // User can read and update their own profile.
+      
+      // A user can read or update their own profile.
       allow get, update: if isOwner(userId);
-      // Super Admins have full access. This no longer conflicts with create.
+      
+      // Super Admins have full read and write access.
       allow read, write: if isSuperAdmin();
-      // Nobody can list all users.
+      
+      // No one can list all users.
       allow list: if false;
     }
     
