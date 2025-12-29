@@ -65,9 +65,10 @@ service cloud.firestore {
     
     // Exam results for students.
     match /examResults/{resultId} {
-        // Any authenticated user can create a result.
-        // The application logic in use-mock-test.ts ensures the correct student details are saved.
-        allow create: if isAuth();
+        // A user can create a result if it's their own mock test (UID is reg no), or if it's an admin.
+        allow create: if request.resource.data.registrationNumber == request.auth.uid || 
+                         isSuperAdmin() || 
+                         isFranchiseAdmin(request.resource.data.franchiseId);
 
         // Public read is necessary for certificate verification.
         allow read: if true; 
