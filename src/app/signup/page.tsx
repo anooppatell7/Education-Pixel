@@ -64,58 +64,30 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const authUser = userCredential.user;
       
-      // Step 2: Check for a pre-existing user document (created by super-admin with email as ID)
-      const oldUserDocRef = doc(db, "users", email);
-      const oldUserDocSnap = await getDoc(oldUserDocRef);
-
-      let userData: AppUser;
-
-      if (oldUserDocSnap.exists()) {
-        // If it exists, merge its data with the new user's data for the new document
-        const oldData = oldUserDocSnap.data() as AppUser;
-        userData = {
-            id: authUser.uid,
-            name: name,
-            email: email,
-            createdAt: serverTimestamp(),
-            role: oldData.role || 'student', 
-            franchiseId: oldData.franchiseId || '',
-            city: oldData.city || '',
-        };
-      } else {
-        // If it doesn't exist, create a standard new student document
-        userData = {
-            id: authUser.uid,
-            name: name,
-            email: email,
-            createdAt: serverTimestamp(),
-            role: 'student', 
-            franchiseId: '',
-            city: '',
-        };
-      }
+      const userData: AppUser = {
+        id: authUser.uid,
+        name: name,
+        email: email,
+        createdAt: serverTimestamp(),
+        role: 'student', // Always default to student on signup
+        franchiseId: '',
+        city: '',
+      };
       
-      // Step 3: Use a batch write to ensure atomicity
-      const batch = writeBatch(db);
+      // Step 2: Create the user document in Firestore with their UID as the ID
+      const userDocRef = doc(db, "users", authUser.uid);
+      
+      // Use setDoc to create the document. This will be allowed by the new, simpler security rule.
+      await setDoc(userDocRef, userData);
 
-      // Create/Set the new document with the user's UID as the ID
-      const newUserDocRef = doc(db, "users", authUser.uid);
-      batch.set(newUserDocRef, userData);
-
-      // If an old document with the email as ID existed, delete it
-      if (oldUserDocSnap.exists()) {
-        batch.delete(oldUserDocRef);
-      }
-
-      await batch.commit();
-
+      // Step 3: Update the user's display name in Firebase Auth
       await updateProfile(authUser, { displayName: name });
       
       toast({
           title: "Account Created",
           description: "Welcome! You have successfully signed up.",
       });
-      router.push('/login');
+      router.push('/profile');
 
     } catch (error: any) {
       let errorMessage = "An unknown error occurred.";
