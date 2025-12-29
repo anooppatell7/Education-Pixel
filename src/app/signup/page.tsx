@@ -64,31 +64,16 @@ export default function SignupPage() {
       // 2. Update Auth profile display name
       await updateProfile(authUser, { displayName: name });
       
-      // 3. Determine user role and franchise details
-      const userQuery = query(collection(db, "users"), where("email", "==", email));
-      const userSnap = await getDocs(userQuery);
-
-      let role = "student";
-      let franchiseId: string | null = null;
-      let userCity: string | null = null;
-      
-      // If a user doc already exists with this email, it's likely a pre-added franchise admin
-      if (!userSnap.empty && userSnap.docs[0].data().role === 'franchiseAdmin') {
-          const preExistingUserData = userSnap.docs[0].data();
-          role = "franchiseAdmin";
-          franchiseId = preExistingUserData.franchiseId;
-          userCity = preExistingUserData.city;
-      }
-      
-      // 4. Create user document in Firestore. This will overwrite if a doc with the same UID exists, which is fine here.
+      // 3. Create user document in Firestore. No need to check for existing user here as signup implies new.
+      // Firestore security rules will handle permissions.
       const userDocRef = doc(db, "users", authUser.uid);
       const userData: AppUser = {
         id: authUser.uid,
         name: name,
         email: email,
-        role: role as 'student' | 'franchiseAdmin' | 'superAdmin',
-        city: userCity || '',
-        franchiseId: franchiseId || '',
+        role: 'student', // Default role for new signups
+        city: '',
+        franchiseId: '',
         createdAt: serverTimestamp(),
       };
       
@@ -99,11 +84,7 @@ export default function SignupPage() {
         description: "Welcome! You have successfully signed up.",
       });
 
-      if (role === 'franchiseAdmin') {
-          router.push(`/franchise/${franchiseId}/dashboard`);
-      } else {
-          router.push('/profile');
-      }
+      router.push('/profile');
 
     } catch (error: any) {
       let errorMessage = "An unknown error occurred.";
