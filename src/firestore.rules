@@ -65,10 +65,14 @@ service cloud.firestore {
     
     // Exam results for students.
     match /examResults/{resultId} {
-        // A user can create a result if it's their own mock test (UID is reg no), or if it's an admin.
+        // A user can create a result if:
+        // 1. It's their own mock test (UID is reg no).
+        // 2. They are an admin.
+        // 3. They are the registered student for that official exam (by checking the examRegistrations doc).
         allow create: if request.resource.data.registrationNumber == request.auth.uid || 
                          isSuperAdmin() || 
-                         isFranchiseAdmin(request.resource.data.franchiseId);
+                         isFranchiseAdmin(request.resource.data.franchiseId) ||
+                         get(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)).data.registrationNumber == request.resource.data.registrationNumber;
 
         // Public read is necessary for certificate verification.
         allow read: if true; 
@@ -163,5 +167,3 @@ service cloud.firestore {
     }
   }
 }
-
-    
