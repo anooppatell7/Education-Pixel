@@ -17,8 +17,7 @@ service cloud.firestore {
     }
 
     function isFranchiseAdmin(franchiseId) {
-      // Production: return request.auth.token.role == "franchiseAdmin" && request.auth.token.franchiseId == franchiseId;
-      // This rule is more complex without claims, requires a read to user doc.
+      // This is now safer to use as it's not called during signup flows.
       return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'franchiseAdmin' 
                        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId == franchiseId;
     }
@@ -27,15 +26,11 @@ service cloud.firestore {
       return isAuth() && request.auth.uid == userId;
     }
     
-    function userBelongsToFranchise(franchiseId) {
-        return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.franchiseId == franchiseId;
-    }
-
     // == CORE DATA ==
 
     // Users collection stores role and franchise info.
     match /users/{userId} {
-      // User can create their own document during signup.
+      // User creates own profile document during signup.
       allow create: if request.auth != null && request.auth.uid == userId;
       
       // A user can read or update their own profile.
@@ -70,8 +65,8 @@ service cloud.firestore {
         // Student can read their own data. Admins can read/update registrations.
         allow read, update: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin(resource.data.franchiseId);
         
-        // Allow any authenticated user to query the collection (needed for verification)
-        allow list: if isAuth();
+        // Franchise admins need to list registrations to add students to an exam.
+        allow list: if isAuth() && (isSuperAdmin() || isFranchiseAdmin(request.query.franchiseId));
     }
     
     // Exam results for students.
@@ -87,6 +82,10 @@ service cloud.firestore {
                     || (isAuth() && resource.data.registrationNumber == request.auth.uid)
                     || (isAuth() && exists(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)) && resource.data.registrationNumber == get(/databases/$(database)/documents/examRegistrations/$(request.auth.uid)).data.registrationNumber);
         
+        // Anyone can query for a certificate ID to verify it.
+        // This is safe because certificateId is a non-guessable unique ID.
+        allow list: if request.query.keys().hasAny(['certificateId']);
+
         // Only Super Admins can delete results.
         allow delete: if isSuperAdmin();
     }
