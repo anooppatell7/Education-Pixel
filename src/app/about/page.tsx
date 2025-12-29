@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import SectionDivider from "@/components/section-divider";
 import { Button } from "@/components/ui/button";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
+const siteUrl = "https://www.educationpixel.site";
 
 export const metadata: Metadata = {
   title: "About Education Pixel - Premier Tech Institute",

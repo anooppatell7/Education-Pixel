@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
+const siteUrl = "https://www.educationpixel.site";
 
 export const metadata: Metadata = {
   title: "Online Mock Tests for Computer Courses - Education Pixel",

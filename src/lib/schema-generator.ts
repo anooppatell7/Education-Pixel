@@ -2,7 +2,7 @@
 import type { BlogPost, HowToSchema, FAQPageSchema } from './types';
 import { WithContext, BlogPosting, BreadcrumbList } from 'schema-dts';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://education-pixel.com';
+const siteUrl = 'https://www.educationpixel.site';
 
 // Helper function to remove HTML tags
 const stripHtml = (html: string): string => {

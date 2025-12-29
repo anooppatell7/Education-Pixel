@@ -91,7 +91,7 @@ export default function CertificateTemplate(data: CertificateData) {
       },
       
       qrCode: { position: 'absolute', bottom: '90px', left: '90px', width: '100px', height: '100px' },
-      qrText: { position: 'absolute', bottom: '75px', left: '105px', fontSize: '10px', fontWeight: 'bold' },
+      qrText: { position: 'absolute', bottom: '65px', left: '80px', width: '120px', textAlign: 'center', fontSize: '10px', fontWeight: 'bold' },
       
       authSigLine: { position: 'absolute', bottom: '115px', right: '80px', width: '160px', borderTop: '1px solid #000' },
       authSigText: { position: 'absolute', bottom: '90px', right: '80px', width: '160px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', color: '#1a237e' },
@@ -177,7 +177,10 @@ export default function CertificateTemplate(data: CertificateData) {
             </div>
 
             {data.qrCodeUrl && <img src={data.qrCodeUrl} alt="QR" style={styles.qrCode} />}
-            <p style={styles.qrText}>Scan to Verify</p>
+            <div style={styles.qrText}>
+                <span>Scan to Verify</span>
+                <span style={{display: 'block', fontWeight: 'normal' }}>www.educationpixel.site</span>
+            </div>
             
             <div style={styles.authSigLine}></div>
             <p style={styles.authSigText}>Authorised Signature</p>

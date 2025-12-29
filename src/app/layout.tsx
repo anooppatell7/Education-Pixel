@@ -25,8 +25,7 @@ const volkhov = Volkhov({
   variable: "--font-volkhov",
 });
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
+const siteUrl = "https://www.educationpixel.site";
 
 const faviconUrl = "https://res.cloudinary.com/dqycipmr0/image/upload/v1766033775/EP_uehxrf.png";
 

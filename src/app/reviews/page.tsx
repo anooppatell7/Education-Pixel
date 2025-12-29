@@ -7,7 +7,7 @@ import SectionDivider from "@/components/section-divider";
 import type { Review } from '@/lib/types';
 
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
+const siteUrl = "https://www.educationpixel.site";
 
 export const metadata: Metadata = {
   title: "Student Reviews - Education Pixel",

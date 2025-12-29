@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 import ResourcesClient from "@/components/resources-client";
 import SectionDivider from "@/components/section-divider";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
+const siteUrl = "https://www.educationpixel.site";
 
 export const metadata: Metadata = {
   title: "Free Student Resources (PDF, Notes) - Education Pixel",

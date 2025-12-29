@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import SectionDivider from '@/components/section-divider';
 import { Card, CardContent } from '@/components/ui/card';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://education-pixel.com";
+const siteUrl = "https://www.educationpixel.site";
 
 export const metadata: Metadata = {
   title: "Terms and Conditions - Education Pixel",
@@ -66,7 +66,7 @@ export default function TermsAndConditionsPage() {
                 
                 <h2>6. Disclaimer</h2>
                 <p>
-                  Your use of the Service is at your sole risk. The Service is provided on an "AS IS" and "AS AVAILABLE" basis. The Service is provided without warranties of any kind, whether express or implied, including, but not limited to, implied warranties of merchantability, fitness for a particular purpose, non-infringement or course of performance.
+                  Your use of the Service is at your sole risk. The Service is provided on an "AS IS" and "AS AVAILABLE" basis. The Service is provided without warranties of any kind, whether express or implied, including, but not to, implied warranties of merchantability, fitness for a particular purpose, non-infringement or course of performance.
                 </p>
 
                 <h2>7. Governing Law</h2>

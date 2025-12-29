@@ -2,7 +2,7 @@
 import type { Course, BlogPost } from './types';
 import { WithContext, Organization, WebSite, Course as CourseSchema, BlogPosting, BreadcrumbList, ListItem } from 'schema-dts';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://education-pixel.com';
+const siteUrl = 'https://www.educationpixel.site';
 
 export const organizationSchema: WithContext<Organization> = {
   '@context': 'https://schema.org',
