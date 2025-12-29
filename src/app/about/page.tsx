@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     description: "Learn about Education Pixel, a leading tech institute. Our mission is to provide top-quality IT education and job-oriented courses.",
     url: `${siteUrl}/about`,
     images: [{
-        url: "https://picsum.photos/seed/mtech-classroom/1200/630",
+        url: "https://res.cloudinary.com/dqycipmr0/image/upload/v1766673710/Gemini_Generated_Image_9mx1f9mx1f9mx1f9_nfqa1p.png",
         width: 1200,
         height: 630,
         alt: "Education Pixel Classroom"
@@ -105,9 +105,9 @@ export default function AboutPage() {
                     <Card className="overflow-hidden shadow-xl rounded-xl border-t-4 border-t-accent transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                         <CardContent className="p-0">
                         <Image
-                            src="https://picsum.photos/seed/mtech-classroom/800/600"
-                            alt="Education Pixel classroom with students"
-                            data-ai-hint="classroom students"
+                            src="https://res.cloudinary.com/dqycipmr0/image/upload/v1766673710/Gemini_Generated_Image_9mx1f9mx1f9mx1f9_nfqa1p.png"
+                            alt="Instructor helping a student at Education Pixel"
+                            data-ai-hint="instructor student"
                             width={800}
                             height={600}
                             className="w-full h-auto object-cover"
