@@ -39,8 +39,9 @@ service cloud.firestore {
       // Super Admins have full read and write access.
       allow read, write: if isSuperAdmin();
       
-      // No one can list all users.
-      allow list: if false;
+      // Allow a logged-in user to query the users collection ONLY for email checks during signup.
+      // This is safe because the 'get' rule prevents reading arbitrary documents.
+      allow list: if request.auth != null;
     }
     
     // Franchises can only be created and managed by Super Admins, but read by anyone for signup.

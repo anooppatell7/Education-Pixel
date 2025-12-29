@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser, db } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Head from "next/head";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, collection, query, where, getDocs, writeBatch } from "firebase/firestore";
 import type { User as AppUser } from "@/lib/types";
 import { isValidTLD } from "@/lib/tld-validator";
 import { Loader2 } from "lucide-react";
@@ -57,27 +57,58 @@ export default function SignupPage() {
     }
 
     try {
+      // Step 1: Check if a user with this email already exists in Firestore users collection
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+      
+      let existingUserData: Partial<AppUser> | null = null;
+      let existingUserDocId: string | null = null;
+
+      if (!querySnapshot.empty) {
+        // User with this email exists, capture their data
+        const existingDoc = querySnapshot.docs[0];
+        existingUserData = existingDoc.data() as Partial<AppUser>;
+        existingUserDocId = existingDoc.id;
+      }
+
+      // Step 2: Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const authUser = userCredential.user;
       
       await updateProfile(authUser, { displayName: name });
       
-      const userDocRef = doc(db, "users", authUser.uid);
-      
+      // Step 3: Prepare data for Firestore document
+      const newUserDocRef = doc(db, "users", authUser.uid);
       const userData: Partial<AppUser> = {
         name: name,
         email: email,
         createdAt: serverTimestamp(),
+        // If existing user data was found, use its role, otherwise default to 'student'
+        role: existingUserData?.role || 'student',
+        franchiseId: existingUserData?.franchiseId || '',
+        city: existingUserData?.city || '',
       };
       
-      await setDoc(userDocRef, userData, { merge: true });
+      // Step 4: Write to Firestore
+      const batch = writeBatch(db);
+
+      // If an old document exists with a different ID, delete it
+      if (existingUserDocId && existingUserDocId !== authUser.uid) {
+        const oldDocRef = doc(db, "users", existingUserDocId);
+        batch.delete(oldDocRef);
+      }
+      
+      // Create the new user document with the correct role
+      batch.set(newUserDocRef, userData);
+      
+      await batch.commit();
       
       toast({
         title: "Account Created",
         description: "Welcome! You have successfully signed up.",
       });
 
-      // After signup, redirect logic will be handled by the login page or a dedicated redirect handler
       router.push('/login');
 
     } catch (error: any) {
