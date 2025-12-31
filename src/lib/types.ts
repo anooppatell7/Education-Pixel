@@ -270,6 +270,7 @@ export interface CertificateData extends Omit<ExamResult, 'id' | 'submittedAt' |
   qrCodeUrl?: string;
   backgroundImageUrl: string;
   certificateBadgeUrl: string;
+  signatureUrl: string;
   combinedFooterLogoUrl: string;
 }
 
@@ -331,5 +332,3 @@ export type FAQPageSchema = FAQPage;
     
 
     
-
-
